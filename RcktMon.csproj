@@ -2,17 +2,13 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <RootNamespace>RcktMon</RootNamespace>
     <EnableDefaultItems>False</EnableDefaultItems>
     <ApplicationIcon>iconfinder_rocket_406798.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <PublishTrimmed>true</PublishTrimmed>
-  </PropertyGroup>
-  
   <ItemGroup>
     <Compile Remove="Properties\Resources.Designer.cs" />
     <Compile Remove="Properties\Settings.Designer.cs" />
