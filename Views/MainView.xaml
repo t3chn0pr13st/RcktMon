@@ -36,7 +36,7 @@
                     <LayoutDocumentPane>
                         <LayoutDocument ContentId="Stocks" Title="Котировки" x:Name="StocksDoc">
                               
-                            <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource StocksCollectionView}}" 
+                            <DataGrid IsReadOnly="True" ItemsSource="{Binding Stocks}" 
                                     VirtualizingPanel.IsVirtualizing="True" 
                                     VirtualizingPanel.IsContainerVirtualizable="True"
                                     VirtualizingPanel.VirtualizationMode="Recycling"
@@ -50,7 +50,7 @@
                                     <DataGridTextColumn Binding="{Binding Currency}" Header="Валюта" />
                                     <DataGridTextColumn Binding="{Binding TodayOpen}" Header="Цена открытия" />
                                     <DataGridTextColumn Binding="{Binding Price}" Header="Текущая цена" />
-                                    <DataGridTextColumn Binding="{Binding DayChange, StringFormat=P2}" Header="Изменение" />
+                                    <DataGridTextColumn Binding="{Binding DayChange, StringFormat=P2}" Header="Изменение" SortDirection="Descending" />
                                     <DataGridTextColumn Binding="{Binding LastUpdate, StringFormat=HH:mm:ss.ff}" Header="Обновление" />
                                     <DataGridTextColumn Binding="{Binding Status}" Header="Состояние" />
                                 </DataGrid.Columns>

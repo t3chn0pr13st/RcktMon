@@ -47,14 +47,14 @@ namespace TradeApp.Data
         {
             get
             {
-                return long.TryParse(_tradingVM.TgChatId, out long result ) ? result : 0;
+                return long.TryParse(_tradingVM.TgChatId, out long result ) ? result : long.MinValue;
             }
         }
 
         internal decimal DayChangeTrigger => _tradingVM.MinDayPriceChange;
         internal decimal TenMinChangeTrigger => _tradingVM.MinTenMinutesPriceChange;
 
-        internal bool IsTelegramEnabled => TgBotToken != null && _tradingVM.IsTelegramEnabled;
+        internal bool IsTelegramEnabled => TgBotToken != null && _tradingVM.IsTelegramEnabled && _telegram != null;
 
         private void PrepareConnection()
         {
@@ -79,7 +79,7 @@ namespace TradeApp.Data
             if (_telegram != null)
                 _telegram.CancellationPending = true;
 
-            if (TgBotToken != null && TgChatId > 0) 
+            if (TgBotToken != null && TgChatId > long.MinValue) 
                 _telegram = new TelegramManager(TgBotToken, TgChatId) { IsEnabled = IsTelegramEnabled };
                        
 
@@ -210,6 +210,7 @@ namespace TradeApp.Data
                         var stock = _tradingVM.Stocks.FirstOrDefault(s => s.Figi == candle.Figi);
                         if (stock != null)
                         {
+                            stock.IsNotifying = false;
                             if (candle.Interval == CandleInterval.Day)
                             {
                                 stock.TodayOpen = candle.Open;
@@ -337,7 +338,8 @@ namespace TradeApp.Data
                                     QueueBrokerAction(b => b.SendStreamingRequestAsync(infoReq),
                                         $"Подписка на статус инструмента {stock.Ticker} ({stock.Figi})");
 
-                                    _telegram.PostMessage(stock.GetDayChangeInfoText());
+                                    if (IsTelegramEnabled)
+                                        _telegram.PostMessage(stock.GetDayChangeInfoText());
 
                                     BackgroundInvoke(() =>
                                     {
@@ -385,6 +387,7 @@ namespace TradeApp.Data
                                     Interlocked.Increment(ref _refreshPendingCount);
                                 }
                             }
+                            stock.IsNotifying = true;
                         }
 
                         break;
