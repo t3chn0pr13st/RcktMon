@@ -1,0 +1,114 @@
+﻿<UserControl x:Class="TradeApp.MainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:cal="http://caliburnmicro.com"
+             xmlns:local="clr-namespace:TradeApp" xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase" xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance Type=local:MainViewModel}"
+             d:DesignHeight="1000" d:DesignWidth="1600">
+    <UserControl.Resources>
+        <CollectionViewSource Source="{Binding Stocks}" x:Key="StocksCollectionView">
+            <CollectionViewSource.SortDescriptions>
+                <componentmodel:SortDescription PropertyName="DayChange" Direction="Descending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+          <CollectionViewSource Source="{Binding Messages}" x:Key="EventsCollectionView">
+            <CollectionViewSource.SortDescriptions>
+                <componentmodel:SortDescription PropertyName="Date" Direction="Descending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
+    <Grid x:Name="LayoutGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <DockingManager Grid.Row="1">
+            <DockingManager.Theme>
+                <Vs2013DarkTheme />
+            </DockingManager.Theme>
+            
+            <LayoutRoot>
+                <LayoutPanel>
+                    <LayoutDocumentPane>
+                        <LayoutDocument ContentId="Stocks" Title="Котировки" x:Name="StocksDoc">
+                              
+                            <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource StocksCollectionView}}" 
+                                    VirtualizingPanel.IsVirtualizing="True" 
+                                    VirtualizingPanel.IsContainerVirtualizable="True"
+                                    VirtualizingPanel.VirtualizationMode="Recycling"
+                                    ScrollViewer.CanContentScroll="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                    AutoGenerateColumns="False" >
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Width="220" Binding="{Binding Name}" Header="Название" />
+                                    <DataGridTextColumn Binding="{Binding Ticker}" Header="Тикер" />
+                                    <DataGridTextColumn Binding="{Binding Currency}" Header="Валюта" />
+                                    <DataGridTextColumn Binding="{Binding TodayOpen}" Header="Цена открытия" />
+                                    <DataGridTextColumn Binding="{Binding Price}" Header="Текущая цена" />
+                                    <DataGridTextColumn Binding="{Binding DayChange, StringFormat=P2}" Header="Изменение" />
+                                    <DataGridTextColumn Binding="{Binding LastUpdate, StringFormat=HH:mm:ss.ff}" Header="Обновление" />
+                                    <DataGridTextColumn Binding="{Binding Status}" Header="Состояние" />
+                                </DataGrid.Columns>
+                            </DataGrid>          
+                              
+                        </LayoutDocument>                             
+                    </LayoutDocumentPane>
+                     <LayoutDocumentPane>
+                        <LayoutDocument ContentId="Alerts" Title="События" x:Name="EventDoc">
+                              
+                            <DataGrid IsReadOnly="True"
+                                ItemsSource="{Binding Source={StaticResource EventsCollectionView}}" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Binding="{Binding Ticker}" Header="Тикер" />
+                                    <DataGridTextColumn Binding="{Binding Change, StringFormat=P2}" Header="Изменение" />
+                                    <DataGridTextColumn Binding="{Binding Volume}" Header="Объём" />
+                                    <DataGridTextColumn Binding="{Binding Text}" Header="Сообщение" />
+                                    <DataGridTextColumn Binding="{Binding Date}" Header="Дата события" />
+                                </DataGrid.Columns>
+                            </DataGrid>  
+                              
+                        </LayoutDocument>                             
+                    </LayoutDocumentPane>
+                    <LayoutAnchorablePane Name="ToolsPane" DockMinWidth="250">
+                        <LayoutAnchorable Title="Настройки" ContentId="Settings" AutoHideMinWidth="250">
+                            <StackPanel Orientation="Vertical" DataContext="{Binding SettingsViewModel}">
+                                <GroupBox Header="Ключи доступа">
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Text="TinkoffInvest OpenAPI Token" FontWeight="Bold" Margin="2" />
+                                        <TextBlock Text="Зайдите на страницу настроек Тинькофф Инвестиции, там внизу в блоке Токен для OpenAPI получите Токен для торговли, и вставьте сюда" TextWrapping="Wrap" Margin="2" />
+                                        <TextBox Text="{Binding TiApiKey}" Margin="2" />
+                                        <TextBlock FontWeight="Bold" Text="Telegram Bot Token" Margin="2 6 2 0" />
+                                        <TextBlock Text="Создайте бота через @botfather, вставьте сюда его токен" TextWrapping="Wrap" Margin="2" />
+                                        <TextBox Text="{Binding TgBotApiKey}" Margin="2" />
+                                        <TextBlock Text="Telegram Chat Id" Margin="2 6 2 0" FontWeight="Bold" />
+                                        <TextBlock Margin="2" TextWrapping="Wrap"
+                                            Text="Это id чата в телеграмм, куда будет отправлять сообщения ваш бот. Можно пригласить бота в группу\канал, и вставить сюда chatId группы. Чтобы бот писал в лс, вставьте личный chatId (подойдет тот же telegram id что в pantini tools, узнать можно у @pantini_warden_bot или @username_to_id_bot)" />
+                                        <TextBox Text="{Binding TgChatId}" Margin="2" />
+                                        <Button Margin="2 10 2 6" cal:Message.Attach="AcceptKeys">Применить</Button>
+                                    </StackPanel>
+                                </GroupBox>
+                                 <GroupBox Header="Настройки уведомлений">
+                                    <StackPanel Orientation="Vertical">
+                                        <mah:ToggleSwitch IsOn="{Binding IsTelegramEnabled}" FontSize="12.5"
+                                                          Content="Слать уведомления в телеграм" />
+                                        <TextBlock Text="При изменении цены за день (%)" Margin="2" />
+                                        <TextBox Text="{Binding MinDayPriceChangePercent}" Margin="2" />
+                                        <TextBlock Text="При изменении цены за 10 минут (%)" Margin="2" />
+                                        <TextBox Text="{Binding MinTenMinutesPriceChangePercent}" Margin="2" />
+                                        <Button Margin="2 10 2 6" cal:Message.Attach="AcceptOptions">Применить</Button>
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+                        </LayoutAnchorable>
+                    </LayoutAnchorablePane>
+                </LayoutPanel>
+            </LayoutRoot>
+        </DockingManager>
+        
+    </Grid>
+</UserControl>
