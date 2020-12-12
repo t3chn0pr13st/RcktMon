@@ -16,16 +16,11 @@ using TradeApp.ViewModels;
 
 namespace TradeApp
 {
-    [Serializable]
     public class MainViewModel : PropertyChangedBase
     {
-        [JsonIgnore]
         public BindableCollection<StockViewModel> Stocks { get; } = new BindableCollection<StockViewModel>();
-        [JsonIgnore]
         public BindableCollection<MessageViewModel> Messages { get; } = new BindableCollection<MessageViewModel>();
-        [JsonIgnore]
         public StocksManager StocksManager { get; private set; }
-        [JsonIgnore]
         public SettingsViewModel SettingsViewModel { get; } 
 
         #region App Settings 
