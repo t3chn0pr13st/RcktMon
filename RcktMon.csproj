@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <RootNamespace>TradeApp</RootNamespace>
+    <RootNamespace>RcktMon</RootNamespace>
     <EnableDefaultItems>False</EnableDefaultItems>
     <ApplicationIcon>iconfinder_rocket_406798.ico</ApplicationIcon>
   </PropertyGroup>
