@@ -72,7 +72,7 @@ namespace TradeApp
         {
             TiApiKey = CryptoHelper.Encrypt(TiApiKey),
             TgBotApiKey = CryptoHelper.Encrypt(TgBotApiKey),
-            TgChatId = CryptoHelper.Encrypt(TgBotApiKey),
+            TgChatId = CryptoHelper.Encrypt(TgChatId),
             MinDayPriceChange, MinTenMinutesPriceChange, IsTelegramEnabled
         };
 
