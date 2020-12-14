@@ -11,6 +11,7 @@ using System.Windows.Input;
 using AutoMapper;
 using Caliburn.Micro;
 using Newtonsoft.Json;
+using RcktMon.Managers;
 using TradeApp.Data;
 using TradeApp.ViewModels;
 
@@ -61,12 +62,17 @@ namespace TradeApp
                     cfg.CreateMap(obj.GetType(), this.GetType()));
                 var mapper = new Mapper(config);
                 mapper.Map(obj, this, obj.GetType(), this.GetType());
+                try { this.TiApiKey = CryptoHelper.Decrypt(this.TiApiKey); } catch { }
+                try { this.TgBotApiKey = CryptoHelper.Decrypt(this.TgBotApiKey); } catch { }
+                try { this.TgChatId = CryptoHelper.Decrypt(this.TgChatId); } catch { }
             }
         }
 
         private object AnonymousSettingsObj => new 
         {
-            TiApiKey, TgBotApiKey, TgChatId, 
+            TiApiKey = CryptoHelper.Encrypt(TiApiKey),
+            TgBotApiKey = CryptoHelper.Encrypt(TgBotApiKey),
+            TgChatId = CryptoHelper.Encrypt(TgBotApiKey),
             MinDayPriceChange, MinTenMinutesPriceChange, IsTelegramEnabled
         };
 

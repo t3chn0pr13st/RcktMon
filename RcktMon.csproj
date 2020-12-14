@@ -7,6 +7,8 @@
     <RootNamespace>RcktMon</RootNamespace>
     <EnableDefaultItems>False</EnableDefaultItems>
     <ApplicationIcon>iconfinder_rocket_406798.ico</ApplicationIcon>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +35,7 @@
     </ApplicationDefinition>
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="AppWindowManager.cs" />
+    <Compile Include="Managers\CryptoHelper.cs" />
     <Compile Include="Managers\SandboxBot.cs" />
     <Compile Include="Managers\StocksManager.cs" />
     <Compile Include="Managers\StreamingAction.cs" />

@@ -75,7 +75,7 @@ namespace TradeApp.Data
             _currencies["USD"] = new CurrencyInfo { Balance = 2000, Currency = Currency.Usd };
             _currencies["RUB"] = new CurrencyInfo { Balance = 100000, Currency = Currency.Rub };
 
-            _telegram.PostMessage($"Аккаунт песочницы создан. Id {_accountId}.");
+            _telegram.PostMessage($"Аккаунт песочницы создан. Id {_accountId}.", null);
 
             await ReportBalances();
         }
@@ -112,7 +112,7 @@ namespace TradeApp.Data
 {stocks}
 ".Trim();
 
-            _telegram.PostMessage(msg);
+            _telegram.PostMessage(msg, null);
             await Task.CompletedTask;
         }
 
@@ -156,14 +156,14 @@ namespace TradeApp.Data
 
                 _telegram.PostMessage($"Продажа {info.Lots} акций {stock.Ticker} по рыночной цене (примерно {info.CurrentPrice.FormatPrice(stock.Currency)}): {reason}" +
                     $"\r\nЦена покупки: {info.InitialPrice.FormatPrice(stock.Currency)} Цена продажи: {info.CurrentPrice.FormatPrice(stock.Currency)}\r\n" +
-                    $"Profit: {info.Profit.FormatPrice(stock.Currency)}");
+                    $"Profit: {info.Profit.FormatPrice(stock.Currency)}", stock.Ticker);
                 //await MakeOrder(stock.Figi, info.Lots, OperationType.Sell);
                 _archivedTrades.Add(info);
                 //await Task.Delay(1000);
             }
             catch (Exception ex)
             {
-                _telegram.PostMessage(ex.Message);
+                _telegram.PostMessage(ex.Message, null);
                 _failedTrades.Add(info);
                 return;
             }
@@ -193,14 +193,14 @@ namespace TradeApp.Data
 
             try
             {
-                _telegram.PostMessage($"Покупка {lots} акций {stock.Ticker} по рыночной цене (примерно {price.FormatPrice(stock.Currency)})");
+                _telegram.PostMessage($"Покупка {lots} акций {stock.Ticker} по рыночной цене (примерно {price.FormatPrice(stock.Currency)})", null);
                 //await MakeOrder(stock.Figi, lots, OperationType.Buy);
                 UpdateBalance(tradeInfo, OperationType.Buy);
                 //await Task.Delay(1000);
             }
             catch (Exception ex)
             {
-                _telegram.PostMessage(ex.Message);
+                _telegram.PostMessage(ex.Message, null);
                 _failedTrades.Add(tradeInfo);
                 return;
             }

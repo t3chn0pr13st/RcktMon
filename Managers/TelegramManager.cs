@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TradeApp.Data
 {
@@ -14,8 +15,10 @@ namespace TradeApp.Data
         private readonly TelegramBotClient _bot;
         private readonly long _chatId;
 
+        const string TinkoffInvestStocksUrl = "https://www.tinkoff.ru/invest/stocks/{0}/";
+
         private readonly Thread _messageQueueThread;
-        private readonly ConcurrentQueue<string> _botMessageQueue = new ConcurrentQueue<string>();
+        private readonly ConcurrentQueue<(string text, string ticker)> _botMessageQueue = new ConcurrentQueue<(string text, string ticker)>();
 
         public bool IsEnabled { get; set; }
 
@@ -35,33 +38,43 @@ namespace TradeApp.Data
                 };
                 _messageQueueThread.Start();
             }
-            catch
+            catch (Exception ex)
             {
-
+                Debug.WriteLine(ex.Message);
             }
         }
 
-        public void PostMessage(string text)
+        public void PostMessage(string text, string ticker)
         {
             Debug.WriteLine("Telegram message:\r\n" + text + "\r\n");
             if (IsEnabled)
-                _botMessageQueue.Enqueue(text);
+            {
+                _botMessageQueue.Enqueue((text, ticker));
+            }
         }
 
         private void BotMessageQueueLoop(object o)
         {
-            var messageBuffer = new StringBuilder(2048);
             while (!CancellationPending)
             {
-                while (messageBuffer.Length < 2048 && _botMessageQueue.TryDequeue(out string msg))
+                if (_botMessageQueue.TryDequeue(out var msg))
                 {
-                    if (messageBuffer.Length > 0)
-                        messageBuffer.AppendLine("--------------------------------");
-                    messageBuffer.AppendLine(msg);
+                    InlineKeyboardMarkup markup = null;
+                    if (msg.ticker != null)
+                        markup = new InlineKeyboardMarkup(
+                            new[]
+                            {
+                                new[]
+                                {
+                                    InlineKeyboardButton.WithUrl($"Открыть {msg.ticker} в Инвестициях",
+                                        String.Format(TinkoffInvestStocksUrl, msg.ticker)),
+                                }
+                            });
+
+                    _bot.SendTextMessageAsync(_chatId, msg.text, replyMarkup: markup);
+
+                    Thread.Sleep(500);
                 }
-                _bot.SendTextMessageAsync(_chatId, messageBuffer.ToString());
-                messageBuffer.Clear();
-                Thread.Sleep(1000);
             }
         }
     }

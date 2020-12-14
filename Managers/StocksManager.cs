@@ -71,17 +71,16 @@ namespace TradeApp.Data
 
         public void Init()
         {
-            if (TiApiToken == null)
-               return; 
-
-            PrepareConnection();
-
             if (_telegram != null)
                 _telegram.CancellationPending = true;
 
             if (TgBotToken != null && TgChatId > long.MinValue) 
-                _telegram = new TelegramManager(TgBotToken, TgChatId) { IsEnabled = IsTelegramEnabled };
-                       
+                _telegram = new TelegramManager(TgBotToken, TgChatId) { IsEnabled = _tradingVM.IsTelegramEnabled };
+
+            if (TiApiToken == null)
+               return; 
+
+            PrepareConnection();
 
             //TradeBot = new SandboxBot(this, _telegram);
 
@@ -339,7 +338,7 @@ namespace TradeApp.Data
                                         $"Подписка на статус инструмента {stock.Ticker} ({stock.Figi})");
 
                                     if (IsTelegramEnabled)
-                                        _telegram.PostMessage(stock.GetDayChangeInfoText());
+                                        _telegram.PostMessage(stock.GetDayChangeInfoText(), stock.Ticker);
 
                                     BackgroundInvoke(() =>
                                     {
@@ -369,7 +368,7 @@ namespace TradeApp.Data
                                         await ResetConnection("Ошибка при получении статистики за месяц: " + ex.Message);
                                     }
                                     if (IsTelegramEnabled)
-                                        _telegram.PostMessage(stock.GetMinutesChangeInfoText(change.change, change.minutes, change.candles));
+                                        _telegram.PostMessage(stock.GetMinutesChangeInfoText(change.change, change.minutes, change.candles), stock.Ticker);
                                     _uiContext.Post(obj => {
                                         _tradingVM.Messages.Add(new MessageViewModel
                                         {
