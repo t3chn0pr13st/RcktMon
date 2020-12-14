@@ -23,15 +23,22 @@ namespace TradeApp.Data
 
         public TelegramManager(string apiToken, long chatId)
         {
-            _bot = new TelegramBotClient(apiToken);
-            _chatId = chatId;
-
-            _messageQueueThread = new Thread(BotMessageQueueLoop)
+            try
             {
-                IsBackground = true,
-                Name = "TelegramMessageQueueLoopThread"
-            };
-            _messageQueueThread.Start();
+                _bot = new TelegramBotClient(apiToken);
+                _chatId = chatId;
+
+                _messageQueueThread = new Thread(BotMessageQueueLoop)
+                {
+                    IsBackground = true,
+                    Name = "TelegramMessageQueueLoopThread"
+                };
+                _messageQueueThread.Start();
+            }
+            catch
+            {
+
+            }
         }
 
         public void PostMessage(string text)

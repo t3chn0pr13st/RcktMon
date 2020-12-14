@@ -571,7 +571,7 @@ namespace TradeApp.Data
                     stocksToAdd.Add(stock);
                 }
             }
-            BackgroundInvoke(_tradingVM.Stocks.AddRange, stocksToAdd);
+            _tradingVM.Stocks.AddRange(stocksToAdd);
             await UpdatePrices();
             _tradingVM.IsNotifying = false;
         }
