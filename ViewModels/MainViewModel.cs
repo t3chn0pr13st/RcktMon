@@ -81,7 +81,7 @@ namespace TradeApp
             try 
             {
                 System.IO.File.WriteAllText("settings.json", 
-                    JsonConvert.SerializeObject(AnonymousSettingsObj));
+                    JsonConvert.SerializeObject(AnonymousSettingsObj, Formatting.Indented));
             }
             catch (Exception ex)
             {
