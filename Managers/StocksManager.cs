@@ -36,6 +36,7 @@ namespace TradeApp.Data
 
         private readonly ConcurrentQueue<BrokerAction> _brokerActions = new ConcurrentQueue<BrokerAction>();
         private Thread _brokerQueueThread;
+        private Thread[] _responseProcessingThreads;
 
         public Connection Connection => _broker;
         public SandboxConnection SandboxConnection => _sandbox;
@@ -97,6 +98,36 @@ namespace TradeApp.Data
                     Name = "BrokerActionQueueLoopThread"
                 };
                 _brokerQueueThread.Start();
+
+                _responseProcessingThreads = new Thread[4];
+                for (int i = 0; i < _responseProcessingThreads.Length; i++)
+                {
+                    _responseProcessingThreads[i] = new Thread(RespProcessingLoop)
+                    {
+                        IsBackground = true,
+                        Name = $"ResponseProcessingLoopThread{i}"
+                    };
+                    _responseProcessingThreads[i].Start();
+                }
+            }
+        }
+
+        private void RespProcessingLoop()
+        {
+            while (true)
+            {
+                while (_candleProcessingQueue.TryDequeue(out var cr))
+                {
+                    try
+                    {
+                        CandleProcessingProc(cr).GetAwaiter().GetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("Error while processing candle {candle}: {error}", cr, ex.Message);
+                    }
+                }
+                Thread.Sleep(1);
             }
         }
 
@@ -116,6 +147,8 @@ namespace TradeApp.Data
         private volatile int _refreshPendingCount = 0;
         private DateTime? _lastRefresh = null;
 
+        private static NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
         private void BrokerQueueLoop(object o)
         {
             if (TradeBot != null)
@@ -126,8 +159,9 @@ namespace TradeApp.Data
                 {
                     try
                     {
-                        var msg = $"{DateTime.Now} Выполнение операции '{act.Description}'...";
-                        Debug.WriteLine(msg);
+                        //var msg = $"{DateTime.Now} Выполнение операции '{act.Description}'...";
+                        Logger.Trace("Выполнение операции {OperationDescription}", act.Description);
+                        //Debug.WriteLine(msg);
                         var t = act.Action(_broker);
                         t.Wait();
                     }
@@ -165,6 +199,7 @@ namespace TradeApp.Data
                     //                System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                     _lastRefresh = DateTime.Now;
                 }
+                Thread.Sleep(1);
             }
         }
 
@@ -179,7 +214,8 @@ namespace TradeApp.Data
                     Text = msg
                 });
             }, null);
-            Debug.WriteLine(msg);
+            Logger.Error(msg);
+            //Debug.WriteLine(msg);
         }
 
         private async Task ResetConnection(string errorMsg)
@@ -191,204 +227,135 @@ namespace TradeApp.Data
         private async Task ResetConnection()
         {
             _lastEventReceived = null;
+            _candleProcessingQueue.Clear();
             _brokerActions.Clear();
             _subscribedFigi.Clear();
             PrepareConnection();
             await UpdatePrices();
         }
 
-        private async void Broker_StreamingEventReceived(object sender, StreamingEventReceivedEventArgs e)
+        private ConcurrentQueue<CandleResponse> _candleProcessingQueue = new ConcurrentQueue<CandleResponse>();
+
+        private async Task CandleProcessingProc(CandleResponse cr)
         {
-            Debug.WriteLine(JsonConvert.SerializeObject(e.Response));
+            _lastEventReceived = DateTime.Now;
+                var candle = cr.Payload;
+                var stock = _tradingVM.Stocks.FirstOrDefault(s => s.Figi == candle.Figi);
+                if (stock != null)
+                {
+                    stock.IsNotifying = false;
+                    if (candle.Interval == CandleInterval.Day)
+                    {
+                        stock.TodayOpen = candle.Open;
+                        stock.TodayDate = candle.Time;
+                        stock.LastUpdate = DateTime.Now;
+                        stock.Price = candle.Close;
+                        if (stock.TodayOpen > 0)
+                            stock.DayChange = (stock.Price - stock.TodayOpen) / stock.TodayOpen;
+                        stock.DayVolume = candle.Volume;
+                        Interlocked.Increment(ref _refreshPendingCount);
+                        // отписываемся от дневного апдейта и подписываемся на минутную свечу
+                        QueueBrokerAction(b => b.SendStreamingRequestAsync(
+                            UnsubscribeCandle(stock.Figi, CandleInterval.Day)),
+                            $"Отписка от часовой свечи {stock.Ticker} ({stock.Figi})");
+                        QueueBrokerAction(b => b.SendStreamingRequestAsync(
+                            SubscribeCandle(stock.Figi, CandleInterval.Minute)),
+                            $"Подписка на минутную свечу {stock.Ticker} ({stock.Figi})");
+                    }
+                    else if (candle.Interval == CandleInterval.Minute)
+                    {
+                        if (candle.Time.Date > stock.TodayDate)
+                        {
+                            QueueBrokerAction(b => b.SendStreamingRequestAsync(
+                               UnsubscribeCandle(stock.Figi, CandleInterval.Minute)),
+                               $"Отписка от минутной свечи {stock.Ticker} ({stock.Figi})");
+                            QueueBrokerAction(b => b.SendStreamingRequestAsync(
+                                SubscribeCandle(stock.Figi, CandleInterval.Day)),
+                                $"Подписка на дневную свечу {stock.Ticker} ({stock.Figi})");
+                            return;
+                        }
+                       
+                        stock.Price = candle.Close;
+                        if (stock.TodayOpen > 0)
+                            stock.DayChange = (stock.Price - stock.TodayOpen) / stock.TodayOpen;
+
+                        stock.LastUpdate = DateTime.Now;
+                        stock.LogCandle(candle);
+
+                        if (TradeBot != null)
+                            await TradeBot.Check(stock);
+
+                        if (stock.DayChange > DayChangeTrigger
+                            && (stock.LastAboveThreshholdDate == null
+                            || stock.LastAboveThreshholdDate.Value.Date < stock.LastUpdate.Date))
+                        {
+                            stock.LastAboveThreshholdDate = stock.LastUpdate;
+
+                            var infoReq = StreamingRequest.SubscribeInstrumentInfo(stock.Figi);
+                            QueueBrokerAction(b => b.SendStreamingRequestAsync(infoReq),
+                                $"Подписка на статус инструмента {stock.Ticker} ({stock.Figi})");
+
+                            if (IsTelegramEnabled)
+                                _telegram.PostMessage(stock.GetDayChangeInfoText(), stock.Ticker);
+
+                            BackgroundInvoke(() =>
+                            {
+                                _tradingVM.Messages.Add(new MessageViewModel
+                                {
+                                    Ticker = stock.Ticker,
+                                    Date = DateTime.Now,
+                                    Change = stock.DayChange,
+                                    Volume = candle.Volume,
+                                    Text = $"Цена {stock.Ticker} изменилась на {stock.DayChange:P2} с начала дня."
+                                });
+                            });
+                            Interlocked.Increment(ref _refreshPendingCount);
+                        }
+
+                        var change = stock.GetLast10MinChange(TenMinChangeTrigger);
+                        if (Math.Abs(change.change) > TenMinChangeTrigger && stock.DayChange > TenMinChangeTrigger && (stock.LastAboveThreshholdCandleTime == null
+                            || stock.LastAboveThreshholdCandleTime < candle.Time.AddMinutes(-change.minutes)))
+                        {
+                            stock.LastAboveThreshholdCandleTime = candle.Time;
+                            try
+                            {
+                                await GetMonthStats(stock);
+                            }
+                            catch (Exception ex)
+                            {
+                                await ResetConnection("Ошибка при получении статистики за месяц: " + ex.Message);
+                            }
+                            if (IsTelegramEnabled)
+                                _telegram.PostMessage(stock.GetMinutesChangeInfoText(change.change, change.minutes, change.candles), stock.Ticker);
+                            _uiContext.Post(obj => {
+                                _tradingVM.Messages.Add(new MessageViewModel
+                                {
+                                    Ticker = stock.Ticker,
+                                    Date = DateTime.Now,
+                                    Change = change.change,
+                                    Volume = candle.Volume,
+                                    Text = $"Цена {stock.Ticker} изменилась на {change.change:P2} за {change.minutes} мин."
+                                });
+                            }, null);
+
+                            if (TradeBot != null && change.change > TenMinChangeTrigger && stock.DayChange < 0.2m && change.candles.Sum(c => c.Volume) > 100)
+                                await TradeBot.Buy(stock);
+
+                            Interlocked.Increment(ref _refreshPendingCount);
+                        }
+                    }
+                    stock.IsNotifying = true;
+                }
+        }
+
+        private void Broker_StreamingEventReceived(object sender, StreamingEventReceivedEventArgs e)
+        {
+            //Debug.WriteLine(JsonConvert.SerializeObject(e.Response));
             switch (e.Response)
             {
                 case CandleResponse cr:
                     {
-                        _lastEventReceived = DateTime.Now;
-                        var candle = cr.Payload;
-                        var stock = _tradingVM.Stocks.FirstOrDefault(s => s.Figi == candle.Figi);
-                        if (stock != null)
-                        {
-                            stock.IsNotifying = false;
-                            if (candle.Interval == CandleInterval.Day)
-                            {
-                                stock.TodayOpen = candle.Open;
-                                stock.TodayDate = candle.Time;
-                                stock.LastUpdate = DateTime.Now;
-                                stock.Price = candle.Close;
-                                if (stock.TodayOpen > 0)
-                                    stock.DayChange = (stock.Price - stock.TodayOpen) / stock.TodayOpen;
-                                stock.DayVolume = candle.Volume;
-                                Interlocked.Increment(ref _refreshPendingCount);
-                                // отписываемся от дневного апдейта и подписываемся на 5минутную свечу
-                                QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                                    UnsubscribeCandle(stock.Figi, CandleInterval.Day)),
-                                    $"Отписка от часовой свечи {stock.Ticker} ({stock.Figi})");
-                                QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                                    SubscribeCandle(stock.Figi, CandleInterval.Minute)),
-                                    $"Подписка на минутную свечу {stock.Ticker} ({stock.Figi})");
-                            }
-                            #region 5min code
-                            //else if (candle.Interval == CandleInterval.FiveMinutes)
-                            //{
-                            //    if (candle.Time.Date > stock.TodayDate)
-                            //    {
-                            //        QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                            //           UnsubscribeCandle(stock.Figi, CandleInterval.FiveMinutes)),
-                            //           $"Отписка от 5-ти минутной свечи {stock.Ticker} ({stock.Figi})");
-                            //        QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                            //            SubscribeCandle(stock.Figi, CandleInterval.Day)),
-                            //            $"Подписка на дневную свечу {stock.Ticker} ({stock.Figi})");
-                            //        break;
-                            //    }
-                            //    var change = (candle.Close - candle.Open) / candle.Open;
-                            //    stock.Price = candle.Close;
-
-                            //    stock.LastUpdate = DateTime.Now;
-                            //    if (stock.TodayOpen > 0)
-                            //        stock.DayChange = (stock.Price - stock.TodayOpen) / stock.TodayOpen;
-                            //    if (stock.DayChange > (decimal)0.05
-                            //        && (stock.LastAboveThreshholdDate == null
-                            //        || stock.LastAboveThreshholdDate.Value.Date < stock.LastUpdate.Date))
-                            //    {
-                            //        stock.LastAboveThreshholdDate = stock.LastUpdate;
-
-                            //        var infoReq = StreamingRequest.SubscribeInstrumentInfo(stock.Figi);
-                            //        QueueBrokerAction(b => b.SendStreamingRequestAsync(infoReq),
-                            //            $"Подписка на статус инструмента {stock.Ticker} ({stock.Figi})");
-                            //        //if (stock.MonthVolume == 0)
-                            //        //await GetMonthStats(stock);
-                            //        //_telegram.PostMessage(stock.GetChangeInfoText());
-                            //        //_telegram.PostMessage($"Цена {stock.Ticker} изменилась на {stock.DayChange:P2} с начала дня. Объем (5 минут): {candle.Volume}" +
-                            //        //    $"\r\nЦена на начало дня: {stock.TodayOpenF}, Текущая: {stock.PriceF}");
-                            //        _uiContext.Post(obj => {
-                            //            _tradingVM.Messages.Add(new MessageViewModel
-                            //            {
-                            //                Ticker = stock.Ticker,
-                            //                Date = DateTime.Now,
-                            //                Change = stock.DayChange,
-                            //                Volume = candle.Volume,
-                            //                Text = $"Цена {stock.Ticker} изменилась на {stock.DayChange:P2} с начала дня."
-                            //            });
-                            //        }, null);
-                            //        Interlocked.Increment(ref _refreshPendingCount);
-                            //    }
-
-                            //    if ((change > (decimal)0.05 || change < (decimal)-0.05) && (stock.LastAboveThreshholdCandleTime == null
-                            //        || stock.LastAboveThreshholdCandleTime < candle.Time))
-                            //    {
-                            //        stock.LastAboveThreshholdCandleTime = candle.Time;
-                            //        if (stock.MonthVolume == 0)
-                            //            await GetMonthStats(stock);
-                            //        _telegram.PostMessage(stock.GetFiveMinChangeInfoText());
-                            //        //_telegram.PostMessage($"Цена {stock.Ticker} изменилась на {change:P2} за 5 минут. Объем за 5 минут: {candle.Volume}" +
-                            //        //    $"\r\nКурс на начало дня: {stock.TodayOpenF}, Текущий: {stock.PriceF}, Изменение за день: {stock.DayChangeF}");
-                            //        _uiContext.Post(obj => {
-                            //            _tradingVM.Messages.Add(new MessageViewModel
-                            //            {
-                            //                Ticker = stock.Ticker,
-                            //                Date = DateTime.Now,
-                            //                Change = change,
-                            //                Volume = candle.Volume,
-                            //                Text = $"Цена {stock.Ticker} изменилась на {change:P2} за 5 минут."
-                            //            });
-                            //        }, null);
-                            //        Interlocked.Increment(ref _refreshPendingCount);
-                            //    }
-
-                            //    QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                            //        UnsubscribeCandle(stock.Figi, CandleInterval.FiveMinutes)),
-                            //        $"Отписка от 5-ти минутной свечи {stock.Ticker} ({stock.Figi})");
-                            //    QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                            //        SubscribeCandle(stock.Figi, CandleInterval.Minute)),
-                            //        $"Подписка на минутную свечу {stock.Ticker} ({stock.Figi})");
-                            //}
-                            #endregion
-                            else if (candle.Interval == CandleInterval.Minute)
-                            {
-                                if (candle.Time.Date > stock.TodayDate)
-                                {
-                                    QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                                       UnsubscribeCandle(stock.Figi, CandleInterval.Minute)),
-                                       $"Отписка от минутной свечи {stock.Ticker} ({stock.Figi})");
-                                    QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                                        SubscribeCandle(stock.Figi, CandleInterval.Day)),
-                                        $"Подписка на дневную свечу {stock.Ticker} ({stock.Figi})");
-                                    break;
-                                }
-                               
-                                stock.Price = candle.Close;
-                                if (stock.TodayOpen > 0)
-                                    stock.DayChange = (stock.Price - stock.TodayOpen) / stock.TodayOpen;
-
-                                stock.LastUpdate = DateTime.Now;
-                                stock.LogCandle(candle);
-
-                                if (TradeBot != null)
-                                    await TradeBot.Check(stock);
-
-                                if (stock.DayChange > DayChangeTrigger
-                                    && (stock.LastAboveThreshholdDate == null
-                                    || stock.LastAboveThreshholdDate.Value.Date < stock.LastUpdate.Date))
-                                {
-                                    stock.LastAboveThreshholdDate = stock.LastUpdate;
-
-                                    var infoReq = StreamingRequest.SubscribeInstrumentInfo(stock.Figi);
-                                    QueueBrokerAction(b => b.SendStreamingRequestAsync(infoReq),
-                                        $"Подписка на статус инструмента {stock.Ticker} ({stock.Figi})");
-
-                                    if (IsTelegramEnabled)
-                                        _telegram.PostMessage(stock.GetDayChangeInfoText(), stock.Ticker);
-
-                                    BackgroundInvoke(() =>
-                                    {
-                                        _tradingVM.Messages.Add(new MessageViewModel
-                                        {
-                                            Ticker = stock.Ticker,
-                                            Date = DateTime.Now,
-                                            Change = stock.DayChange,
-                                            Volume = candle.Volume,
-                                            Text = $"Цена {stock.Ticker} изменилась на {stock.DayChange:P2} с начала дня."
-                                        });
-                                    });
-                                    Interlocked.Increment(ref _refreshPendingCount);
-                                }
-
-                                var change = stock.GetLast10MinChange(TenMinChangeTrigger);
-                                if (Math.Abs(change.change) > TenMinChangeTrigger && stock.DayChange > TenMinChangeTrigger && (stock.LastAboveThreshholdCandleTime == null
-                                    || stock.LastAboveThreshholdCandleTime < candle.Time.AddMinutes(-change.minutes)))
-                                {
-                                    stock.LastAboveThreshholdCandleTime = candle.Time;
-                                    try
-                                    {
-                                        await GetMonthStats(stock);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        await ResetConnection("Ошибка при получении статистики за месяц: " + ex.Message);
-                                    }
-                                    if (IsTelegramEnabled)
-                                        _telegram.PostMessage(stock.GetMinutesChangeInfoText(change.change, change.minutes, change.candles), stock.Ticker);
-                                    _uiContext.Post(obj => {
-                                        _tradingVM.Messages.Add(new MessageViewModel
-                                        {
-                                            Ticker = stock.Ticker,
-                                            Date = DateTime.Now,
-                                            Change = change.change,
-                                            Volume = candle.Volume,
-                                            Text = $"Цена {stock.Ticker} изменилась на {change.change:P2} за {change.minutes} мин."
-                                        });
-                                    }, null);
-
-                                    if (TradeBot != null && change.change > TenMinChangeTrigger && stock.DayChange < 0.2m && change.candles.Sum(c => c.Volume) > 100)
-                                        await TradeBot.Buy(stock);
-
-                                    Interlocked.Increment(ref _refreshPendingCount);
-                                }
-                            }
-                            stock.IsNotifying = true;
-                        }
-
+                        _candleProcessingQueue.Enqueue(cr);
                         break;
                     }
 

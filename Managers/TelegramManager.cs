@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TradeApp.Data
@@ -71,7 +72,7 @@ namespace TradeApp.Data
                                 }
                             });
 
-                    _bot.SendTextMessageAsync(_chatId, msg.text, replyMarkup: markup);
+                    _bot.SendTextMessageAsync(_chatId, msg.text, replyMarkup: markup, parseMode: ParseMode.Markdown);
 
                     Thread.Sleep(500);
                 }

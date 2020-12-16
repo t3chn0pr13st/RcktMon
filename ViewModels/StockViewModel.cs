@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -75,8 +76,8 @@ namespace TradeApp.ViewModels
             volPrice = volPrice / candles.Length * sumVolume;
             var volPriceF = volPrice.FormatPrice(Currency);
             return @$"
-Цена {Ticker} ({Name}) изменилась на {change:P2} за {minutes} мин. 
-({candles[^1].Time.ToLocalTime():dd.MM.yy H:mm:ss} - {candles[0].Time.ToLocalTime(): H:mm:ss} c {candles[^1].Open.FormatPrice(Currency)} до {candles[0].Close.FormatPrice(Currency)}) 
+`{Ticker}` ({Name}) ({candles[^1].Time.ToLocalTime():dd.MM.yy H:mm:ss} - {candles[0].Time.ToLocalTime(): H:mm:ss}
+↑ {minutes} min. {change:P2} {candles[^1].Open.FormatPrice(Currency)} → {candles[0].Close.FormatPrice(Currency)}) 
 Объем торгов ({minutes} мин) {sumVolume} стоимостью {volPriceF}
 Курс на начало дня: {TodayOpenF}; Текущий: {PriceF}; Изменение за день: {DayChangeF} 
 Объем торгов за день: {DayVolume} акций общей стоимостью (в среднем) {DayVolumeCostF}
@@ -86,9 +87,21 @@ namespace TradeApp.ViewModels
 Средний дневной курс за месяц: {AvgDayPricePerMonthF}
 Объем за месяц (не включая сегодня): {MonthVolume} стоимостью {MonthVolumeCostF}
 ".Trim();
+//            return @$"
+//Цена {Ticker} ({Name}) изменилась на {change:P2} за {minutes} мин. 
+//({candles[^1].Time.ToLocalTime():dd.MM.yy H:mm:ss} - {candles[0].Time.ToLocalTime(): H:mm:ss} c {candles[^1].Open.FormatPrice(Currency)} до {candles[0].Close.FormatPrice(Currency)}) 
+//Объем торгов ({minutes} мин) {sumVolume} стоимостью {volPriceF}
+//Курс на начало дня: {TodayOpenF}; Текущий: {PriceF}; Изменение за день: {DayChangeF} 
+//Объем торгов за день: {DayVolume} акций общей стоимостью (в среднем) {DayVolumeCostF}
+//Объём за прошлый день: {YesterdayVolume} акций стоимостью {YesterdayVolumeCostF}; 
+//Средний курс за прошлый день: {YesterdayAvgPriceF}
+//Средний дневной объём за месяц: {AvgDayVolumePerMonth} акций стоимостью {AvgDayVolumePerMonthCostF} 
+//Средний дневной курс за месяц: {AvgDayPricePerMonthF}
+//Объем за месяц (не включая сегодня): {MonthVolume} стоимостью {MonthVolumeCostF}
+//".Trim();
         }
 
-        public Dictionary<DateTime, CandlePayload> MinuteCandles { get; } = new Dictionary<DateTime, CandlePayload>();
+        public ConcurrentDictionary<DateTime, CandlePayload> MinuteCandles { get; } = new ConcurrentDictionary<DateTime, CandlePayload>();
 
         public void LogCandle(CandlePayload candle)
         {
@@ -98,7 +111,7 @@ namespace TradeApp.ViewModels
             if (MinuteCandles.Count > 100)
             {
                 MinuteCandles.OrderBy(p => p.Key).Take(50).ToList()
-                    .ForEach(p => MinuteCandles.Remove(p.Key));
+                    .ForEach(p => MinuteCandles.TryRemove(p.Key, out _));
             }
         }
 
