@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RcktMon.Views;
 
 namespace TradeApp.ViewModels
 {
@@ -33,14 +34,26 @@ namespace TradeApp.ViewModels
             MinDayPriceChangePercent = tradingViewModel.MinDayPriceChange * 100m;
             MinTenMinutesPriceChangePercent = tradingViewModel.MinTenMinutesPriceChange * 100m;
             IsTelegramEnabled = tradingViewModel.IsTelegramEnabled;
+            ResetKeys();
+        }
+
+        private void ResetKeys()
+        {
+            TiApiKey = PasswordBehavior.PassReplacement;
+            TgBotApiKey = PasswordBehavior.PassReplacement;
         }
 
         public async Task AcceptKeys()
         {
-            _tradingViewModel.TiApiKey = TiApiKey;
-            _tradingViewModel.TgBotApiKey = TgBotApiKey;
+            if (TiApiKey != PasswordBehavior.PassReplacement)
+                _tradingViewModel.TiApiKey = TiApiKey;
+            if (TgBotApiKey != PasswordBehavior.PassReplacement)
+                _tradingViewModel.TgBotApiKey = TgBotApiKey;
+
             _tradingViewModel.TgChatId = TgChatId;
             _tradingViewModel.SaveAppSettings();
+            ResetKeys();
+
             _tradingViewModel.StocksManager.Init();
             await _tradingViewModel.StocksManager.UpdateStocks();
         }

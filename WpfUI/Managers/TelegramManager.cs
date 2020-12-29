@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using NLog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -17,6 +18,7 @@ namespace TradeApp.Data
         private readonly long _chatId;
 
         const string TinkoffInvestStocksUrl = "https://www.tinkoff.ru/invest/stocks/{0}/";
+        private static NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         private readonly Thread _messageQueueThread;
         private readonly ConcurrentQueue<(string text, string ticker)> _botMessageQueue = new ConcurrentQueue<(string text, string ticker)>();
@@ -41,13 +43,13 @@ namespace TradeApp.Data
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Logger.Error("Telegram init error: {exception}", ex.Message);
             }
         }
 
         public void PostMessage(string text, string ticker)
         {
-            Debug.WriteLine("Telegram message:\r\n" + text + "\r\n");
+            Logger.Trace("Telegram message: {text}", text);
             if (IsEnabled)
             {
                 _botMessageQueue.Enqueue((text, ticker));

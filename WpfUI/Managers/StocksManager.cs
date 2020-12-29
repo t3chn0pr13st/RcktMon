@@ -28,6 +28,11 @@ namespace TradeApp.Data
         private readonly SynchronizationContext _uiContext;
         private DateTime? _lastEventReceived = null;
 
+        private volatile int _refreshPendingCount = 0;
+        private DateTime? _lastRefresh = null;
+
+        private static NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
         //private readonly Connection _broker2;
         //private readonly Context _account2;
 
@@ -35,6 +40,7 @@ namespace TradeApp.Data
         private TelegramManager _telegram;
 
         private readonly ConcurrentQueue<BrokerAction> _brokerActions = new ConcurrentQueue<BrokerAction>();
+        private ConcurrentQueue<CandleResponse> _candleProcessingQueue = new ConcurrentQueue<CandleResponse>();
         private Thread _brokerQueueThread;
         private Thread[] _responseProcessingThreads;
 
@@ -144,10 +150,6 @@ namespace TradeApp.Data
             _brokerActions.Enqueue(brAct);
         }
 
-        private volatile int _refreshPendingCount = 0;
-        private DateTime? _lastRefresh = null;
-
-        private static NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         private void BrokerQueueLoop(object o)
         {
@@ -233,8 +235,6 @@ namespace TradeApp.Data
             PrepareConnection();
             await UpdatePrices();
         }
-
-        private ConcurrentQueue<CandleResponse> _candleProcessingQueue = new ConcurrentQueue<CandleResponse>();
 
         private async Task CandleProcessingProc(CandleResponse cr)
         {

@@ -5,6 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:cal="http://caliburnmicro.com"
              xmlns:local="clr-namespace:TradeApp" xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase" xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:views="clr-namespace:RcktMon.Views"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance Type=local:MainViewModel}"
              d:DesignHeight="1000" d:DesignWidth="1600">
     <UserControl.Resources>
@@ -81,7 +83,11 @@
                                     <StackPanel Orientation="Vertical">
                                         <TextBlock Text="TinkoffInvest OpenAPI Token" FontWeight="Bold" Margin="2" />
                                         <TextBlock Text="Зайдите на страницу настроек Тинькофф Инвестиции, там внизу в блоке Токен для OpenAPI получите Токен для торговли, и вставьте сюда" TextWrapping="Wrap" Margin="2" />
-                                        <TextBox Text="{Binding TiApiKey}" Margin="2" />
+                                        <TextBox Text="{Binding TiApiKey}" Margin="2">
+                                            <b:Interaction.Behaviors>
+                                                <views:PasswordBehavior />
+                                            </b:Interaction.Behaviors>
+                                        </TextBox>
                                         <TextBlock FontWeight="Bold" Text="Telegram Bot Token" Margin="2 6 2 0" />
                                         <TextBlock Text="Создайте бота через @botfather, вставьте сюда его токен" TextWrapping="Wrap" Margin="2" />
                                         <TextBox Text="{Binding TgBotApiKey}" Margin="2" />

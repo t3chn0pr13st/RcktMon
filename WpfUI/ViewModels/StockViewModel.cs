@@ -76,9 +76,9 @@ namespace TradeApp.ViewModels
             volPrice = volPrice / candles.Length * sumVolume;
             var volPriceF = volPrice.FormatPrice(Currency);
             return @$"
-`{Ticker}` ({Name}) ({candles[^1].Time.ToLocalTime():dd.MM.yy H:mm:ss} - {candles[0].Time.ToLocalTime(): H:mm:ss}
-↑ {minutes} min. {change:P2} {candles[^1].Open.FormatPrice(Currency)} → {candles[0].Close.FormatPrice(Currency)}) 
-Объем торгов ({minutes} мин) {sumVolume} стоимостью {volPriceF}
+🕒 `{Ticker}` | {candles[^1].Time.ToLocalTime():dddd, dd MMM yyyy, H:mm:ss} - {candles[0].Time.ToLocalTime():H:mm:ss}
+ *{Ticker}* *({Name})*
+↑ {minutes} min. {change:P2} {candles[^1].Open.FormatPrice(Currency),2} → {candles[0].Close.FormatPrice(Currency), -2}) | vol {sumVolume} cost {volPriceF}
 Курс на начало дня: {TodayOpenF}; Текущий: {PriceF}; Изменение за день: {DayChangeF} 
 Объем торгов за день: {DayVolume} акций общей стоимостью (в среднем) {DayVolumeCostF}
 Объём за прошлый день: {YesterdayVolume} акций стоимостью {YesterdayVolumeCostF}; 
