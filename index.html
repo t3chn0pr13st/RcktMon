@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>WebUI</title>
+    <base href="/" />
+    <link href="https://www.cdn-tinkoff.ru/invest-terminal/prod/main.785d5388780db9552391.css" rel="stylesheet">
+    <link href="https://www.cdn-tinkoff.ru/invest-terminal/prod/1.785d5388780db9552391.css" rel="stylesheet">
+    <link href="css/webui.css" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+</head>
+
+<body>
+    <div id="app">
+        <p style="color:white">Loading application...</p>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
+</body>
+
+</html>
