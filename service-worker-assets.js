@@ -49,7 +49,7 @@
       "url": "css\/webui.css"
     },
     {
-      "hash": "sha256-E8TxaAKVVQrgFqJ+JlHeCftd22pTuYs2FeoZxSyD88Q=",
+      "hash": "sha256-Stsah4up0Zcta4IpUGUTJu\/cr2VsVlUA6r+A5cp0Mu8=",
       "url": "debug.log"
     },
     {
@@ -61,11 +61,11 @@
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-PYAZhaf8nz\/IewmtSRGniIXvQJ2zs5tV0bJzBuhhQsE=",
+      "hash": "sha256-RulIvb+2dj5QNfLwS+EmbiSLU+iI+Vm5TePPhHCekeg=",
       "url": "index.html"
     },
     {
-      "hash": "sha256-zMzwbVuRFa\/9lI26DcnBDymGSLhPB+l1YZMDIVnHBEU=",
+      "hash": "sha256-gwcxzzY1zRorBk8fDqz8tkfw15RZUVIzaHf7GI0p2aY=",
       "url": "manifest.json"
     },
     {
@@ -209,7 +209,7 @@
       "url": "_framework\/CoreData.dll"
     },
     {
-      "hash": "sha256-MsETPtHNpUP0zsy2Qb6aBxgVj+8TxhkvBS7Mb+wMkaI=",
+      "hash": "sha256-gf5ox+TqB+QLjpWjkDpkqm7t8TM\/zAgTGw2r+bCWyHI=",
       "url": "_framework\/WebUI.dll"
     },
     {
@@ -377,7 +377,7 @@
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
-      "hash": "sha256-KZCCU+FFpM3t3MNTBxBrXYQlKIodIonLg+Q4Eprtw1U=",
+      "hash": "sha256-hmD1kyR5lyC1Rdp08csSWWHIG3PzrB9zetX2nuU4RUQ=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -385,5 +385,5 @@
       "url": "_framework\/blazor.webassembly.js"
     }
   ],
-  "version": "4xbHien0"
+  "version": "C6P3gVk1"
 };
