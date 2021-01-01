@@ -8,17 +8,27 @@
     <base href="" />
     <link href="https://www.cdn-tinkoff.ru/invest-terminal/prod/main.785d5388780db9552391.css" rel="stylesheet">
     <link href="https://www.cdn-tinkoff.ru/invest-terminal/prod/1.785d5388780db9552391.css" rel="stylesheet">
-    <link href="css/webui.css" />
     <link href="manifest.json" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <style type="text/css">
+
+        body {
+            padding-top: 10px;
+        }
+
+        table {
+            width: 50% !important;
+            float: left;
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+    </style>
+    <script defer src="_framework/blazor.webassembly.js"></script>
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
 </head>
 
-<body>
-    <div id="app">
-        <p style="color:white">Loading application...</p>
-    </div>
-    <script src="_framework/blazor.webassembly.js"></script>
-    <script>navigator.serviceWorker.register('service-worker.js');</script>
+<body id="app">
+    <p style="color:white">Loading application...</p>
 </body>
 
 </html>
