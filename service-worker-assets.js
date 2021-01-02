@@ -221,11 +221,11 @@
       "url": "_framework\/Tinkoff.Trading.OpenApi.dll"
     },
     {
-      "hash": "sha256-2gfRXjWfyhdyVNckv5s9knHpx0CTcgng6HyxZk37OKc=",
+      "hash": "sha256-N13Ut2v4QHlMpn7fC63fLJvFwz2E4dsFiHPBiJKCf98=",
       "url": "_framework\/CoreData.dll"
     },
     {
-      "hash": "sha256-pL7DeDh9e4FvggRJ9om1cy3gWN6OQ3s5OiEuQ6cF00Y=",
+      "hash": "sha256-S1BKoecVg8SsINcRg4DAT3VngZcanDiq7KYU9Pmh\/oY=",
       "url": "_framework\/BlazorWebAssemblyWebUI.dll"
     },
     {
@@ -393,7 +393,7 @@
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
-      "hash": "sha256-o+XRQ5iRulwKe3\/vWuwi3LnFwnvDeI68kaT6bMUiF2Y=",
+      "hash": "sha256-NmuXDz126SjXBrn9pVnERdQCdpesLwQoMtldgrqYEBc=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -401,5 +401,5 @@
       "url": "_framework\/blazor.webassembly.js"
     }
   ],
-  "version": "lRcuxvgp"
+  "version": "lDMtcu8H"
 };
