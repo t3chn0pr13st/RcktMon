@@ -1,8 +1,6 @@
-﻿using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Media;
+﻿using System.Windows.Controls;
 
-namespace TradeApp
+namespace RcktMon.Views
 {
     /// <summary>
     /// Interaction logic for TradeView.xaml
@@ -12,15 +10,6 @@ namespace TradeApp
         public MainView()
         {
             InitializeComponent();
-            Loaded += TradeView_Loaded;
-        }
-
-        private async void TradeView_Loaded(object sender, System.Windows.RoutedEventArgs e)
-        {
-            if (DataContext is MainViewModel tradingViewModel)
-            {
-                await Task.Run(() => tradingViewModel.StocksManager.UpdateStocks());
-            }
         }
     }
 }

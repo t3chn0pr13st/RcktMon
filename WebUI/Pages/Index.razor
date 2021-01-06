@@ -1,0 +1,219 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client
+@using CoreData.Interfaces
+@using CoreData.Models
+@using Microsoft.Extensions.DependencyInjection
+
+@if ( _stocks == null )
+{
+    <div style="margin: 5px;">
+        <p style="color:white;"><b>RcktMon WebClient</b>: @connectionStatus</p>
+        <h3 style="color:white">Loading...</h3>
+        <section class="wrapper">
+            <div class="spinner">
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+            </div>
+        </section>
+    </div>
+}
+else
+{
+    <table class="src-modules-Market-containers-styles-table-3XTI7 table tableSortable">
+        <thead>
+            <tr>
+                <th>
+                    <div class="th">
+                        <div>Инструмент</div>
+                    </div>
+                </th>
+                <th>
+                    <div class="th">Валюта</div>
+                </th>
+                <th>
+                    <div class="th">Цена открытия</div>
+                </th>
+                <th>
+                    <div class="th">Текущая цена</div>
+                </th>
+                <th>
+                    <div class="th">Изменение</div>
+                </th>
+                <th>
+                    <div class="th">Обновление</div>
+                </th>
+                <th>
+                    <div class="th">Статус</div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ( IStockModel stock in _stocks )
+            {
+                <tr id="@stock.Ticker" class="" data-symbol-id="@stock.Ticker">
+                    <td>
+                        <div class="src-modules-Market-containers-components-MarketTable-Row-styles-logoName-GctSK">
+                            <div class="src-modules-Market-containers-components-MarketTable-Row-styles-logo-3NQRG" style="background-image: url('https://static.tinkoff.ru/brands/traiding/@(stock.Isin)x160.png');"></div>
+                            <div class="src-modules-Market-containers-components-MarketTable-Row-styles-shortName-196hq">@stock.Ticker</div>
+                            <div class="src-modules-Market-containers-components-MarketTable-Row-styles-fullName-25O_s">
+                                <div class="src-modules-Market-containers-components-MarketTable-Row-styles-description-2BaLi">@stock.Name</div>
+                                <div class="src-modules-Market-containers-components-MarketTable-Row-styles-shadow-2MlRJ"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>@stock.Currency</div>
+                    </td>
+                    <td>
+                        <div>@stock.TodayOpenF</div>
+                    </td>
+                    <td>
+                        <div>@stock.PriceF</div>
+                    </td>
+                    <td>
+                        <div>@stock.DayChangeF</div>
+                    </td>
+                    <td>
+                        <div>@stock.LastUpdate.ToString( "HH:mm:ss.ff" )</div>
+                    </td>
+                    <td>
+                        <div>@stock.Status</div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if ( _messages != null )
+    {
+        <table class="src-modules-Market-containers-styles-table-3XTI7 table tableSortable">
+            <thead>
+                <tr>
+                    <th>
+                        <div class="th">
+                            <div>Инструмент</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="th">Изменение</div>
+                    </th>
+                    <th>
+                        <div class="th">Объем</div>
+                    </th>
+                    <th>
+                        <div class="th">Сообщение</div>
+                    </th>
+                    <th>
+                        <div class="th">Дата события</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ( IMessageModel message in _messages )
+                {
+                    <tr id="@message.Ticker-@message.Date.ToFileTimeUtc()" class="" data-symbol-id="@message.Ticker-@message.Date.ToFileTimeUtc()">
+                        <td>
+                            <div class="src-modules-Market-containers-components-MarketTable-Row-styles-logoName-GctSK">
+                                <div class="src-modules-Market-containers-components-MarketTable-Row-styles-logo-3NQRG" style="background-image: url('https://static.tinkoff.ru/brands/traiding/@(message.GetStockByMessage(_stocks).Isin)x160.png');"></div>
+                                <div class="src-modules-Market-containers-components-MarketTable-Row-styles-shortName-196hq">@message.Ticker</div>
+                                <div class="src-modules-Market-containers-components-MarketTable-Row-styles-fullName-25O_s">
+                                    <div class="src-modules-Market-containers-components-MarketTable-Row-styles-description-2BaLi">@message.GetStockByMessage( _stocks ).Name</div>
+                                    <div class="src-modules-Market-containers-components-MarketTable-Row-styles-shadow-2MlRJ"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>@message.Change.ToString( "P2" )</div>
+                        </td>
+                        <td>
+                            <div>@message.Volume</div>
+                        </td>
+                        <td>
+                            <div>@message.Text</div>
+                        </td>
+                        <td>
+                            <div>@message.Date</div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code
+{
+    string url = "https://dev.technopriest.ru/stockshub";
+
+    HubConnection _connection = null;
+
+    HashSet<StockModel> _stocks = null;
+    HashSet<MessageModel> _messages = null;
+
+    string connectionStatus = "Closed";
+
+    private async Task Connect()
+    {
+        _connection = new HubConnectionBuilder()
+            .WithUrl( url )
+            .AddMessagePackProtocol()
+            .WithAutomaticReconnect()
+            .Build();
+        await _connection.StartAsync();
+        connectionStatus = "Connected.";
+
+        StateHasChanged();
+
+        _connection.Closed += async ( ex ) =>
+        {
+            connectionStatus = "Disconnected";
+            //await _connection.StartAsync();
+        };
+
+        _connection.On<MessageModel>( "message", message =>
+         {
+             if ( _messages != null )
+             {
+                 _messages.Add( message );
+                 StateHasChanged();
+             }
+
+         } );
+
+        _connection.On<StockModel>( "stock", stock =>
+         {
+             if ( _stocks != null )
+             {
+                 _stocks.Add( stock );
+                 StateHasChanged();
+             }
+         } );
+
+        _connection.On<StockModel[]>( "stocks", stocks =>
+        {
+            _stocks = new HashSet<StockModel>(stocks);
+            StateHasChanged();
+        } );
+
+        _connection.On<MessageModel[]>( "messages", messages =>
+        {
+            _messages = new HashSet<MessageModel>(messages);
+            StateHasChanged();
+        } );
+
+        await _connection.SendAsync( "stocks" );
+        await _connection.SendAsync( "messages" );
+    }
+
+    protected override async Task OnAfterRenderAsync( bool firstRender )
+    {
+        if ( firstRender )
+            await Connect();
+        await base.OnAfterRenderAsync( firstRender );
+    }
+}

@@ -1,13 +1,14 @@
-﻿<UserControl x:Class="TradeApp.MainView"
+﻿<UserControl x:Class="RcktMon.Views.MainView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:cal="http://caliburnmicro.com"
-             xmlns:local="clr-namespace:TradeApp" xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase" xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase" xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:views="clr-namespace:RcktMon.Views"
-             mc:Ignorable="d" d:DataContext="{d:DesignInstance Type=local:MainViewModel}"
+             xmlns:viewModels="clr-namespace:RcktMon.ViewModels"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance Type=viewModels:MainViewModel}"
              d:DesignHeight="1000" d:DesignWidth="1600">
     <UserControl.Resources>
         <CollectionViewSource Source="{Binding Stocks}" x:Key="StocksCollectionView">
@@ -79,7 +80,7 @@
                     <LayoutAnchorablePane Name="ToolsPane" DockMinWidth="250">
                         <LayoutAnchorable Title="Настройки" ContentId="Settings" AutoHideMinWidth="250">
                             <StackPanel Orientation="Vertical" DataContext="{Binding SettingsViewModel}">
-                                <GroupBox Header="Ключи доступа">
+                                <Expander Header="Ключи доступа">
                                     <StackPanel Orientation="Vertical">
                                         <TextBlock Text="TinkoffInvest OpenAPI Token" FontWeight="Bold" Margin="2" />
                                         <TextBlock Text="Зайдите на страницу настроек Тинькофф Инвестиции, там внизу в блоке Токен для OpenAPI получите Токен для торговли, и вставьте сюда" TextWrapping="Wrap" Margin="2" />
@@ -93,12 +94,12 @@
                                         <TextBox Text="{Binding TgBotApiKey}" Margin="2" />
                                         <TextBlock Text="Telegram Chat Id" Margin="2 6 2 0" FontWeight="Bold" />
                                         <TextBlock Margin="2" TextWrapping="Wrap"
-                                            Text="Это id чата в телеграмм, куда будет отправлять сообщения ваш бот. Можно пригласить бота в группу\канал, и вставить сюда chatId группы. Чтобы бот писал в лс, вставьте личный chatId (подойдет тот же telegram id что в pantini tools, узнать можно у @pantini_warden_bot или @username_to_id_bot)" />
+                                                   Text="Это id чата в телеграмм, куда будет отправлять сообщения ваш бот. Можно пригласить бота в группу\канал, и вставить сюда chatId группы. Чтобы бот писал в лс, вставьте личный chatId (подойдет тот же telegram id что в pantini tools, узнать можно у @pantini_warden_bot или @username_to_id_bot)" />
                                         <TextBox Text="{Binding TgChatId}" Margin="2" />
                                         <Button Margin="2 10 2 6" cal:Message.Attach="AcceptKeys">Применить</Button>
                                     </StackPanel>
-                                </GroupBox>
-                                 <GroupBox Header="Настройки уведомлений">
+                                </Expander>
+                                 <Expander Header="Настройки уведомлений" IsExpanded="True">
                                     <StackPanel Orientation="Vertical">
                                         <mah:ToggleSwitch IsOn="{Binding IsTelegramEnabled}" FontSize="12.5"
                                                           Content="Слать уведомления в телеграм" />
@@ -106,9 +107,11 @@
                                         <TextBox Text="{Binding MinDayPriceChangePercent}" Margin="2" />
                                         <TextBlock Text="При изменении цены за 10 минут (%)" Margin="2" />
                                         <TextBox Text="{Binding MinTenMinutesPriceChangePercent}" Margin="2" />
+                                        <TextBlock Text="Мин. объем при резком изменении &#10; (% от среднего объема за день)" TextWrapping="Wrap" Margin="2" />
+                                        <TextBox Text="{Binding MinVolumeDeviationFromDailyAveragePercent}" Margin="2" />
                                         <Button Margin="2 10 2 6" cal:Message.Attach="AcceptOptions">Применить</Button>
                                     </StackPanel>
-                                </GroupBox>
+                                </Expander>
                             </StackPanel>
                         </LayoutAnchorable>
                     </LayoutAnchorablePane>

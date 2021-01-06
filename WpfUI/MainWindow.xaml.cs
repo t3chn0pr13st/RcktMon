@@ -1,4 +1,4 @@
-﻿namespace TradeApp
+﻿namespace RcktMon
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

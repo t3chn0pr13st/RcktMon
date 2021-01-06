@@ -1,0 +1,32 @@
+﻿@page "/"
+@namespace WebUIBlazorServer.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RcktMon WebUI BlazorServer</title>
+    <base href="~/" />
+    <link href="https://www.cdn-tinkoff.ru/invest-terminal/prod/main.785d5388780db9552391.css" rel="stylesheet">
+    <link href="https://www.cdn-tinkoff.ru/invest-terminal/prod/1.785d5388780db9552391.css" rel="stylesheet">
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="WebUIBlazorServer.styles.css" rel="stylesheet" />
+    <style type="text/css">
+        html, body {
+            overflow: auto;
+        }
+        body {
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <component type="typeof(App)" render-mode="Server" />
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>

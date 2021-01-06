@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Caliburn.Micro;
 
-namespace TradeApp
+namespace RcktMon
 {
     /// <summary>
     /// Provides a window manager for the application

@@ -1,22 +1,22 @@
-﻿using Caliburn.Micro;
-using MahApps.Metro.Controls;
-using System.Windows;
-using System.Linq;
-using System.ComponentModel.Composition.Hosting;
-using System.Threading.Tasks;
+﻿using System;
 using System.Collections.Generic;
-using System;
-using System.ComponentModel.Composition;
-using System.Windows.Media;
+using System.Windows;
+using Caliburn.Micro;
+using CoreNgine.Models;
+using CoreNgine.Shared;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using NLog.Extensions.Logging;
+using RcktMon.ViewModels;
 
-namespace TradeApp
+namespace RcktMon
 {
     public class AppBootstrapper : BootstrapperBase
     {
         /// <summary>
         /// Stores the composition containers
         /// </summary>
-        private SimpleContainer container;
+        private IHost _host;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppBootstrapper"/> class
@@ -32,7 +32,7 @@ namespace TradeApp
         /// <param name="instance">The instance</param>
         protected override void BuildUp(object instance)
         {
-            this.container.BuildUp(instance);
+            _host.Start();
         }
 
         /// <summary>
@@ -40,11 +40,39 @@ namespace TradeApp
         /// </summary>
         protected override void Configure()
         {
-            this.container = new SimpleContainer();
-            this.container.Singleton<IWindowManager, AppWindowManager>();
-            this.container.Singleton<IEventAggregator, EventAggregator>();
-            this.container.Singleton<MainViewModel>();
+            ViewLocator.AddNamespaceMapping("CoreNgine.Models", "RcktMon.Views");
+            ViewLocator.NameTransformer.AddRule("IMainModel", "MainViewModel");
+
+            _host = new HostBuilder()
+                .ConfigureServices((context, services) =>
+                {
+                    services.AddSingleton<IWindowManager, AppWindowManager>();
+                    services.AddSingleton<IEventAggregator, EventAggregator>();
+                    services.AddSingleton<IMainModel, MainViewModel>();
+                    services.AddSingleton<StocksManager>();
+                    services.AddLogging(lb =>
+                    {
+                        lb.AddNLog("NLog.config");
+                    });
+                })
+                .Build();
         }
+
+        //private void ConfigureRebus(IServiceCollection services)
+        //{
+        //    services.AutoRegisterHandlersFromAssemblyOf<StocksManager>();
+        //    services.AutoRegisterHandlersFromAssemblyOf<MainViewModel>();
+
+        //    services.AddRebus(configure =>
+        //    {
+        //        var result = configure
+        //            .Logging(l => l.ColoredConsole(minLevel: LogLevel.Info))
+        //            .Routing(r => r.TypeBased().MapAssemblyOf<TestRequest>("Messages"))
+        //            .Transport(t => t
+        //                .UseInMemoryTransport(new InMemNetwork(true), "Messages"));
+        //        return result;
+        //    });
+        //}
 
         /// <summary>
         /// Gets all instances of the windows
@@ -53,7 +81,7 @@ namespace TradeApp
         /// <returns>The list of windows</returns>
         protected override IEnumerable<object> GetAllInstances(Type service)
         {
-            return this.container.GetAllInstances(service);
+            return _host.Services.GetServices(service);
         }
 
         /// <summary>
@@ -64,13 +92,12 @@ namespace TradeApp
         /// <returns>The window instance</returns>
         protected override object GetInstance(Type service, string key)
         {
-            var instance = this.container.GetInstance(service, key);
-            if (instance != null)
-            {
-                return instance;
-            }
+            var result = _host.Services.GetService(service);
 
-            throw new Exception("Could not locate any instances.");
+            if (result == null)
+                throw new Exception("Could not locate any instances.");
+
+            return result;
         }
 
         /// <summary>
@@ -80,7 +107,13 @@ namespace TradeApp
         /// <param name="e">The startup events</param>
         protected override void OnStartup(object sender, StartupEventArgs e)
         {
-            this.DisplayRootViewFor<MainViewModel>();
+            _host.Services.GetRequiredService<IMainModel>().Start();
+            this.DisplayRootViewFor<IMainModel>();
+        }
+
+        protected override void OnExit(object sender, EventArgs e)
+        {
+            base.OnExit(sender, e);
         }
     }
 }

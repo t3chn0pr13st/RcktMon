@@ -1,7 +1,6 @@
-﻿<mah:MetroWindow  x:Class="TradeApp.MainWindow"
+﻿<mah:MetroWindow  x:Class="RcktMon.MainWindow"
                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                  xmlns:local="clr-namespace:TradeApp"
                   xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                   UseLayoutRounding="True"
                   Title="TI RCKTMon"

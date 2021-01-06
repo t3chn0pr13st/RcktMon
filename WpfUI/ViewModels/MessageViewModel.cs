@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Caliburn.Micro;
+using CoreData.Interfaces;
+using CoreNgine.Models;
 
-namespace TradeApp.ViewModels
+namespace RcktMon.ViewModels
 {
-    public class MessageViewModel : PropertyChangedBase
+    public class MessageViewModel : PropertyChangedBase, IMessageModel
     {
         public DateTime Date { get; set; }
         public string Ticker { get; set; }

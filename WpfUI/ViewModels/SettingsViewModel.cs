@@ -1,12 +1,8 @@
-﻿using Caliburn.Micro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Caliburn.Micro;
 using RcktMon.Views;
 
-namespace TradeApp.ViewModels
+namespace RcktMon.ViewModels
 {
     public class SettingsViewModel : PropertyChangedBase
     {
@@ -16,6 +12,7 @@ namespace TradeApp.ViewModels
 
         public decimal MinDayPriceChangePercent { get; set; }
         public decimal MinTenMinutesPriceChangePercent { get; set; }
+        public decimal MinVolumeDeviationFromDailyAveragePercent { get; set; }
         public bool IsTelegramEnabled { get; set; }
 
         private MainViewModel _tradingViewModel;
@@ -33,6 +30,7 @@ namespace TradeApp.ViewModels
             TgChatId = tradingViewModel.TgChatId;
             MinDayPriceChangePercent = tradingViewModel.MinDayPriceChange * 100m;
             MinTenMinutesPriceChangePercent = tradingViewModel.MinTenMinutesPriceChange * 100m;
+            MinVolumeDeviationFromDailyAveragePercent = tradingViewModel.MinVolumeDeviationFromDailyAverage * 100m;
             IsTelegramEnabled = tradingViewModel.IsTelegramEnabled;
             ResetKeys();
         }
@@ -62,6 +60,7 @@ namespace TradeApp.ViewModels
         {
             _tradingViewModel.MinDayPriceChange = MinDayPriceChangePercent / 100m;
             _tradingViewModel.MinTenMinutesPriceChange = MinTenMinutesPriceChangePercent / 100m;
+            _tradingViewModel.MinVolumeDeviationFromDailyAverage = MinVolumeDeviationFromDailyAveragePercent / 100m;
             _tradingViewModel.IsTelegramEnabled = IsTelegramEnabled;
             _tradingViewModel.SaveAppSettings();
         }
