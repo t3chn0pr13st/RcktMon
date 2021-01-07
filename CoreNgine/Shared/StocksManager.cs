@@ -317,7 +317,7 @@ namespace CoreNgine.Shared
                             if (IsTelegramEnabled)
                             {
                                 var changeInfo = stock.GetMinutesChangeInfo(change.change, change.minutes, change.candles);
-                                if (changeInfo.volPercent / 100m >= _mainModel.MinVolumeDeviationFromDailyAverage)
+                                if (changeInfo.volPercent >= _mainModel.MinVolumeDeviationFromDailyAverage)
                                     _telegram.PostMessage(changeInfo.message, stock.Ticker);
                             }
 

@@ -80,14 +80,14 @@ namespace CoreData
             volPrice = volPrice / candles.Length * sumVolume;
             var volPriceF = volPrice.FormatPrice(s.Currency);
 
-            decimal volPercentOfChange = Math.Round(sumVolume / s.AvgDayVolumePerMonth * 100, 2);
-            decimal volPercentOfDay = Math.Round(s.DayVolume / s.AvgDayVolumePerMonth * 100, 2);
+            decimal volPercentOfChange = sumVolume / s.AvgDayVolumePerMonth;
+            decimal volPercentOfDay = s.DayVolume / s.AvgDayVolumePerMonth;
 
             return (@$"
-`{s.Ticker}` {candles[^1].Time.ToLocalTime():ddd, dd.MM.yy, H:mm} → {candles[0].Time.ToLocalTime():H:mm:ss}
+`{s.Ticker}` {candles[^1].Time.ToLocalTime():ddd, dd.MM.yy, H:mm-} → {candles[0].Time.ToLocalTime():H:mm:ss}
 *{s.Ticker}* *({s.Name})*
 {change.Arrow()} {change.FormatPercent()} за {minutes} мин. ({candles[^1].Open.FormatPrice(s.Currency),2} → {candles[0].Close.FormatPrice(s.Currency), -2}) vol {sumVolume} ({volPercentOfChange.FormatPercent()}% of avg), {volPriceF}
-{s.DayChange.Arrow()} {s.DayChangeF} сегодня ({s.TodayOpenF} → {s.PriceF}) vol {s.DayVolume} ({volPercentOfDay}% of avg), {s.DayVolumeCostF}
+{s.DayChange.Arrow()} {s.DayChangeF} сегодня ({s.TodayOpenF} → {s.PriceF}) vol {s.DayVolume} ({volPercentOfDay.FormatPercent()}% of avg), {s.DayVolumeCostF}
 Средная цена вчера: {s.YesterdayAvgPriceF} объем {s.YesterdayVolume} лотов ({s.YesterdayVolumeCostF})
 Средняя цена за месяц: {s.AvgDayPricePerMonthF} объем {s.AvgDayVolumePerMonth} лотов ({s.AvgDayVolumePerMonthCostF})
 Общий объем за месяц {s.MonthVolume} лотов ({s.MonthVolumeCostF})
