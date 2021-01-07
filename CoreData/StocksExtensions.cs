@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using CoreData.Interfaces;
 using CoreData.Models;
@@ -14,14 +15,14 @@ namespace CoreData
             return stocks.FirstOrDefault(s => s.Ticker == message.Ticker) as IStockModel;
         }
 
-        public static string Arrow(this decimal d) => d > 0 ? "▲" : "▼";
+        public static string Arrow(this decimal d) => d > 0 ? "🔼" : "🔻";
 
         public static string GetDayChangeInfoText(this IStockModel s)
         {
             return @$"
-🕒 {s.TodayDate.ToLocalTime():ddd, dd.MM.yyyy, H:mm:ss} → {s.LastUpdate:H:mm:ss}
-*{s.Ticker}* *({s.Name})* | `{s.Ticker}`
-{s.DayChange.Arrow()} {s.DayChangeF} сегодня ({s.TodayOpenF} → {s.PriceF}) vol {s.DayVolume}, {s.DayVolumeCostF}
+`{s.Ticker}` {s.TodayDate.ToLocalTime():ddd, dd.MM.yy, H:mm:ss} → {s.LastUpdate:H:mm:ss}
+*{s.Ticker}* *({s.Name})*
+{s.DayChange.Arrow()} {s.DayChangeF} сегодня ({s.TodayOpenF} → {s.PriceF}) vol {Math.Ceiling(s.DayVolume)} ({s.DayVolumeCostF})
 ".Trim();
         }
 
@@ -83,13 +84,13 @@ namespace CoreData
             decimal volPercentOfDay = Math.Round(s.DayVolume / s.AvgDayVolumePerMonth * 100, 2);
 
             return (@$"
-🕒 {candles[^1].Time.ToLocalTime():ddd, dd.MM.yyyy, H:mm:ss} → {candles[0].Time.ToLocalTime():H:mm:ss}
-*{s.Ticker}* *({s.Name})* | `{s.Ticker}`
-{change.Arrow()} {change:P2} за {minutes} мин. ({candles[^1].Open.FormatPrice(s.Currency),2} → {candles[0].Close.FormatPrice(s.Currency), -2}) vol {sumVolume} ({volPercentOfChange}% of avg), {volPriceF}
+`{s.Ticker}` {candles[^1].Time.ToLocalTime():ddd, dd.MM.yy, H:mm} → {candles[0].Time.ToLocalTime():H:mm:ss}
+*{s.Ticker}* *({s.Name})*
+{change.Arrow()} {change.FormatPercent()} за {minutes} мин. ({candles[^1].Open.FormatPrice(s.Currency),2} → {candles[0].Close.FormatPrice(s.Currency), -2}) vol {sumVolume} ({volPercentOfChange.FormatPercent()}% of avg), {volPriceF}
 {s.DayChange.Arrow()} {s.DayChangeF} сегодня ({s.TodayOpenF} → {s.PriceF}) vol {s.DayVolume} ({volPercentOfDay}% of avg), {s.DayVolumeCostF}
-Средная цена вчера: {s.YesterdayAvgPriceF} объем {s.YesterdayVolume} лотов, {s.YesterdayVolumeCostF}
-Средняя цена за месяц: {s.AvgDayPricePerMonthF} объем {s.AvgDayVolumePerMonth} лотов, {s.AvgDayVolumePerMonthCostF}
-Общий объем за месяц {s.MonthVolume} лотов, {s.MonthVolumeCostF}
+Средная цена вчера: {s.YesterdayAvgPriceF} объем {s.YesterdayVolume} лотов ({s.YesterdayVolumeCostF})
+Средняя цена за месяц: {s.AvgDayPricePerMonthF} объем {s.AvgDayVolumePerMonth} лотов ({s.AvgDayVolumePerMonthCostF})
+Общий объем за месяц {s.MonthVolume} лотов ({s.MonthVolumeCostF})
 ".Trim(), volPercentOfChange);
 //            return @$"
 //Цена {Ticker} ({Name}) изменилась на {change:P2} за {minutes} мин. 

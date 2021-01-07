@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Tinkoff.Trading.OpenApi.Models;
 
 namespace CoreData.Interfaces
@@ -44,7 +45,7 @@ namespace CoreData.Interfaces
          string YesterdayVolumeCostF => YesterdayVolumeCost.FormatPrice(Currency);
          string YesterdayAvgPriceF => YesterdayAvgPrice.FormatPrice(Currency);
          string MonthVolumeCostF => MonthVolumeCost.FormatPrice(Currency);
-         string DayChangeF => DayChange.ToString("P2");
+         string DayChangeF => DayChange.ToString("P2", CultureInfo.InvariantCulture);
          string DayVolumeCostF => DayVolumeCost.FormatPrice(Currency);
          string AvgDayVolumePerMonthCostF => AvgDayVolumePerMonthCost.FormatPrice(Currency);
          string AvgDayPricePerMonthF => AvgDayPricePerMonth.FormatPrice(Currency);

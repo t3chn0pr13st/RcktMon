@@ -182,7 +182,7 @@ namespace CoreNgine.Shared
                 if (_lastEventReceived != null && DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
                 {
                     if (!_mainModel.Stocks.Any(s => s.Status != null && s.Status != "not_available_for_trading") 
-                        || (DateTime.Now.TimeOfDay.Hours < 10 && DateTime.Now.TimeOfDay.Hours > 2))
+                        || (DateTime.Now.Hour < 10 && DateTime.Now.Hour > 2))
                     {
                         Thread.Sleep(1000);
                         continue;
@@ -235,6 +235,8 @@ namespace CoreNgine.Shared
                     //stock.IsNotifying = false;
                     if (candle.Interval == CandleInterval.Day)
                     {
+                        if (candle.Time.Date < DateTime.Now.Date)
+                            return;
                         stock.TodayOpen = candle.Open;
                         stock.TodayDate = candle.Time;
                         stock.LastUpdate = DateTime.Now;
@@ -253,7 +255,7 @@ namespace CoreNgine.Shared
                     }
                     else if (candle.Interval == CandleInterval.Minute)
                     {
-                        if (candle.Time.Date > stock.TodayDate)
+                        if (candle.Time.Date > stock.TodayDate && candle.Time.ToLocalTime().Hour > 3)
                         {
                             QueueBrokerAction(b => b.SendStreamingRequestAsync(
                                UnsubscribeCandle(stock.Figi, CandleInterval.Minute)),
@@ -274,7 +276,7 @@ namespace CoreNgine.Shared
                         if (TradeBot != null)
                             await TradeBot.Check(stock);
 
-                        if (stock.DayChange > DayChangeTrigger
+                        if (Math.Abs(stock.DayChange) > DayChangeTrigger
                             && (stock.LastAboveThresholdDate == null
                             || stock.LastAboveThresholdDate.Value.Date < stock.LastUpdate.Date))
                         {
@@ -292,7 +294,7 @@ namespace CoreNgine.Shared
                                 DateTime.Now,
                                 stock.DayChange,
                                 candle.Volume,
-                                $"{stock.Ticker}: {stock.DayChange:P2} с начала дня ({stock.TodayOpenF} → {stock.PriceF})"
+                                $"{stock.Ticker}: {stock.DayChange.Arrow()} {stock.DayChange:P2} с начала дня ({stock.TodayOpenF} → {stock.PriceF})"
                             );
 
                             Interlocked.Increment(ref _refreshPendingCount);

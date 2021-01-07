@@ -9,6 +9,7 @@
     <ApplicationIcon>iconfinder_rocket_406798.ico</ApplicationIcon>
     <AssemblyVersion>1.1.2.0</AssemblyVersion>
     <FileVersion>1.1.2.0</FileVersion>
+    <AssemblyName>RcktMon</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
