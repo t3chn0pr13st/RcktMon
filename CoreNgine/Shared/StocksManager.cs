@@ -90,7 +90,7 @@ namespace CoreNgine.Shared
                 _telegram.Stop();
 
             if (TgBotToken != null && TgChatId > long.MinValue) 
-                _telegram = new TelegramManager(_services, TgBotToken, TgChatId) { IsEnabled = _mainModel.IsTelegramEnabled };
+                _telegram = new TelegramManager(_services, TgBotToken, TgChatId);
 
             if (TiApiToken == null)
                return; 

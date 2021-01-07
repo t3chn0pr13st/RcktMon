@@ -25,7 +25,7 @@ namespace CoreNgine.Shared
         private Task _messageQueueLoopTask;
         private readonly ConcurrentQueue<(string text, string ticker)> _botMessageQueue = new ConcurrentQueue<(string text, string ticker)>();
 
-        public bool IsEnabled { get; set; }
+        public bool IsEnabled => _mainModel.IsTelegramEnabled;
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 

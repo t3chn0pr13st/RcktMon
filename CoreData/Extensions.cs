@@ -7,10 +7,9 @@ namespace CoreData
     {
         public static string FormatDecimal(this decimal val) => val.ToString(CultureInfo.InvariantCulture);
 
-        public static string FormatPercent(this decimal val) => val.ToString("P2", CultureInfo.InvariantCulture);
+        public static string FormatPercent(this decimal val) => val.ToString("P2", CultureInfo.InvariantCulture).Replace(" ", "");
 
-
-        public static string FormatPrice(this decimal price, string currency)
+        public static string FormatNumber(this decimal price)
         {
             string mod = "";
             price = Math.Round(price, 2);
@@ -33,17 +32,22 @@ namespace CoreData
                 price = Math.Round(price, 2);
             }
 
-            var priceStr = price.ToString(CultureInfo.InvariantCulture);
+            return $"{price.ToString(CultureInfo.InvariantCulture)}{mod}";
+        }
+
+        public static string FormatPrice(this decimal price, string currency)
+        {
+            var priceStr = price.FormatNumber();
             switch (currency.ToUpper())
             {
                 case "RUB":
-                    return $"{priceStr}{mod} rub.";
+                    return $"{priceStr} rub.";
                 case "USD":
-                    return $"${priceStr}{mod}";
+                    return $"${priceStr}";
                 case "EUR":
-                    return $"€{priceStr}{mod}";
+                    return $"€{priceStr}";
                 default:
-                    return $"{priceStr}{mod} {currency} ";
+                    return $"{priceStr}{currency} ";
             }
         }
 

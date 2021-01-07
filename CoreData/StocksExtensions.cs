@@ -22,7 +22,7 @@ namespace CoreData
             return @$"
 `{s.Ticker}` {s.TodayDate.ToLocalTime():ddd, dd.MM.yy, H:mm:ss} → {s.LastUpdate:H:mm:ss}
 *{s.Ticker}* *({s.Name})*
-{s.DayChange.Arrow()} {s.DayChangeF} сегодня ({s.TodayOpenF} → {s.PriceF}) vol {Math.Ceiling(s.DayVolume)} ({s.DayVolumeCostF})
+{s.DayChange.Arrow()} {s.DayChangeF} сегодня ({s.TodayOpenF} → {s.PriceF}) 🔹 vol {s.DayVolume.FormatNumber()} ({s.DayVolumeCostF})
 ".Trim();
         }
 
@@ -84,26 +84,14 @@ namespace CoreData
             decimal volPercentOfDay = s.DayVolume / s.AvgDayVolumePerMonth;
 
             return (@$"
-`{s.Ticker}` {candles[^1].Time.ToLocalTime():ddd, dd.MM.yy, H:mm-} → {candles[0].Time.ToLocalTime():H:mm:ss}
+`{s.Ticker}` {candles[^1].Time.ToLocalTime():ddd, dd.MM.yy, H:mm} → {s.LastUpdate:H:mm:ss}
 *{s.Ticker}* *({s.Name})*
-{change.Arrow()} {change.FormatPercent()} за {minutes} мин. ({candles[^1].Open.FormatPrice(s.Currency),2} → {candles[0].Close.FormatPrice(s.Currency), -2}) vol {sumVolume} ({volPercentOfChange.FormatPercent()}% of avg), {volPriceF}
-{s.DayChange.Arrow()} {s.DayChangeF} сегодня ({s.TodayOpenF} → {s.PriceF}) vol {s.DayVolume} ({volPercentOfDay.FormatPercent()}% of avg), {s.DayVolumeCostF}
-Средная цена вчера: {s.YesterdayAvgPriceF} объем {s.YesterdayVolume} лотов ({s.YesterdayVolumeCostF})
-Средняя цена за месяц: {s.AvgDayPricePerMonthF} объем {s.AvgDayVolumePerMonth} лотов ({s.AvgDayVolumePerMonthCostF})
-Общий объем за месяц {s.MonthVolume} лотов ({s.MonthVolumeCostF})
+{change.Arrow()} {change.FormatPercent()} in {minutes}m ({candles[^1].Open.FormatPrice(s.Currency),2} → {candles[0].Close.FormatPrice(s.Currency), -2}) 🔸 Vol {sumVolume} ({volPercentOfChange.FormatPercent()}), {volPriceF}
+{s.DayChange.Arrow()} {s.DayChangeF} today ({s.TodayOpenF} → {s.PriceF}) 🔹 Vol {s.DayVolume} ({volPercentOfDay.FormatPercent()}), {s.DayVolumeCostF}
+❇️ Yesterday AVG {s.YesterdayAvgPriceF} ◽️ Vol {s.YesterdayVolume.FormatNumber()} ({s.YesterdayVolumeCostF})
+✳️ Month       AVG {s.AvgDayPricePerMonthF} ◽️ Vol {s.AvgDayVolumePerMonth.FormatNumber()} ({s.AvgDayVolumePerMonthCostF})
+✴️ Month Total Vol {s.MonthVolume.FormatNumber()} ({s.MonthVolumeCostF})
 ".Trim(), volPercentOfChange);
-//            return @$"
-//Цена {Ticker} ({Name}) изменилась на {change:P2} за {minutes} мин. 
-//({candles[^1].Time.ToLocalTime():dd.MM.yy H:mm:ss} - {candles[0].Time.ToLocalTime(): H:mm:ss} c {candles[^1].Open.FormatPrice(Currency)} до {candles[0].Close.FormatPrice(Currency)}) 
-//Объем торгов ({minutes} мин) {sumVolume} стоимостью {volPriceF}
-//Курс на начало дня: {TodayOpenF}; Текущий: {PriceF}; Изменение за день: {DayChangeF} 
-//Объем торгов за день: {DayVolume} акций общей стоимостью (в среднем) {DayVolumeCostF}
-//Объём за прошлый день: {YesterdayVolume} акций стоимостью {YesterdayVolumeCostF}; 
-//Средний курс за прошлый день: {YesterdayAvgPriceF}
-//Средний дневной объём за месяц: {AvgDayVolumePerMonth} акций стоимостью {AvgDayVolumePerMonthCostF} 
-//Средний дневной курс за месяц: {AvgDayPricePerMonthF}
-//Объем за месяц (не включая сегодня): {MonthVolume} стоимостью {MonthVolumeCostF}
-//".Trim();
         }
     }
 }
