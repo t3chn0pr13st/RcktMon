@@ -19,5 +19,6 @@ namespace CoreNgine.Models
         IMessageModel AddMessage(string ticker, DateTime date, decimal change, decimal volume, string text);
 
         void Start();
+        void OnStockUpdated(IStockModel stock);
     }
 }

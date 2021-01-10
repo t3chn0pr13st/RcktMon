@@ -15,7 +15,7 @@ namespace CoreData
             return stocks.FirstOrDefault(s => s.Ticker == message.Ticker) as IStockModel;
         }
 
-        public static string Arrow(this decimal d) => d > 0 ? "🔼" : "🔻";
+        public static string Arrow(this decimal d, bool plain = false) => plain ? d > 0 ? "↑" : "↓" : d > 0 ? "🔼" : "🔻";
 
         public static string GetDayChangeInfoText(this IStockModel s)
         {

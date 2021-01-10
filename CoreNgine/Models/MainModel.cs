@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreData.Interfaces;
 using CoreData.Models;
+using CoreNgine.Interfaces;
 using CoreNgine.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,7 @@ namespace CoreNgine.Models
         public IEnumerable<IStockModel> Stocks { get; } = new HashSet<StockModel>();
         public IEnumerable<IMessageModel> Messages { get; } = new HashSet<MessageModel>();
         public StocksManager StocksManager { get; private set; }
-
+        private IHandler<IStockModel> _stockUpdateHandler;
         private ILogger<MainModel> _logger;
 
         #region App Settings 
@@ -38,6 +39,7 @@ namespace CoreNgine.Models
         {
             _services = serviceProvider;
             _logger = logger;
+            _stockUpdateHandler = serviceProvider.GetService<IHandler<IStockModel>>();
             
             LoadAppSettings();
         }
@@ -50,6 +52,11 @@ namespace CoreNgine.Models
         protected virtual void LoadAppSettings()
         {
 
+        }
+
+        public void OnStockUpdated(IStockModel stock)
+        {
+            _stockUpdateHandler?.OnHandleData(stock);
         }
 
         public virtual IStockModel CreateStockModel(MarketInstrument instrument)

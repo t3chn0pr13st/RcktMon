@@ -172,6 +172,10 @@ namespace RcktMon.ViewModels
             if (StocksManager == null)
                 StocksManager = _services.GetRequiredService<StocksManager>();
             await RefreshAll();
+            //var l2data = _services.GetRequiredService<L2DataConnector>();
+            //await l2data.ConnectAsync();
+            //var message = "+[" + String.Join(",", Stocks.Where(s => s.Currency == "Usd").Select(s => s.Ticker)) + "]";
+            //await l2data.SendMessageAsync(message);
         }
 
         public async Task RefreshAll()
@@ -183,5 +187,7 @@ namespace RcktMon.ViewModels
         {
             await StocksManager.UpdatePrices();
         }
+
+        public void OnStockUpdated( IStockModel stock ) { }
     }
 }

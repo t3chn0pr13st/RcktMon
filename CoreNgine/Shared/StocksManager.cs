@@ -175,7 +175,7 @@ namespace CoreNgine.Shared
                         //_brokerActions.Push(act);
                         var errorMsg = $"Ошибка при выполнении операции '{act.Description}': {ex.Message}";
                         LogError(errorMsg);
-                        await ResetConnection();
+                        await ResetConnection(errorMsg);
                     }
                 }
 
@@ -235,7 +235,7 @@ namespace CoreNgine.Shared
                     //stock.IsNotifying = false;
                     if (candle.Interval == CandleInterval.Day)
                     {
-                        if (candle.Time.Date < DateTime.Now.Date)
+                        if (candle.Time.Date < DateTime.Now.Date && stock.LastUpdate > DateTime.MinValue)
                             return;
                         stock.TodayOpen = candle.Open;
                         stock.TodayDate = candle.Time;
@@ -294,7 +294,7 @@ namespace CoreNgine.Shared
                                 DateTime.Now,
                                 stock.DayChange,
                                 candle.Volume,
-                                $"{stock.Ticker}: {stock.DayChange.Arrow()} {stock.DayChange:P2} с начала дня ({stock.TodayOpenF} → {stock.PriceF})"
+                                $"{stock.Ticker}: {stock.DayChange.Arrow(true)} {stock.DayChange:P2} с начала дня ({stock.TodayOpenF} → {stock.PriceF})"
                             );
 
                             Interlocked.Increment(ref _refreshPendingCount);

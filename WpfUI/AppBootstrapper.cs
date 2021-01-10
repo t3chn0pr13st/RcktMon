@@ -49,6 +49,7 @@ namespace RcktMon
                     services.AddSingleton<IWindowManager, AppWindowManager>();
                     services.AddSingleton<IEventAggregator, EventAggregator>();
                     services.AddSingleton<IMainModel, MainViewModel>();
+                    services.AddSingleton<L2DataConnector>();
                     services.AddSingleton<StocksManager>();
                     services.AddLogging(lb =>
                     {
