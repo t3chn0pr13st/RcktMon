@@ -48,11 +48,6 @@ namespace RcktMon.Helpers
 
         public INgineSettings ReadSettings()
         {
-            MinDayPriceChange = 0.1m;
-            MinVolumeDeviationFromDailyAverage = 0.002m;
-            MinTenMinutesPriceChange = 0.05m;
-            MinTenMinutesVolPercentChange = 0.07m;
-            CheckRockets = true;
             if (File.Exists("settings.json"))
             {
                 var text = File.ReadAllText("settings.json");
@@ -73,6 +68,16 @@ namespace RcktMon.Helpers
                 try { this.TgBotApiKey = CryptoHelper.Decrypt(this.TgBotApiKey); } catch { }
                 try { this.TgChatId = CryptoHelper.Decrypt(this.TgChatId); } catch { }
                 try { this.USAQuotesPassword = CryptoHelper.Decrypt(this.USAQuotesPassword); } catch { }
+
+                if (MinDayPriceChange == 0)
+                {
+                    MinDayPriceChange = 0.08m;
+                    MinVolumeDeviationFromDailyAverage = 0.002m;
+                    MinTenMinutesPriceChange = 0.05m;
+                    MinTenMinutesVolPercentChange = 0.07m;
+                    CheckRockets = true;
+                    IsTelegramEnabled = true;
+                }
             }
 
             return this;
