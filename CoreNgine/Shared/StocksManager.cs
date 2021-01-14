@@ -3,12 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreData;
 using CoreData.Interfaces;
+using CoreData.Models;
 using CoreNgine.Data;
+using CoreNgine.Infra;
 using CoreNgine.Models;
 using Microsoft.Extensions.Logging;
 using Tinkoff.Trading.OpenApi.Models;
@@ -20,68 +22,86 @@ namespace CoreNgine.Shared
     public class StocksManager
     {
         private readonly IMainModel _mainModel;
-        private Connection _broker;
-        private SandboxConnection _sandbox;
         private DateTime? _lastEventReceived = null;
 
-        private volatile int _refreshPendingCount = 0;
-        private DateTime? _lastRefresh = null;
         private readonly ILogger<StocksManager> _logger;
-
-        //private readonly Connection _broker2;
-        //private readonly Context _account2;
-
+        
         private readonly HashSet<string> _subscribedFigi = new HashSet<string>();
+        private readonly HashSet<string> _subscribedMinuteFigi = new HashSet<string>();
         private TelegramManager _telegram;
 
-        private readonly ConcurrentQueue<BrokerAction> _brokerActions = new ConcurrentQueue<BrokerAction>();
-        private ConcurrentQueue<CandleResponse> _candleProcessingQueue = new ConcurrentQueue<CandleResponse>();
-        private Task _brokerQueueTask;
+        private readonly ConcurrentQueue<BrokerAction> CommonConnectionActions = new ConcurrentQueue<BrokerAction>();
+        private ConcurrentQueue<object> _stockProcessingQueue = new ConcurrentQueue<object>();
+        private ConcurrentQueue<IStockModel> _monthStatsQueue = new ConcurrentQueue<IStockModel>();
+        private Task _monthStatsTask;
+        private Task CommonConnectionQueueTask;
         private Task[] _responseProcessingTasks;
 
-        public Connection Connection => _broker;
-        public SandboxConnection SandboxConnection => _sandbox;
-        public SandboxBot TradeBot { get; private set; }
 
-        internal string TiApiToken => _mainModel.TiApiKey;
-        internal string TgBotToken => _mainModel.TgBotApiKey;
+        private Connection CommonConnection { get; set; }
+        private Connection CandleConnection { get; set; }
+        private Connection InstrumentInfoConnection { get; set; }
+
+        internal string TiApiToken => Settings.TiApiKey;
+        internal string TgBotToken => Settings.TgBotApiKey;
         internal long TgChatId 
         {
             get
             {
-                return long.TryParse(_mainModel.TgChatId, out long result ) ? result : long.MinValue;
+                return long.TryParse(Settings.TgChatId, out long result ) ? result : long.MinValue;
             }
         }
-
-        internal decimal DayChangeTrigger => _mainModel.MinDayPriceChange;
-        internal decimal TenMinChangeTrigger => _mainModel.MinTenMinutesPriceChange;
-
-        internal bool IsTelegramEnabled => TgBotToken != null && _mainModel.IsTelegramEnabled && _telegram != null;
+        
+        public TelegramManager Telegram => _telegram;
 
         private readonly IServiceProvider _services;
+        private readonly ISettingsProvider _settingsProvider;
+
+        public IEventAggregator2 EventAggregator { get; }
+
+        public INgineSettings Settings => _settingsProvider.Settings;
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         
-        public StocksManager(IServiceProvider services, IMainModel mainModel, ILogger<StocksManager> logger)
+        public StocksManager(IServiceProvider services, IMainModel mainModel, ILogger<StocksManager> logger, ISettingsProvider settingsProvider, IEventAggregator2 eventAggregator)
         {
+            _settingsProvider = settingsProvider;
             _services = services;
             _mainModel = mainModel;
             _logger = logger;
+            EventAggregator = eventAggregator;
 
             Init();
         }
 
         private void PrepareConnection()
         {
-            if (_broker != null)
+            if (CommonConnection != null)
             {
-                _broker.StreamingEventReceived -= Broker_StreamingEventReceived;
-                _broker.Dispose();
+                _stockProcessingQueue.Clear();
+                CommonConnection.StreamingEventReceived -= Broker_StreamingEventReceived;
+                CommonConnection.Dispose();
+            }
+            if (InstrumentInfoConnection != null)
+            {
+                InstrumentInfoConnection.StreamingEventReceived -= Broker_StreamingEventReceived;
+                InstrumentInfoConnection.Dispose();
             }
 
-            _sandbox = ConnectionFactory.GetSandboxConnection(TiApiToken);
-            _broker = ConnectionFactory.GetConnection(TiApiToken);
-            _broker.StreamingEventReceived += Broker_StreamingEventReceived;
+            if (CandleConnection != null)
+            {
+                CandleConnection.StreamingEventReceived -= Broker_StreamingEventReceived;
+                CandleConnection.Dispose();
+            }
+
+            CommonConnection = ConnectionFactory.GetConnection(TiApiToken);
+            CandleConnection = ConnectionFactory.GetConnection(TiApiToken);
+            InstrumentInfoConnection = ConnectionFactory.GetConnection(TiApiToken);
+            CandleConnection.StreamingEventReceived += Broker_StreamingEventReceived;
+            InstrumentInfoConnection.StreamingEventReceived += Broker_StreamingEventReceived;
+            CommonConnection.StreamingEventReceived += Broker_StreamingEventReceived;
+
+            RunMonthUpdateTaskIfNotRunning();
         }
 
         public void Init()
@@ -97,16 +117,9 @@ namespace CoreNgine.Shared
 
             PrepareConnection();
 
-            //TradeBot = new SandboxBot(this, _telegram);
-
-            //_broker2 = ConnectionFactory.GetConnection("[token]");
-            //_account2 = _broker2.Context;
-
-            //_broker2.StreamingEventReceived += Broker_StreamingEventReceived;
-
-            if (_brokerQueueTask == null)
+            if (CommonConnectionQueueTask == null)
             {
-                _brokerQueueTask = Task.Factory
+                CommonConnectionQueueTask = Task.Factory
                     .StartNew(() => BrokerQueueLoopAsync()
                             .ConfigureAwait(false),
                     _cancellationTokenSource.Token,
@@ -131,15 +144,22 @@ namespace CoreNgine.Shared
             var cancellationToken = _cancellationTokenSource.Token;
             while (!cancellationToken.IsCancellationRequested)
             {
-                while (_candleProcessingQueue.TryDequeue(out var cr))
+                while (_stockProcessingQueue.TryDequeue(out var obj))
                 {
-                    try
+                    if (obj is CandleResponse cr)
                     {
-                        await CandleProcessingProc(cr);
+                        try
+                        {
+                            await CandleProcessingProc(cr);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError("Error while processing candle {candle}: {error}", cr, ex.Message);
+                        }
                     }
-                    catch (Exception ex)
+                    else if (obj is IStockModel stock)
                     {
-                        _logger.LogError("Error while processing candle {candle}: {error}", cr, ex.Message);
+                        await _mainModel.OnStockUpdated(stock);
                     }
                 }
 
@@ -147,32 +167,30 @@ namespace CoreNgine.Shared
             }
         }
 
-        private void QueueBrokerAction(Func<Connection, Task> act, string description)
+        public void QueueBrokerAction(Func<Connection, Task> act, string description)
         {
             var brAct = new BrokerAction(act, description);
-            _brokerActions.Enqueue(brAct);
+            CommonConnectionActions.Enqueue(brAct);
         }
 
         private async Task BrokerQueueLoopAsync()
         {
             var cancellationToken = _cancellationTokenSource.Token;
-            if (TradeBot != null)
-                TradeBot.Init().Wait();
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                while (_brokerActions.TryDequeue(out BrokerAction act))
+                while (CommonConnectionActions.TryDequeue(out BrokerAction act))
                 {
                     try
                     {
                         //var msg = $"{DateTime.Now} Выполнение операции '{act.Description}'...";
                         _logger.LogTrace("Выполнение операции {OperationDescription}", act.Description);
                         //Debug.WriteLine(msg);
-                        await act.Action(_broker);
+                        await act.Action(CommonConnection);
                     }
                     catch (Exception ex)
                     {
-                        //_brokerActions.Push(act);
+                        //CommonConnectionActions.Push(act);
                         var errorMsg = $"Ошибка при выполнении операции '{act.Description}': {ex.Message}";
                         LogError(errorMsg);
                         await ResetConnection(errorMsg);
@@ -181,17 +199,14 @@ namespace CoreNgine.Shared
 
                 if (_lastEventReceived != null && DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
                 {
-                    if (!_mainModel.Stocks.Any(s => s.Status != null && s.Status != "not_available_for_trading") 
-                        || (DateTime.Now.Hour < 10 && DateTime.Now.Hour > 2))
+                    if (!_mainModel.Stocks.Values.Any(s => s.Status != null && s.Status != "not_available_for_trading") 
+                        || (DateTime.Now.Hour < 10 && (DateTime.Now.Hour > 1 || DateTime.Now.Hour == 1 && DateTime.Now.Minute >= 45)))
                     {
                         Thread.Sleep(1000);
                         continue;
-                    }    
-                    _lastEventReceived = null;
-                    _brokerActions.Clear();
-                    _subscribedFigi.Clear();
-                    PrepareConnection();
-                    await UpdatePrices();
+                    }
+
+                    await ResetConnection("Данные не поступали дольше 5 секунд");
                 }
 
                 await Task.Delay(100);
@@ -209,18 +224,19 @@ namespace CoreNgine.Shared
             //Debug.WriteLine(msg);
         }
 
-        private async Task ResetConnection(string errorMsg)
+        public async Task ResetConnection(string errorMsg)
         {
             LogError("Переподключение: " + errorMsg);
             await ResetConnection();
         }
 
-        private async Task ResetConnection()
+        public async Task ResetConnection()
         {
             _lastEventReceived = null;
-            _candleProcessingQueue.Clear();
-            _brokerActions.Clear();
+            _stockProcessingQueue.Clear();
+            CommonConnectionActions.Clear();
             _subscribedFigi.Clear();
+            _subscribedMinuteFigi.Clear();
             PrepareConnection();
             await UpdatePrices();
         }
@@ -229,138 +245,66 @@ namespace CoreNgine.Shared
         {
             _lastEventReceived = DateTime.Now;
                 var candle = cr.Payload;
-                var stock = _mainModel.Stocks.FirstOrDefault(s => s.Figi == candle.Figi);
+                var stock = _mainModel.Stocks.Values.FirstOrDefault(s => s.Figi == candle.Figi);
                 if (stock != null)
                 {
                     //stock.IsNotifying = false;
                     if (candle.Interval == CandleInterval.Day)
                     {
-                        if (candle.Time.Date < DateTime.Now.Date && stock.LastUpdate > DateTime.MinValue)
+                        if (candle.Time.Date < DateTime.Now.Date.Subtract(TimeSpan.FromHours(3)) && stock.LastUpdate > DateTime.MinValue)
                             return;
                         stock.TodayOpen = candle.Open;
-                        stock.TodayDate = candle.Time;
+                        stock.TodayDate = candle.Time.ToLocalTime();
                         stock.LastUpdate = DateTime.Now;
                         stock.Price = candle.Close;
                         if (stock.TodayOpen > 0)
                             stock.DayChange = (stock.Price - stock.TodayOpen) / stock.TodayOpen;
-                        stock.DayVolume = candle.Volume;
-                        Interlocked.Increment(ref _refreshPendingCount);
-                        // отписываемся от дневного апдейта и подписываемся на минутную свечу
-                        QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                            UnsubscribeCandle(stock.Figi, CandleInterval.Day)),
-                            $"Отписка от часовой свечи {stock.Ticker} ({stock.Figi})");
-                        QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                            SubscribeCandle(stock.Figi, CandleInterval.Minute)),
-                            $"Подписка на минутную свечу {stock.Ticker} ({stock.Figi})");
+                        stock.DayVolume = Math.Truncate(candle.Volume);
+                        if (stock.AvgDayVolumePerMonth > 0)
+                            stock.DayVolChgOfAvg = stock.DayVolume / stock.AvgDayVolumePerMonth;
+                        await _mainModel.OnStockUpdated(stock);
+                        if (!_subscribedMinuteFigi.Contains(stock.Figi))
+                        {
+                            QueueBrokerAction(b => b.SendStreamingRequestAsync(
+                                    SubscribeCandle(stock.Figi, CandleInterval.Minute)),
+                                $"Подписка на минутную свечу {stock.Ticker} ({stock.Figi})");
+                        }
                     }
                     else if (candle.Interval == CandleInterval.Minute)
                     {
-                        if (candle.Time.Date > stock.TodayDate && candle.Time.ToLocalTime().Hour > 3)
+                        if (candle.Time.Date > stock.TodayDate && candle.Time.ToLocalTime().Hour > 3 && stock.MinuteCandles.Count > 1)
                         {
-                            QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                               UnsubscribeCandle(stock.Figi, CandleInterval.Minute)),
-                               $"Отписка от минутной свечи {stock.Ticker} ({stock.Figi})");
-                            QueueBrokerAction(b => b.SendStreamingRequestAsync(
-                                SubscribeCandle(stock.Figi, CandleInterval.Day)),
-                                $"Подписка на дневную свечу {stock.Ticker} ({stock.Figi})");
+                            await ResetConnection(
+                                $"Новый день ({stock.Ticker} {stock.TodayDate} -> {candle.Time.Date})");
                             return;
                         }
-                       
-                        stock.Price = candle.Close;
-                        if (stock.TodayOpen > 0)
-                            stock.DayChange = (stock.Price - stock.TodayOpen) / stock.TodayOpen;
-
                         stock.LastUpdate = DateTime.Now;
                         stock.LogCandle(candle);
-
-                        if (TradeBot != null)
-                            await TradeBot.Check(stock);
-
-                        if (Math.Abs(stock.DayChange) > DayChangeTrigger
-                            && (stock.LastAboveThresholdDate == null
-                            || stock.LastAboveThresholdDate.Value.Date < stock.LastUpdate.Date))
-                        {
-                            stock.LastAboveThresholdDate = stock.LastUpdate;
-
-                            var infoReq = StreamingRequest.SubscribeInstrumentInfo(stock.Figi);
-                            QueueBrokerAction(b => b.SendStreamingRequestAsync(infoReq),
-                                $"Подписка на статус инструмента {stock.Ticker} ({stock.Figi})");
-
-                            if (IsTelegramEnabled && stock.DayVolume > 10)
-                                _telegram.PostMessage(stock.GetDayChangeInfoText(), stock.Ticker);
-
-                            _mainModel.AddMessage(
-                                stock.Ticker,
-                                DateTime.Now,
-                                stock.DayChange,
-                                candle.Volume,
-                                $"{stock.Ticker}: {stock.DayChange.Arrow(true)} {stock.DayChange:P2} с начала дня ({stock.TodayOpenF} → {stock.PriceF})"
-                            );
-
-                            Interlocked.Increment(ref _refreshPendingCount);
-                        }
-
-                        var change = stock.GetLast10MinChange(TenMinChangeTrigger);
-                        if (Math.Abs(change.change) > TenMinChangeTrigger && stock.DayChange > TenMinChangeTrigger && (stock.LastAboveThresholdCandleTime == null
-                            || stock.LastAboveThresholdCandleTime < candle.Time.AddMinutes(-change.minutes)))
-                        {
-                            stock.LastAboveThresholdCandleTime = candle.Time;
-                            try
-                            {
-                                await GetMonthStats(stock);
-                            }
-                            catch (Exception ex)
-                            {
-                                await ResetConnection("Ошибка при получении статистики за месяц: " + ex.Message);
-                            }
-
-                            if (IsTelegramEnabled)
-                            {
-                                var changeInfo = stock.GetMinutesChangeInfo(change.change, change.minutes, change.candles);
-                                if (changeInfo.volPercent >= _mainModel.MinVolumeDeviationFromDailyAverage)
-                                    _telegram.PostMessage(changeInfo.message, stock.Ticker);
-                            }
-
-                            _mainModel.AddMessage(
-                                stock.Ticker,
-                                DateTime.Now,
-                                stock.DayChange,
-                                candle.Volume,
-                                $"{stock.Ticker}: {change.change:P2} за {change.minutes} мин. ({change.candles[^1].Open.FormatPrice(stock.Currency),2} → {change.candles[0].Close.FormatPrice(stock.Currency), -2}) "
-                            );
-
-                            if (TradeBot != null && change.change > TenMinChangeTrigger && stock.DayChange < 0.2m && change.candles.Sum(c => c.Volume) > 100)
-                                await TradeBot.Buy(stock);
-
-                            Interlocked.Increment(ref _refreshPendingCount);
-                        }
+                        await _mainModel.OnStockUpdated(stock);
                     }
-                    //stock.IsNotifying = true;
                 }
         }
 
         private async void Broker_StreamingEventReceived(object sender, StreamingEventReceivedEventArgs e)
         {
             //Debug.WriteLine(JsonConvert.SerializeObject(e.Response));
+            _lastEventReceived = DateTime.Now;
             switch (e.Response)
             {
                 case CandleResponse cr:
                     {
-                        _candleProcessingQueue.Enqueue(cr);
+                        _stockProcessingQueue.Enqueue(cr);
                         break;
                     }
 
                 case OrderbookResponse or:
                     {
-                        var stock = _mainModel.Stocks.FirstOrDefault(s => s.Figi == or.Payload.Figi);
+                        var stock = _mainModel.Stocks.Values.FirstOrDefault(s => s.Figi == or.Payload.Figi);
                         if (stock != null && or.Payload.Asks.Count > 0 && or.Payload.Bids.Count > 0)
                         {
-                            stock.Price = (or.Payload.Asks[0][0] + or.Payload.Bids[0][0]) / 2;
-                            if (stock.TodayOpen > 0)
-                            {
-                                stock.DayChange = (stock.Price - stock.TodayOpen) / stock.TodayOpen;
-                                stock.LastUpdate = or.Time.ToLocalTime();
-                            }
+                            stock.BestBidPrice = or.Payload.Bids[0][0];
+                            stock.BestAskPrice = or.Payload.Asks[0][0];
+                            _stockProcessingQueue.Enqueue(stock); // raise stock update (but only in sync with other updates)
                         }
 
                         break;
@@ -369,28 +313,44 @@ namespace CoreNgine.Shared
                 case InstrumentInfoResponse ir:
                     {
                         var info = ir.Payload;
-                        var stock = _mainModel.Stocks.FirstOrDefault(s => s.Figi == info.Figi);
+                        var stock = _mainModel.Stocks.Values.FirstOrDefault(s => s.Figi == info.Figi);
                         if (stock != null)
                         {
                             stock.Status = info.TradeStatus;
                         }
-
                         break;
                     }
             }
         }
 
-        private async Task GetMonthStats(IStockModel stock)
+        private int _apiCount = 0;
+
+        private async Task<bool> GetMonthStats(IStockModel stock)
         {
-            var prices = await _broker.Context.MarketCandlesAsync(stock.Figi,
-                DateTime.Now.Date.AddMonths(-1),
-                DateTime.Now.Date.AddDays(1), CandleInterval.Day);
+            if (!stock.MonthStatsExpired)
+                return true;
+
+            _apiCount++;
+            //Debug.WriteLine($"API Request {++_apiCount} for {stock.Ticker} {stock.PriceF} {stock.DayChangeF} {DateTime.Now}");
+
+            CandleList prices = null;
+            try
+            {
+                prices = await CommonConnection.Context.MarketCandlesAsync(stock.Figi,
+                    DateTime.Now.Date.AddMonths(-1),
+                    DateTime.Now.Date.AddDays(1), CandleInterval.Day);
+                stock.LastMonthDataUpdate = DateTime.Now;
+            }
+            catch
+            {
+                return false;
+            }
 
             decimal monthVolume = 0, monthHigh = 0, monthLow = 0, monthAvgPrice = 0, 
                 avgDayVolumePerMonth = 0, avgDayPricePerMonthCost = 0, monthOpen = -1,
                 yesterdayVolume = 0, yesterdayMin = 0, yesterdayMax = 0, yesterdayAvgPrice = 0;
 
-            var todayCandle = prices.Candles[^1];
+            var todayCandle = prices.Candles[prices.Candles.Count-1];
             foreach (var candle in prices.Candles)
             {
                 if (candle == todayCandle)
@@ -414,8 +374,8 @@ namespace CoreNgine.Shared
 
             monthAvgPrice = (monthLow + monthHigh) / 2;
             yesterdayAvgPrice = (yesterdayMin + yesterdayMax) / 2;
-            avgDayVolumePerMonth = monthVolume / (prices.Candles.Count - 1);
-            avgDayPricePerMonthCost /= prices.Candles.Count - 1;
+            avgDayVolumePerMonth = monthVolume / prices.Candles.Count;
+            avgDayPricePerMonthCost /= prices.Candles.Count;
             
             stock.MonthOpen = monthOpen;
             stock.MonthHigh = monthHigh;
@@ -425,14 +385,116 @@ namespace CoreNgine.Shared
             stock.AvgDayVolumePerMonth = Math.Round(avgDayVolumePerMonth);
             stock.AvgDayPricePerMonth = avgDayPricePerMonthCost;
             stock.AvgDayVolumePerMonthCost = avgDayPricePerMonthCost * avgDayVolumePerMonth * stock.Lot;
+            stock.DayVolChgOfAvg = stock.DayVolume / stock.AvgDayVolumePerMonth;
             stock.YesterdayVolume = yesterdayVolume;
             stock.YesterdayVolumeCost = yesterdayVolume * yesterdayAvgPrice;
             stock.YesterdayAvgPrice = yesterdayAvgPrice;
+
+            return true;
+        }
+
+        public async Task<bool> CheckMonthStatsAsync(IStockModel stock, CancellationToken token = default(CancellationToken))
+        {
+            if (stock.MonthStatsExpired)
+            {
+                lock (stock)
+                {
+                    if (!_monthStatsQueue.Contains(stock))
+                    {
+                        _monthStatsQueue.Enqueue(stock);
+                    }
+                }
+
+                while (stock.MonthStatsExpired && !token.IsCancellationRequested)
+                {
+                    await Task.Delay(100, token);
+                }
+
+                if (token.IsCancellationRequested)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private void EnqueueStockForMonthStatsIfExpired(IStockModel stock)
+        {
+            if (stock.MonthStatsExpired)
+            {
+                lock (stock)
+                {
+                    if (stock.MonthStatsExpired && !_monthStatsQueue.Contains(stock))
+                    {
+                        _monthStatsQueue.Enqueue(stock);
+                    }
+                }
+            }
+        }
+
+        private DateTime _lastBatchMonthStatsEnqueued;
+
+        private async Task ReportStatsCheckerProgress()
+        {
+            var stocks = _mainModel.Stocks.Values.Where(s => s.Price > 0).ToList();
+            var completed = stocks.Count(s => !s.MonthStatsExpired);
+            await EventAggregator.PublishOnCurrentThreadAsync(new StatsUpdateMessage(completed, stocks.Count,
+                completed == stocks.Count, _apiCount));
+        }
+
+        private async Task MonthStatsCheckerLoop()
+        {
+            var token = _cancellationTokenSource.Token;
+            _lastBatchMonthStatsEnqueued = DateTime.Now;
+
+            while (!token.IsCancellationRequested)
+            {
+                if (_monthStatsQueue.TryDequeue(out var stock))
+                {
+                    try
+                    {
+                        if (await GetMonthStats(stock))
+                            await ReportStatsCheckerProgress();
+                        else
+                        {
+                            await Task.Delay(500);
+                            EnqueueStockForMonthStatsIfExpired(stock);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Ошибка при загрузке истории");
+                        EnqueueStockForMonthStatsIfExpired(stock);
+                    }
+                }
+
+                if (DateTime.Now.Subtract(_lastBatchMonthStatsEnqueued).TotalSeconds > 31)
+                {
+                    _mainModel.Stocks
+                        .Select(s => s.Value)
+                        .Where(s => !_monthStatsQueue.Contains(s)
+                                    && s.MonthStatsExpired && s.Price > 0)
+                        .OrderByDescending(s => Math.Abs(s.DayChange))
+                        .Take(30).ToList().ForEach(s => _monthStatsQueue.Enqueue(s));
+                    _lastBatchMonthStatsEnqueued = DateTime.Now;
+                }
+
+                if (!_monthStatsQueue.Any())
+                    await Task.Delay(100);
+            }
+        }
+
+        private void RunMonthUpdateTaskIfNotRunning()
+        {
+            if (_monthStatsTask == null)
+                _monthStatsTask = Task.Factory.StartLongRunningTask(
+                    () => MonthStatsCheckerLoop().ConfigureAwait(false), 
+                    _cancellationTokenSource.Token);
         }
 
         public async Task UpdatePrices()
         {
-            foreach (var stock in _mainModel.Stocks)
+            var toSubscribeInstr = new HashSet<IStockModel>();
+            foreach (var stock in _mainModel.Stocks.Values)
             {
                 if (!_subscribedFigi.Contains(stock.Figi))
                 {
@@ -440,10 +502,25 @@ namespace CoreNgine.Shared
                     QueueBrokerAction(b => b.SendStreamingRequestAsync(request),
                         $"Подписка на дневную свечу {stock.Ticker} ({stock.Figi})");
 
+                    var request2 = new OrderbookSubscribeRequest(stock.Figi, 2);
+                    QueueBrokerAction(b => CandleConnection.SendStreamingRequestAsync(request2),
+                        $"Подписка на стакан {stock.Ticker} ({stock.Figi}");
+
+                    toSubscribeInstr.Add(stock);
                     _subscribedFigi.Add(stock.Figi);
                 }
             }
-            await Task.CompletedTask;
+
+            int n = 0;
+            foreach (var stock in toSubscribeInstr)
+            {
+                var request3 = new InstrumentInfoSubscribeRequest( stock.Figi );
+                QueueBrokerAction( b => InstrumentInfoConnection.SendStreamingRequestAsync( request3 ),
+                    $"Подписка на статус {stock.Ticker} ({stock.Figi}" );
+
+                if (++n % 100 == 0)
+                    await Task.Delay(1000);
+            }
         }
 
         private void AddCandleToStock(object data)
@@ -461,13 +538,13 @@ namespace CoreNgine.Shared
 
         public async Task UpdateStocks()
         {
-            if (_broker == null)
+            if (CommonConnection == null)
                 return;
-            var stocks = await _broker.Context.MarketStocksAsync();
+            var stocks = await CommonConnection.Context.MarketStocksAsync();
             var stocksToAdd = new HashSet<IStockModel>();
             foreach (var instr in stocks.Instruments)
             {
-                var stock = _mainModel.Stocks.FirstOrDefault(s => s.Figi == instr.Figi);
+                var stock = _mainModel.Stocks.Values.FirstOrDefault(s => s.Figi == instr.Figi);
                 if (stock == null)
                 {
                     stock = _mainModel.CreateStockModel(instr);

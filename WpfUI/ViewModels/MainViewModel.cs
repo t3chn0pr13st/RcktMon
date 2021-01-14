@@ -1,14 +1,19 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using AutoMapper;
 using Caliburn.Micro;
+using CoreData;
 using CoreData.Interfaces;
+using CoreNgine.Infra;
 using CoreNgine.Models;
 using CoreNgine.Shared;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,63 +26,39 @@ namespace RcktMon.ViewModels
 {
     public class MainViewModel : PropertyChangedBase, IMainModel
     {
-        public IEnumerable<IStockModel> Stocks { get; } = new ObservableCollection<StockViewModel>();
-        public IEnumerable<IMessageModel> Messages { get; } = new ObservableCollection<MessageViewModel>();
-        public StocksManager StocksManager { get; private set; }
-        public SettingsViewModel SettingsViewModel { get; }
-
+        private StocksManager _stocksManager;
         private ILogger<MainViewModel> _logger;
-        
+        private ISettingsProvider _settingsProvider;
+        private IEventAggregator2 _eventAggregator;
         private readonly SynchronizationContext _uiContext;
-
-        #region App Settings 
-        
-        public string TiApiKey { get; set; }
-        public string TgBotApiKey { get; set; }
-        public string TgChatId { get; set; }
-        public decimal MinDayPriceChange { get; set; }
-        public decimal MinTenMinutesPriceChange { get; set; }
-        public decimal MinVolumeDeviationFromDailyAverage { get; set; }
-        public bool IsTelegramEnabled { get; set; }
-
-        #endregion App Settings
-
-        private IEventAggregator _eventAggregator;
         private IServiceProvider _services;
 
-        public MainViewModel(IServiceProvider serviceProvider, IEventAggregator eventAggregator, ILogger<MainViewModel> logger)
+        public IDictionary<string, IStockModel> Stocks { get; } = new ConcurrentDictionary<string, IStockModel>();
+        public IEnumerable<IMessageModel> Messages { get; } = new ObservableCollection<MessageViewModel>();
+
+        public StocksManager StocksManager =>
+            _stocksManager ?? (_stocksManager = _services.GetRequiredService<StocksManager>());
+        public SettingsViewModel SettingsViewModel { get; }
+        public StatusViewModel Status { get; }
+
+        public INgineSettings Settings => _settingsProvider.Settings;
+
+        public MainViewModel(IServiceProvider serviceProvider, ILogger<MainViewModel> logger, IEventAggregator2 eventAggregator, ISettingsProvider settingsProvider, StatusViewModel status)
         {
             _services = serviceProvider;
-            _eventAggregator = eventAggregator;
             _logger = logger;
             _uiContext = SynchronizationContext.Current;
+            _settingsProvider = settingsProvider;
+            _eventAggregator = eventAggregator;
+            Status = status;
 
             LoadAppSettings();
-            SettingsViewModel = new SettingsViewModel(this);
+            SettingsViewModel = new SettingsViewModel(_settingsProvider, this);
         }
 
         internal void LoadAppSettings()
         {
-            MinDayPriceChange = 0.1m;
-            MinVolumeDeviationFromDailyAverage = 0.002m;
-            MinTenMinutesPriceChange = 0.05m;
-            if (File.Exists("settings.json"))
-            {
-                var text = File.ReadAllText("settings.json");
-                var definition = new 
-                {
-                    TiApiKey, TgBotApiKey, TgChatId, 
-                    MinDayPriceChange, MinTenMinutesPriceChange, IsTelegramEnabled
-                };
-                var obj = JsonConvert.DeserializeAnonymousType(text, definition);
-                var config = new MapperConfiguration(cfg => 
-                    cfg.CreateMap(obj.GetType(), this.GetType()));
-                var mapper = new Mapper(config);
-                mapper.Map(obj, this, obj.GetType(), this.GetType());
-                try { this.TiApiKey = CryptoHelper.Decrypt(this.TiApiKey); } catch { }
-                try { this.TgBotApiKey = CryptoHelper.Decrypt(this.TgBotApiKey); } catch { }
-                try { this.TgChatId = CryptoHelper.Decrypt(this.TgChatId); } catch { }
-            }
+            _settingsProvider.ReadSettings();
         }
 
         public IStockModel CreateStockModel(MarketInstrument instrument)
@@ -131,25 +112,21 @@ namespace RcktMon.ViewModels
             InitStocksManager();
         }
 
-        private object AnonymousSettingsObj => new 
-        {
-            TiApiKey = CryptoHelper.Encrypt(TiApiKey),
-            TgBotApiKey = CryptoHelper.Encrypt(TgBotApiKey),
-            TgChatId = CryptoHelper.Encrypt(TgChatId),
-            MinDayPriceChange, MinTenMinutesPriceChange, IsTelegramEnabled
-        };
+        private DateTime _lastViewUpdate = DateTime.Now;
 
-        internal void SaveAppSettings()
+        public async Task OnStockUpdated(IStockModel stock)
         {
-            try 
-            {
-                System.IO.File.WriteAllText("settings.json", 
-                    JsonConvert.SerializeObject(AnonymousSettingsObj, Formatting.Indented));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical(ex, ex.Message);
-            }
+            if (stock.PriceUSA > 0 && stock.Price > 0)
+                stock.DiffPercentUSA = (stock.PriceUSA - stock.Price) / stock.PriceUSA;
+            await _eventAggregator.PublishOnCurrentThreadAsync(stock);
+            //if (DateTime.Now.Subtract(_lastViewUpdate).TotalMilliseconds > 500)
+            //{
+            //    _lastViewUpdate = DateTime.Now;
+            //    _uiContext.Post(obj =>
+            //    {
+            //        CollectionViewSource.GetDefaultView(Stocks.Values).Refresh();
+            //    }, null);
+            //}
         }
 
         public Task AddStocks(IEnumerable<IStockModel> stocks)
@@ -157,21 +134,34 @@ namespace RcktMon.ViewModels
             var tcs = new TaskCompletionSource();
             _uiContext.Post(obj =>
             {
-                stocks.OfType<StockViewModel>().ToList().ForEach(s =>
+                stocks.ToList().ForEach(s =>
                 {
-                    (Stocks as ObservableCollection<StockViewModel>)?.Add(s);
+                    Stocks[s.Ticker] = s;
                 });
                 tcs.SetResult();
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Stocks)));
             }, null);
-            return tcs.Task;
+
+            return Task.WhenAll(_eventAggregator.PublishOnCurrentThreadAsync(stocks), tcs.Task);
         }
 
         public async Task InitStocksManager()
         {
-            await Task.Delay(1000);
-            if (StocksManager == null)
-                StocksManager = _services.GetRequiredService<StocksManager>();
-            await RefreshAll();
+            bool success = false;
+            while (!success)
+            {
+                await Task.Delay(1000);
+                try
+                {
+                    await RefreshAll();
+                    success = true;
+                }
+                catch (Exception ex)
+                {
+                    AddMessage("ERR", DateTime.Now, "Не удалось получить список инструментов: " + ex.Message);
+                    success = false;
+                }
+            }
             //var l2data = _services.GetRequiredService<L2DataConnector>();
             //await l2data.ConnectAsync();
             //var message = "+[" + String.Join(",", Stocks.Where(s => s.Currency == "Usd").Select(s => s.Ticker)) + "]";
@@ -188,6 +178,5 @@ namespace RcktMon.ViewModels
             await StocksManager.UpdatePrices();
         }
 
-        public void OnStockUpdated( IStockModel stock ) { }
     }
 }

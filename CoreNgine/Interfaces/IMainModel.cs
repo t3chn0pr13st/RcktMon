@@ -9,7 +9,7 @@ using Tinkoff.Trading.OpenApi.Models;
 
 namespace CoreNgine.Models
 {
-    public interface IMainModel : INgineSettings, IStocksInfoContainer
+    public interface IMainModel : IStocksInfoContainer
     {
         IStockModel CreateStockModel(MarketInstrument instrument);
         Task AddStocks(IEnumerable<IStockModel> stocks);
@@ -19,6 +19,6 @@ namespace CoreNgine.Models
         IMessageModel AddMessage(string ticker, DateTime date, decimal change, decimal volume, string text);
 
         void Start();
-        void OnStockUpdated(IStockModel stock);
+        Task OnStockUpdated(IStockModel stock);
     }
 }

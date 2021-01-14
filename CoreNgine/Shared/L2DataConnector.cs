@@ -65,9 +65,9 @@ namespace CoreNgine.Shared
                 while (!loopToken.IsCancellationRequested) {
                     outputStream = new MemoryStream(ReceiveBufferSize);
                     do {
-                        receiveResult = await _clientWebSocket.ReceiveAsync(buffer, _cancellationTokenSource.Token);
+                        receiveResult = await _clientWebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), _cancellationTokenSource.Token);
                         if (receiveResult.MessageType != WebSocketMessageType.Close)
-                            outputStream.Write(buffer, 0, receiveResult.Count);
+                            await outputStream.WriteAsync(buffer, 0, receiveResult.Count, _cancellationTokenSource.Token);
                     }
                     while (!receiveResult.EndOfMessage);
                     if (receiveResult.MessageType == WebSocketMessageType.Close) break;

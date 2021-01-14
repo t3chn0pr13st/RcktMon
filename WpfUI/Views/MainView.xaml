@@ -11,7 +11,7 @@
              mc:Ignorable="d" d:DataContext="{d:DesignInstance Type=viewModels:MainViewModel}"
              d:DesignHeight="1000" d:DesignWidth="1600">
     <UserControl.Resources>
-        <CollectionViewSource Source="{Binding Stocks}" x:Key="StocksCollectionView">
+        <CollectionViewSource IsLiveSortingRequested="True" Source="{Binding Stocks.Values}" x:Key="StocksCollectionView">
             <CollectionViewSource.SortDescriptions>
                 <componentmodel:SortDescription PropertyName="DayChange" Direction="Descending" />
             </CollectionViewSource.SortDescriptions>
@@ -36,51 +36,67 @@
             
             <LayoutRoot>
                 <LayoutPanel>
-                    <LayoutDocumentPane>
-                        <LayoutDocument ContentId="Stocks" Title="Котировки" x:Name="StocksDoc">
-                              
-                            <DataGrid IsReadOnly="True" ItemsSource="{Binding Stocks}" 
-                                    VirtualizingPanel.IsVirtualizing="True" 
-                                    VirtualizingPanel.IsContainerVirtualizable="True"
-                                    VirtualizingPanel.VirtualizationMode="Recycling"
-                                    ScrollViewer.CanContentScroll="True"
-                                    ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                    AutoGenerateColumns="False" >
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Width="220" Binding="{Binding Name}" Header="Название" />
-                                    <DataGridTextColumn Binding="{Binding Ticker}" Header="Тикер" />
-                                    <DataGridTextColumn Binding="{Binding Currency}" Header="Валюта" />
-                                    <DataGridTextColumn Binding="{Binding TodayOpen}" Header="Цена открытия" />
-                                    <DataGridTextColumn Binding="{Binding Price}" Header="Текущая цена" />
-                                    <DataGridTextColumn Binding="{Binding DayChange, StringFormat=P2}" Header="Изменение" SortDirection="Descending" />
-                                    <DataGridTextColumn Binding="{Binding LastUpdate, StringFormat=HH:mm:ss.ff}" Header="Обновление" />
-                                    <DataGridTextColumn Binding="{Binding Status}" Header="Состояние" />
-                                </DataGrid.Columns>
-                            </DataGrid>          
-                              
-                        </LayoutDocument>                             
-                    </LayoutDocumentPane>
-                     <LayoutDocumentPane>
-                        <LayoutDocument ContentId="Alerts" Title="События" x:Name="EventDoc">
-                              
-                            <DataGrid IsReadOnly="True"
-                                ItemsSource="{Binding Source={StaticResource EventsCollectionView}}" AutoGenerateColumns="False">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Binding="{Binding Ticker}" Header="Тикер" />
-                                    <DataGridTextColumn Binding="{Binding Change, StringFormat=P2}" Header="Изменение" />
-                                    <DataGridTextColumn Binding="{Binding Volume}" Header="Объём" />
-                                    <DataGridTextColumn Binding="{Binding Text}" Header="Сообщение" />
-                                    <DataGridTextColumn Binding="{Binding Date}" Header="Дата события" />
-                                </DataGrid.Columns>
-                            </DataGrid>  
-                              
-                        </LayoutDocument>                             
-                    </LayoutDocumentPane>
+                    <LayoutPanel Orientation="Vertical">
+                        <LayoutDocumentPane>
+                            <LayoutDocument ContentId="Stocks" Title="Котировки" x:Name="StocksDoc">
+                                  
+                                <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource StocksCollectionView}}" 
+                                        VirtualizingPanel.IsVirtualizing="True" 
+                                        VirtualizingPanel.IsContainerVirtualizable="True"
+                                        VirtualizingPanel.VirtualizationMode="Recycling"
+                                        ScrollViewer.CanContentScroll="True"
+                                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                        AutoGenerateColumns="False" >
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Width="220" Binding="{Binding Name}" Header="Название" />
+                                        <DataGridTextColumn Binding="{Binding Ticker}" Header="Тикер" />
+                                        <DataGridTextColumn Binding="{Binding Currency}" Header="Валюта" />
+                                        <DataGridTextColumn Binding="{Binding TodayOpen}" Header="Цена открытия" />
+                                        <DataGridTextColumn Binding="{Binding Price}" Header="Текущая цена" />
+                                        <DataGridTextColumn Binding="{Binding DayChange, StringFormat=P2}" Header="Изменение" SortDirection="Descending" />
+                                        <DataGridTextColumn Binding="{Binding DayVolume}" Header="Volume" />
+                                        <DataGridTextColumn Binding="{Binding DayVolChgOfAvg, StringFormat=P2}" Header="% Avg Vol" />
+                                        <DataGridTextColumn Binding="{Binding BestBidPrice}" Header="Лучший бид" />
+                                        <DataGridTextColumn Binding="{Binding BestAskPrice}" Header="Лучший аск" />
+                                        <DataGridTextColumn Binding="{Binding Status}" Header="Состояние" />
+                                        <DataGridTextColumn Binding="{Binding PriceUSA}" Header="Цена USA" />
+                                        <DataGridTextColumn Binding="{Binding DiffPercentUSA, StringFormat=P2}" Header="Разница с USA" />
+                                        <DataGridTextColumn Binding="{Binding BidUSA}" Header="Лучший бид USA" />
+                                        <DataGridTextColumn Binding="{Binding AskUSA}" Header="Лучший аск USA" />
+                                        <DataGridTextColumn Binding="{Binding LastUpdate, StringFormat=HH:mm:ss.ff}" Header="Обновление" />
+                                    </DataGrid.Columns>
+                                </DataGrid>          
+                                  
+                            </LayoutDocument>        
+
+                        </LayoutDocumentPane>
+
+                        <LayoutAnchorablePane DockHeight="200">
+
+                            <LayoutAnchorable ContentId="Alerts" Title="Лог событий" x:Name="EventDoc">
+
+                                <DataGrid IsReadOnly="True"
+                                          ItemsSource="{Binding Source={StaticResource EventsCollectionView}}" AutoGenerateColumns="False">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Ticker}" Header="Тикер" />
+                                        <DataGridTextColumn Binding="{Binding Change, StringFormat=P2}" Header="Изменение" />
+                                        <DataGridTextColumn Binding="{Binding Volume}" Header="Объём" />
+                                        <DataGridTextColumn Binding="{Binding Text}" Header="Сообщение" />
+                                        <DataGridTextColumn Binding="{Binding Date}" Header="Дата события" />
+                                    </DataGrid.Columns>
+                                </DataGrid>  
+
+                            </LayoutAnchorable>
+
+                        </LayoutAnchorablePane>
+
+                    </LayoutPanel>
+
                     <LayoutAnchorablePane Name="ToolsPane" DockMinWidth="250">
                         <LayoutAnchorable Title="Настройки" ContentId="Settings" AutoHideMinWidth="250">
                             <StackPanel Orientation="Vertical" DataContext="{Binding SettingsViewModel}">
-                                <Expander Header="Ключи доступа">
+                                <Expander Header="Ключи доступа" Name="KeySettings">
                                     <StackPanel Orientation="Vertical">
                                         <TextBlock Text="TinkoffInvest OpenAPI Token" FontWeight="Bold" Margin="2" />
                                         <TextBlock Text="Зайдите на страницу настроек Тинькофф Инвестиции, там внизу в блоке Токен для OpenAPI получите Токен для торговли, и вставьте сюда" TextWrapping="Wrap" Margin="2" />
@@ -99,6 +115,21 @@
                                         <Button Margin="2 10 2 6" cal:Message.Attach="AcceptKeys">Применить</Button>
                                     </StackPanel>
                                 </Expander>
+                                <Expander Header="USA Data" Visibility="Collapsed">
+                                    <StackPanel Orientation="Vertical">
+                                        <mah:ToggleSwitch IsOn="{Binding USAQuotesEnabled}" FontSize="12.5"
+                                                          Content="Включить поиск расхождений" />
+                                        <TextBlock Text="Логин от сервиса котировок" Margin="2" />
+                                        <TextBox Text="{Binding USAQuotesLogin}" Margin="2" />
+                                        <TextBlock Text="Пароль от сервиса котировок" Margin="2" />
+                                        <TextBox Text="{Binding USAQuotesPassword}" Margin="2">
+                                            <b:Interaction.Behaviors>
+                                                <views:PasswordBehavior />
+                                            </b:Interaction.Behaviors>
+                                        </TextBox>
+                                        <Button Margin="2 10 2 6" cal:Message.Attach="AcceptOptions">Применить</Button>
+                                    </StackPanel>
+                                </Expander>
                                  <Expander Header="Настройки уведомлений" IsExpanded="True">
                                     <StackPanel Orientation="Vertical">
                                         <mah:ToggleSwitch IsOn="{Binding IsTelegramEnabled}" FontSize="12.5"
@@ -107,17 +138,56 @@
                                         <TextBox Text="{Binding MinDayPriceChangePercent}" Margin="2" />
                                         <TextBlock Text="При изменении цены за 10 минут (%)" Margin="2" />
                                         <TextBox Text="{Binding MinTenMinutesPriceChangePercent}" Margin="2" />
-                                        <TextBlock Text="Мин. объем при резком изменении &#10; (% от среднего объема за день)" TextWrapping="Wrap" Margin="2" />
+                                        <TextBlock Text="Мин. объем при изменении цены &#10; (% от среднего объема за день)" TextWrapping="Wrap" Margin="2" />
                                         <TextBox Text="{Binding MinVolumeDeviationFromDailyAveragePercent}" Margin="2" />
+                                        <TextBlock Text="При изменении объёма за 10 минут &#10; (% от среднего объёма за день)" Margin="2" />
+                                        <TextBox Text="{Binding MinTenMinutesVolPercentChangePercent}" Margin="2" />
                                         <Button Margin="2 10 2 6" cal:Message.Attach="AcceptOptions">Применить</Button>
                                     </StackPanel>
                                 </Expander>
                             </StackPanel>
                         </LayoutAnchorable>
                     </LayoutAnchorablePane>
+
                 </LayoutPanel>
+
+                <!--<LayoutRoot.BottomSide>
+                    <LayoutAnchorSide>
+
+                        <LayoutAnchorGroup>
+                           
+                              
+                        </LayoutAnchorGroup>  
+                    </LayoutAnchorSide>
+                </LayoutRoot.BottomSide>-->
+               
             </LayoutRoot>
         </DockingManager>
-        
+        <StatusBar Grid.Row="2">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid Visibility="{Binding Status.ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem Grid.Column="4">
+                <TextBlock Text="{Binding Status.StatusProgressText}"  />
+            </StatusBarItem>
+            <Separator Grid.Column="1" />
+            <StatusBarItem Grid.Column="0">
+                <TextBlock Text="{Binding Status.StatusInfoText}" />
+            </StatusBarItem>
+            <Separator Grid.Column="3" />
+            <StatusBarItem Grid.Column="2">
+                <ProgressBar Value="{Binding Status.StatusPercent}" Width="90" Height="16" />
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </UserControl>

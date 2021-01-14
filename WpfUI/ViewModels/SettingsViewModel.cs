@@ -1,5 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Caliburn.Micro;
+using CoreData.Interfaces;
+using CoreNgine.Models;
+using CoreNgine.Shared;
 using RcktMon.Views;
 
 namespace RcktMon.ViewModels
@@ -13,25 +16,43 @@ namespace RcktMon.ViewModels
         public decimal MinDayPriceChangePercent { get; set; }
         public decimal MinTenMinutesPriceChangePercent { get; set; }
         public decimal MinVolumeDeviationFromDailyAveragePercent { get; set; }
+        public decimal MinTenMinutesVolPercentChangePercent { get; set; }
         public bool IsTelegramEnabled { get; set; }
 
-        private MainViewModel _tradingViewModel;
+        public bool USAQuotesEnabled { get; set; }
+        public string USAQuotesURL { get; set; }
+        public string USAQuotesLogin { get; set; }
+        public string USAQuotesPassword { get; set; }
+
+        private ISettingsProvider _settingsProvider;
+        private MainViewModel _mainViewModel;
+
+        public StocksManager StocksManager => _mainViewModel.StocksManager;
+
+        public INgineSettings Settings => _settingsProvider.Settings;
 
         public SettingsViewModel()
         {
 
         }
 
-        public SettingsViewModel(MainViewModel tradingViewModel )
+        public SettingsViewModel(ISettingsProvider settingsProvider, IMainModel mainModel)
         {
-            _tradingViewModel = tradingViewModel;
-            TiApiKey = tradingViewModel.TiApiKey;
-            TgBotApiKey = tradingViewModel.TgBotApiKey;
-            TgChatId = tradingViewModel.TgChatId;
-            MinDayPriceChangePercent = tradingViewModel.MinDayPriceChange * 100m;
-            MinTenMinutesPriceChangePercent = tradingViewModel.MinTenMinutesPriceChange * 100m;
-            MinVolumeDeviationFromDailyAveragePercent = tradingViewModel.MinVolumeDeviationFromDailyAverage * 100m;
-            IsTelegramEnabled = tradingViewModel.IsTelegramEnabled;
+            _mainViewModel = mainModel as MainViewModel;
+            _settingsProvider = settingsProvider;
+
+            TiApiKey = Settings.TiApiKey;
+            TgBotApiKey = Settings.TgBotApiKey;
+            TgChatId = Settings.TgChatId;
+            MinDayPriceChangePercent = Settings.MinDayPriceChange * 100m;
+            MinTenMinutesPriceChangePercent = Settings.MinTenMinutesPriceChange * 100m;
+            MinVolumeDeviationFromDailyAveragePercent = Settings.MinVolumeDeviationFromDailyAverage * 100m;
+            MinTenMinutesVolPercentChangePercent = Settings.MinTenMinutesVolPercentChange * 100m;
+            IsTelegramEnabled = Settings.IsTelegramEnabled;
+            USAQuotesEnabled = Settings.USAQuotesEnabled;
+            USAQuotesURL = Settings.USAQuotesURL;
+            USAQuotesLogin = Settings.USAQuotesLogin;
+            USAQuotesPassword = Settings.USAQuotesPassword;
             ResetKeys();
         }
 
@@ -39,30 +60,42 @@ namespace RcktMon.ViewModels
         {
             TiApiKey = PasswordBehavior.PassReplacement;
             TgBotApiKey = PasswordBehavior.PassReplacement;
+            USAQuotesPassword = PasswordBehavior.PassReplacement;
         }
 
         public async Task AcceptKeys()
         {
             if (TiApiKey != PasswordBehavior.PassReplacement)
-                _tradingViewModel.TiApiKey = TiApiKey;
+                _settingsProvider.Settings.TiApiKey = TiApiKey;
             if (TgBotApiKey != PasswordBehavior.PassReplacement)
-                _tradingViewModel.TgBotApiKey = TgBotApiKey;
+                _settingsProvider.Settings.TgBotApiKey = TgBotApiKey;
 
-            _tradingViewModel.TgChatId = TgChatId;
-            _tradingViewModel.SaveAppSettings();
+            _settingsProvider.Settings.TgChatId = TgChatId;
+            _settingsProvider.SaveSettings(_settingsProvider.Settings);
             ResetKeys();
 
-            _tradingViewModel.StocksManager.Init();
-            await _tradingViewModel.StocksManager.UpdateStocks();
+            StocksManager.Init();
+            await StocksManager.UpdateStocks();
         }
 
         public void AcceptOptions()
         {
-            _tradingViewModel.MinDayPriceChange = MinDayPriceChangePercent / 100m;
-            _tradingViewModel.MinTenMinutesPriceChange = MinTenMinutesPriceChangePercent / 100m;
-            _tradingViewModel.MinVolumeDeviationFromDailyAverage = MinVolumeDeviationFromDailyAveragePercent / 100m;
-            _tradingViewModel.IsTelegramEnabled = IsTelegramEnabled;
-            _tradingViewModel.SaveAppSettings();
+            Settings.MinDayPriceChange = MinDayPriceChangePercent / 100m;
+            Settings.MinTenMinutesPriceChange = MinTenMinutesPriceChangePercent / 100m;
+            Settings.MinVolumeDeviationFromDailyAverage = MinVolumeDeviationFromDailyAveragePercent / 100m;
+            Settings.MinTenMinutesVolPercentChange = MinTenMinutesVolPercentChangePercent / 100m;
+            Settings.IsTelegramEnabled = IsTelegramEnabled;
+
+            Settings.USAQuotesEnabled = USAQuotesEnabled;
+            Settings.USAQuotesURL = USAQuotesURL;
+            Settings.USAQuotesLogin = USAQuotesLogin;
+            if (USAQuotesPassword != PasswordBehavior.PassReplacement)
+            {
+                Settings.USAQuotesPassword = USAQuotesPassword;
+                ResetKeys();
+            }
+
+            _settingsProvider.SaveSettings(_settingsProvider.Settings);
         }
 
     }

@@ -11,5 +11,6 @@ namespace CoreData.Interfaces
         decimal Low { get; set; }
         decimal High { get; set; }
         DateTime Time { get; set; }
+        decimal Volume { get; set; }
     }
 }

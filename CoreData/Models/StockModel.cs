@@ -20,6 +20,8 @@ namespace CoreData.Models
         public DateTime TodayDate { get; set; }
         public decimal TodayOpen { get; set; }
         public decimal Price { get; set; }
+        public decimal BestBidPrice { get; set; }
+        public decimal BestAskPrice { get; set; }
         public decimal DayChange { get; set; }
         public decimal DayVolume { get; set; }
         public decimal DayVolumeCost => DayVolume * AvgPrice;
@@ -28,6 +30,15 @@ namespace CoreData.Models
         public DateTime LastUpdate { get; set; }
         public DateTime? LastAboveThresholdDate { get; set; }
         public DateTime? LastAboveThresholdCandleTime { get; set; }
+        public DateTime? LastAboveVolThresholdCandleTime { get; set; }
+
+        public decimal PriceUSA { get; set; }
+        public decimal BidUSA { get; set; }
+        public decimal AskUSA { get; set; }
+        public decimal BidSizeUSA { get; set; }
+        public decimal AskSizeUSA { get; set; }
+        public DateTime? LastTradeUSA { get; set; }
+        public decimal DiffPercentUSA { get; set; }
 
         public decimal MonthOpen { get; set; }
         public decimal MonthLow { get; set; }
@@ -53,6 +64,9 @@ namespace CoreData.Models
         public string AvgDayVolumePerMonthCostF => AvgDayVolumePerMonthCost.FormatPrice(Currency);
         public string AvgDayPricePerMonthF => AvgDayPricePerMonth.FormatPrice(Currency);
         public string AvgMonthPriceF => MonthAvg.FormatPrice(Currency);
+        public DateTime LastMonthDataUpdate { get; set; }
+        public decimal? DayVolChgOfAvg { get; set; }
+        public bool MonthStatsExpired => DateTime.Now.Date.Subtract(LastMonthDataUpdate.Date).TotalDays > 1;
 
         public IDictionary<DateTime, CandlePayload> MinuteCandles { get; } = new Dictionary<DateTime, CandlePayload>();
 
@@ -64,7 +78,7 @@ namespace CoreData.Models
             if (MinuteCandles.Count > 100)
             {
                 MinuteCandles.OrderBy(p => p.Key).Take(50).ToList()
-                    .ForEach(p => MinuteCandles.Remove(p.Key, out _));
+                    .ForEach(p => MinuteCandles.Remove(p.Key));
             }
         }
 
@@ -82,7 +96,8 @@ namespace CoreData.Models
                 Close = candle.Close,
                 Low = candle.Low,
                 High = candle.High,
-                Time = candle.Time
+                Time = candle.Time,
+                Volume = candle.Volume
             });
         }
     }

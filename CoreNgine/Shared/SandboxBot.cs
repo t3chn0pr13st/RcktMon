@@ -61,7 +61,7 @@ namespace CoreNgine.Shared
 
         public async Task Init()
         {
-            _sandbox = _broker.SandboxConnection.Context;
+            //_sandbox = _broker.SandboxConnection.Context;
             var account = await _sandbox.RegisterAsync(BrokerAccountType.Tinkoff);
             _accountId = account.BrokerAccountId;
 

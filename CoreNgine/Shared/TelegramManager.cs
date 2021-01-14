@@ -25,7 +25,8 @@ namespace CoreNgine.Shared
         private Task _messageQueueLoopTask;
         private readonly ConcurrentQueue<(string text, string ticker)> _botMessageQueue = new ConcurrentQueue<(string text, string ticker)>();
 
-        public bool IsEnabled => _mainModel.IsTelegramEnabled;
+        public bool IsEnabled => Settings.IsTelegramEnabled;
+        public INgineSettings Settings { get; }
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
@@ -42,6 +43,7 @@ namespace CoreNgine.Shared
         {
             _services = serviceProvider;
             _mainModel = serviceProvider.GetRequiredService<IMainModel>();
+            Settings = serviceProvider.GetRequiredService<ISettingsProvider>().Settings;
             _logger = (ILogger<TelegramManager>) serviceProvider.GetService(typeof(ILogger<TelegramManager>));
             try
             {
@@ -72,7 +74,7 @@ namespace CoreNgine.Shared
 
         private string GetStockChart(string ticker)
         {
-            var stock = _mainModel.Stocks.FirstOrDefault(s => s.Ticker == ticker);
+            var stock = _mainModel.Stocks[ticker];
             if (stock != null && stock.Currency.Equals("USD", StringComparison.InvariantCultureIgnoreCase))
             {
                 return $"https://www.stockscores.com/chart.asp?TickerSymbol={ticker}&TimeRange=3&Interval=10&Volume=1&ChartType=CandleStick&Stockscores=1&ChartWidth=1100&ChartHeight=480&LogScale=None&Band=None&avgType1=None&movAvg1=&avgType2=None&movAvg2=&Indicator1=RSI&Indicator2=MACD&Indicator3=MDX&Indicator4=None&CompareWith=&entryPrice=&stopLossPrice=&candles=redgreen";
@@ -105,7 +107,16 @@ namespace CoreNgine.Shared
                         if (chartUrl != null)
                         {
                             sent = true;
-                            await _bot.SendPhotoAsync(_chatId, new InputOnlineFile(chartUrl), msg.text, ParseMode.Markdown, replyMarkup: markup);
+                            try
+                            {
+                                await _bot.SendPhotoAsync(_chatId, new InputOnlineFile(chartUrl), msg.text,
+                                    ParseMode.Markdown, replyMarkup: markup);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex.Message);
+                                sent = false;
+                            }
                         }
                     }
                     if (!sent)

@@ -17,19 +17,30 @@ namespace CoreData.Interfaces
          DateTime TodayDate { get; set; }
          decimal TodayOpen { get; set; }
          decimal Price { get; set; }
+         decimal BestBidPrice { get; set; }
+         decimal BestAskPrice { get; set; }
          decimal DayChange { get; set; }
          decimal DayVolume { get; set; }
-         decimal DayVolumeCost => DayVolume * AvgPrice * Lot;
-         decimal AvgPrice => (TodayOpen + Price) / 2;
+         decimal DayVolumeCost { get; }
+         decimal AvgPrice { get; }
          string Status { get; set; }
          DateTime LastUpdate { get; set; }
          DateTime? LastAboveThresholdDate { get; set; }
          DateTime? LastAboveThresholdCandleTime { get; set; }
+         DateTime? LastAboveVolThresholdCandleTime { get; set; }
+
+         decimal PriceUSA { get; set; }
+         decimal BidUSA { get; set; }
+         decimal AskUSA { get; set; }
+         decimal BidSizeUSA { get; set; }
+         decimal AskSizeUSA { get; set; }
+         DateTime? LastTradeUSA { get; set; }
+         decimal DiffPercentUSA { get; set; }
 
          decimal MonthOpen { get; set; }
          decimal MonthLow { get; set; }
          decimal MonthHigh { get; set; }
-         decimal MonthAvg => (MonthHigh + MonthLow) / 2;
+         decimal MonthAvg { get; }
          decimal MonthVolume { get; set; }
          decimal MonthVolumeCost { get; set; }
          decimal AvgDayVolumePerMonth { get; set; }
@@ -39,17 +50,21 @@ namespace CoreData.Interfaces
          decimal YesterdayVolumeCost { get; set; }
          decimal YesterdayAvgPrice { get; set; }
 
-         string TodayOpenF => TodayOpen.FormatPrice(Currency);
-         string PriceF => Price.FormatPrice(Currency);
-         string AvgPriceF => AvgPrice.FormatPrice(Currency);
-         string YesterdayVolumeCostF => YesterdayVolumeCost.FormatPrice(Currency);
-         string YesterdayAvgPriceF => YesterdayAvgPrice.FormatPrice(Currency);
-         string MonthVolumeCostF => MonthVolumeCost.FormatPrice(Currency);
-         string DayChangeF => DayChange.FormatPercent();
-         string DayVolumeCostF => DayVolumeCost.FormatPrice(Currency);
-         string AvgDayVolumePerMonthCostF => AvgDayVolumePerMonthCost.FormatPrice(Currency);
-         string AvgDayPricePerMonthF => AvgDayPricePerMonth.FormatPrice(Currency);
-         string AvgMonthPriceF => MonthAvg.FormatPrice(Currency);
+         string TodayOpenF { get; }
+         string PriceF { get; }
+         string AvgPriceF { get; }
+         string YesterdayVolumeCostF { get; }
+         string YesterdayAvgPriceF { get; }
+         string MonthVolumeCostF { get; }
+         string DayChangeF { get; }
+         string DayVolumeCostF { get; }
+         string AvgDayVolumePerMonthCostF { get; }
+         string AvgDayPricePerMonthF { get; }
+         string AvgMonthPriceF { get; }
+         decimal? DayVolChgOfAvg { get; set; }
+
+         DateTime LastMonthDataUpdate { get; set; }
+         bool MonthStatsExpired { get; }
 
          void LogCandle(CandlePayload candle);
 

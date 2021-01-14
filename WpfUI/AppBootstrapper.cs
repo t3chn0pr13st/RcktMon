@@ -2,12 +2,19 @@
 using System.Collections.Generic;
 using System.Windows;
 using Caliburn.Micro;
+using CoreData.Interfaces;
+using CoreNgine;
+using CoreNgine.Infra;
+using CoreNgine.Interfaces;
 using CoreNgine.Models;
 using CoreNgine.Shared;
+using CoreNgine.Strategies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NLog.Extensions.Logging;
+using RcktMon.Helpers;
 using RcktMon.ViewModels;
+using USADataProvider;
 
 namespace RcktMon
 {
@@ -16,7 +23,7 @@ namespace RcktMon
         /// <summary>
         /// Stores the composition containers
         /// </summary>
-        private IHost _host;
+        private CoreContainer _container = new CoreContainer();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppBootstrapper"/> class
@@ -32,7 +39,7 @@ namespace RcktMon
         /// <param name="instance">The instance</param>
         protected override void BuildUp(object instance)
         {
-            _host.Start();
+            _container.Host.Start();
         }
 
         /// <summary>
@@ -43,37 +50,19 @@ namespace RcktMon
             ViewLocator.AddNamespaceMapping("CoreNgine.Models", "RcktMon.Views");
             ViewLocator.NameTransformer.AddRule("IMainModel", "MainViewModel");
 
-            _host = new HostBuilder()
-                .ConfigureServices((context, services) =>
+            _container.Configure(services =>
+            {
+                services.AddSingleton<IWindowManager, AppWindowManager>();
+                services.AddSingleton<IMainModel, MainViewModel>();
+                services.AddSingleton<ISettingsProvider, SettingsModel>();
+                services.AddSingleton<IUSADataManager, USADataManager>();
+                services.AddSingleton<StatusViewModel>();
+                services.AddLogging(lb =>
                 {
-                    services.AddSingleton<IWindowManager, AppWindowManager>();
-                    services.AddSingleton<IEventAggregator, EventAggregator>();
-                    services.AddSingleton<IMainModel, MainViewModel>();
-                    services.AddSingleton<L2DataConnector>();
-                    services.AddSingleton<StocksManager>();
-                    services.AddLogging(lb =>
-                    {
-                        lb.AddNLog("NLog.config");
-                    });
-                })
-                .Build();
+                    lb.AddNLog("NLog.config");
+                });
+            });
         }
-
-        //private void ConfigureRebus(IServiceCollection services)
-        //{
-        //    services.AutoRegisterHandlersFromAssemblyOf<StocksManager>();
-        //    services.AutoRegisterHandlersFromAssemblyOf<MainViewModel>();
-
-        //    services.AddRebus(configure =>
-        //    {
-        //        var result = configure
-        //            .Logging(l => l.ColoredConsole(minLevel: LogLevel.Info))
-        //            .Routing(r => r.TypeBased().MapAssemblyOf<TestRequest>("Messages"))
-        //            .Transport(t => t
-        //                .UseInMemoryTransport(new InMemNetwork(true), "Messages"));
-        //        return result;
-        //    });
-        //}
 
         /// <summary>
         /// Gets all instances of the windows
@@ -82,7 +71,7 @@ namespace RcktMon
         /// <returns>The list of windows</returns>
         protected override IEnumerable<object> GetAllInstances(Type service)
         {
-            return _host.Services.GetServices(service);
+            return _container.Services.GetServices(service);
         }
 
         /// <summary>
@@ -93,7 +82,7 @@ namespace RcktMon
         /// <returns>The window instance</returns>
         protected override object GetInstance(Type service, string key)
         {
-            var result = _host.Services.GetService(service);
+            var result = _container.Services.GetService(service);
 
             if (result == null)
                 throw new Exception("Could not locate any instances.");
@@ -108,7 +97,8 @@ namespace RcktMon
         /// <param name="e">The startup events</param>
         protected override void OnStartup(object sender, StartupEventArgs e)
         {
-            _host.Services.GetRequiredService<IMainModel>().Start();
+            _container.RunMain();
+            _container.Services.GetService<IUSADataManager>();
             this.DisplayRootViewFor<IMainModel>();
         }
 

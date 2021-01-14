@@ -12,5 +12,7 @@ namespace CoreData.Models
         public decimal Low { get; set; }
         public decimal High { get; set; }
         public DateTime Time { get; set; }
+
+        public decimal Volume { get; set; }
     }
 }

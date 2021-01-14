@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using CoreData;
 using CoreData.Interfaces;
 using CoreData.Models;
-using CoreNgine.Interfaces;
+using CoreNgine.Infra;
 using CoreNgine.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,31 +17,23 @@ namespace CoreNgine.Models
 {
     public class MainModel : IMainModel
     {
-        public IEnumerable<IStockModel> Stocks { get; } = new HashSet<StockModel>();
+        public IDictionary<string, IStockModel> Stocks { get; } = new ConcurrentDictionary<string, IStockModel>();
         public IEnumerable<IMessageModel> Messages { get; } = new HashSet<MessageModel>();
         public StocksManager StocksManager { get; private set; }
         private IHandler<IStockModel> _stockUpdateHandler;
         private ILogger<MainModel> _logger;
 
-        #region App Settings 
-        
-        public string TiApiKey { get; set; }
-        public string TgBotApiKey { get; set; }
-        public string TgChatId { get; set; }
-        public decimal MinDayPriceChange { get; set; }
-        public decimal MinTenMinutesPriceChange { get; set; }
-        public decimal MinVolumeDeviationFromDailyAverage { get; set; } = 0.01m;
-        public bool IsTelegramEnabled { get; set; }
-
-        #endregion App Settings
-
         private IServiceProvider _services;
+        private ISettingsProvider _settingsProvider;
+        private IEventAggregator2 _eventAggregator;
+        public INgineSettings Settings { get; private set; }
 
-        public MainModel(IServiceProvider serviceProvider, ILogger<MainModel> logger)
+        public MainModel(IServiceProvider serviceProvider, ILogger<MainModel> logger, ISettingsProvider settingsProvider, IEventAggregator2 eventAggregator)
         {
             _services = serviceProvider;
             _logger = logger;
-            _stockUpdateHandler = serviceProvider.GetService<IHandler<IStockModel>>();
+            _settingsProvider = settingsProvider;
+            _eventAggregator = eventAggregator;
             
             LoadAppSettings();
         }
@@ -51,12 +45,12 @@ namespace CoreNgine.Models
 
         protected virtual void LoadAppSettings()
         {
-
+            Settings = _settingsProvider.ReadSettings();
         }
 
-        public void OnStockUpdated(IStockModel stock)
+        public virtual async Task OnStockUpdated(IStockModel stock)
         {
-            _stockUpdateHandler?.OnHandleData(stock);
+            await _eventAggregator.PublishOnCurrentThreadAsync(stock);
         }
 
         public virtual IStockModel CreateStockModel(MarketInstrument instrument)
@@ -98,17 +92,14 @@ namespace CoreNgine.Models
             return message;
         }
 
-        public Task AddStocks(IEnumerable<IStockModel> stocks)
+        public virtual async Task AddStocks(IEnumerable<IStockModel> stocks)
         {
-            stocks.OfType<StockModel>().ToList().ForEach(s => { (Stocks as HashSet<StockModel>)?.Add(s); });
-            return Task.CompletedTask;
+            stocks.ToList().ForEach(s => { Stocks[s.Ticker] = s; });
+            await _eventAggregator.PublishOnCurrentThreadAsync(stocks);
         }
 
         public async Task InitStocksManager()
         {
-            await Task.Delay(1000);
-            if (StocksManager == null)
-                StocksManager = _services.GetRequiredService<StocksManager>();
             await RefreshAll();
         }
 

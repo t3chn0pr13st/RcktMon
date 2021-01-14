@@ -38,8 +38,10 @@
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="AppWindowManager.cs" />
     <Compile Include="Helpers\CryptoHelper.cs" />
+    <Compile Include="Helpers\SettingsModel.cs" />
     <Compile Include="ViewModels\MessageViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
+    <Compile Include="ViewModels\StatusViewModel.cs" />
     <Compile Include="ViewModels\StockViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Views\MainView.xaml.cs">
@@ -110,6 +112,7 @@
     <PackageReference Include="NLog.Extensions.Logging" Version="1.7.0" />
     <PackageReference Include="NLog.Schema" Version="4.7.6" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.3.1" />
+    <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
     <PackageReference Include="System.Composition.Hosting" Version="5.0.0" />
     <PackageReference Include="Telegram.Bot" Version="15.7.1" />
@@ -117,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreNgine\CoreNgine.csproj" />
+    <ProjectReference Include="..\L2DataProvider\USADataProvider.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,7 +8,7 @@ namespace CoreNgine.Models
 {
     public interface IStocksInfoContainer
     {
-        public IEnumerable<IStockModel> Stocks { get; }
+        public IDictionary<string, IStockModel> Stocks { get; }
         public IEnumerable<IMessageModel> Messages { get; }
     }
 }
