@@ -72,12 +72,15 @@ namespace RcktMon.Helpers
                 if (MinDayPriceChange == 0)
                 {
                     MinDayPriceChange = 0.08m;
-                    MinVolumeDeviationFromDailyAverage = 0.002m;
-                    MinTenMinutesPriceChange = 0.05m;
-                    MinTenMinutesVolPercentChange = 0.07m;
                     CheckRockets = true;
                     IsTelegramEnabled = true;
                 }
+                if (MinVolumeDeviationFromDailyAverage == 0)
+                    MinVolumeDeviationFromDailyAverage = 0.002m;
+                if (MinTenMinutesVolPercentChange == 0)
+                    MinTenMinutesVolPercentChange = 0.05m;
+                if (MinTenMinutesVolPercentChange == 0)
+                    MinTenMinutesVolPercentChange = 0.07m;
             }
 
             return this;
