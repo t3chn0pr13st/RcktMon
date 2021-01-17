@@ -23,6 +23,8 @@ namespace CoreNgine.Shared
     {
         private readonly IMainModel _mainModel;
         private DateTime? _lastEventReceived = null;
+        private int _recentUpdatedStocksCount;
+        private DateTime? _lastRestartTime;
 
         private readonly ILogger<StocksManager> _logger;
         
@@ -102,6 +104,7 @@ namespace CoreNgine.Shared
             CommonConnection.StreamingEventReceived += Broker_StreamingEventReceived;
 
             RunMonthUpdateTaskIfNotRunning();
+            _lastRestartTime = DateTime.Now;
         }
 
         public void Init()
@@ -197,35 +200,41 @@ namespace CoreNgine.Shared
                     }
                 }
 
-                if (_lastEventReceived != null && DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
+                if (_lastRestartTime.HasValue && DateTime.Now.Subtract(_lastRestartTime.Value).TotalSeconds > 10)
                 {
-                    if (!_mainModel.Stocks.Values.Any(s => s.Status != null && s.Status != "not_available_for_trading") 
-                        || IsTradeStoppedTime)
+
+                    if (_lastEventReceived != null && DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
                     {
-                        Thread.Sleep(1000);
-                        continue;
+                        if (IsHolidays || IsTradeStoppedTime)
+                        {
+                            Thread.Sleep(1000);
+                            continue;
+                        }
+
+                        await ResetConnection("Данные не поступали дольше 5 секунд");
+                    }
+                
+                    _recentUpdatedStocksCount =
+                        _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds < 2);
+
+                    if (_recentUpdatedStocksCount < 10 && !IsTradeStoppedTime && !IsHolidays)
+                    {
+                        await ResetConnection("Не приходило обновлений по большей части акций");
                     }
 
-                    await ResetConnection("Данные не поступали дольше 5 секунд");
-                }
-
-                _recentUpdatedStocksCount =
-                    _mainModel.Stocks.Values.Count(s => DateTime.Now.Subtract(s.LastUpdate).TotalSeconds < 2);
-
-                if (_recentUpdatedStocksCount < 10 && !IsTradeStoppedTime)
-                {
-                    await ResetConnection("Не приходило обновлений по большей части акций");
                 }
 
                 await Task.Delay(100);
             }
         }
 
+        public bool IsHolidays => _mainModel.Stocks.Count(s => !String.IsNullOrEmpty(s.Value.Status) 
+                                                               && s.Value.Status != "not_available_for_trading") 
+                                  < _mainModel.Stocks.Count(s => s.Value.Price > 0) / 4;
+
         public bool IsTradeStoppedTime => (DateTime.Now.Hour < 10 &&
                                            (DateTime.Now.Hour > 1 ||
                                             DateTime.Now.Hour == 1 && DateTime.Now.Minute >= 45));
-
-        private int _recentUpdatedStocksCount;
 
         private void LogError(string msg)
         {
