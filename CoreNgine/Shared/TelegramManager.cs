@@ -77,7 +77,7 @@ namespace CoreNgine.Shared
             var stock = _mainModel.Stocks[ticker];
             if (stock != null && stock.Currency.Equals("USD", StringComparison.InvariantCultureIgnoreCase))
             {
-                return $"https://www.stockscores.com/chart.asp?TickerSymbol={ticker}&TimeRange=3&Interval=10&Volume=1&ChartType=CandleStick&Stockscores=1&ChartWidth=1100&ChartHeight=480&LogScale=None&Band=None&avgType1=None&movAvg1=&avgType2=None&movAvg2=&Indicator1=RSI&Indicator2=MACD&Indicator3=MDX&Indicator4=None&CompareWith=&entryPrice=&stopLossPrice=&candles=redgreen";
+                return $"https://stockcharts.com/c-sc/sc?s={ticker}&p=D&yr=0&mn=3&dy=0&i=t8988066255c&r={DateTime.Now.ToFileTimeUtc()}";
             }
 
             return null;

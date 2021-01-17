@@ -66,7 +66,7 @@ namespace CoreNgine.Strategies
 
              var lastCandleTime = stock.MinuteCandles.Max(c => c.Value.Time);
              var candle = stock.MinuteCandles.Last(c => c.Value.Time == lastCandleTime).Value;
-             if (Math.Abs(stock.DayChange) > Settings.MinDayPriceChange
+             if (Math.Abs(stock.DayChange) > Settings.MinDayPriceChange && Settings.MinDayPriceChange > 0
                 && (stock.LastAboveThresholdDate == null
                 || stock.LastAboveThresholdDate.Value.Date < stock.LastUpdate.Date))
              { 
@@ -76,7 +76,7 @@ namespace CoreNgine.Strategies
                      return;
 
                 var volPerc = stock.DayVolume / stock.AvgDayVolumePerMonth;
-                if (volPerc > Settings.MinVolumeDeviationFromDailyAverage)
+                if (volPerc > Settings.MinVolumeDeviationFromDailyAverage && Settings.MinVolumeDeviationFromDailyAverage > 0)
                 {
                     if (Settings.IsTelegramEnabled)
                         StocksManager.Telegram.PostMessage(stock.GetDayChangeInfoText(), stock.Ticker);
@@ -93,7 +93,8 @@ namespace CoreNgine.Strategies
 
             var change = stock.GetLast10MinChange(Settings.MinTenMinutesPriceChange, Settings.MinTenMinutesVolPercentChange);
 
-            if (!change.volumeTrigger && Math.Abs(change.change) > Settings.MinTenMinutesPriceChange && stock.DayChange > Settings.MinTenMinutesPriceChange && (stock.LastAboveThresholdCandleTime == null
+            if (!change.volumeTrigger && Settings.MinTenMinutesPriceChange > 0 && Math.Abs(change.change) > Settings.MinTenMinutesPriceChange 
+                && stock.DayChange > Settings.MinTenMinutesPriceChange && (stock.LastAboveThresholdCandleTime == null
                 || stock.LastAboveThresholdCandleTime < candle.Time.AddMinutes(-change.minutes)))
             {
                 stock.LastAboveThresholdCandleTime = candle.Time;
@@ -119,7 +120,8 @@ namespace CoreNgine.Strategies
                 );
             }
 
-            if (change.volumeTrigger && change.volChange > Settings.MinTenMinutesVolPercentChange && (stock.LastAboveVolThresholdCandleTime == null
+            if (change.volumeTrigger && Settings.MinTenMinutesVolPercentChange > 0 && 
+                change.volChange > Settings.MinTenMinutesVolPercentChange && (stock.LastAboveVolThresholdCandleTime == null
                 || stock.LastAboveVolThresholdCandleTime < candle.Time.AddMinutes(-change.minutes)))
             {
                 stock.LastAboveVolThresholdCandleTime = candle.Time;

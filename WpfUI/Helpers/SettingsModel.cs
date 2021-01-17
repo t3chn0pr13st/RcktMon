@@ -68,20 +68,20 @@ namespace RcktMon.Helpers
                 try { this.TgBotApiKey = CryptoHelper.Decrypt(this.TgBotApiKey); } catch { }
                 try { this.TgChatId = CryptoHelper.Decrypt(this.TgChatId); } catch { }
                 try { this.USAQuotesPassword = CryptoHelper.Decrypt(this.USAQuotesPassword); } catch { }
-
-                if (MinDayPriceChange == 0)
-                {
-                    MinDayPriceChange = 0.08m;
-                    CheckRockets = true;
-                    IsTelegramEnabled = true;
-                }
-                if (MinVolumeDeviationFromDailyAverage == 0)
-                    MinVolumeDeviationFromDailyAverage = 0.002m;
-                if (MinTenMinutesVolPercentChange == 0)
-                    MinTenMinutesVolPercentChange = 0.05m;
-                if (MinTenMinutesVolPercentChange == 0)
-                    MinTenMinutesVolPercentChange = 0.07m;
             }
+
+            if (MinDayPriceChange == 0)
+            {
+                MinDayPriceChange = 0.08m;
+                CheckRockets = true;
+                IsTelegramEnabled = true;
+            }
+            if (MinVolumeDeviationFromDailyAverage == 0)
+                MinVolumeDeviationFromDailyAverage = 0.002m;
+            if (MinTenMinutesVolPercentChange == 0)
+                MinTenMinutesVolPercentChange = 0.05m;
+            if (MinTenMinutesVolPercentChange == 0)
+                MinTenMinutesVolPercentChange = 0.07m;
 
             return this;
         }

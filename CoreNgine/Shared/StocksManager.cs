@@ -200,7 +200,7 @@ namespace CoreNgine.Shared
                 if (_lastEventReceived != null && DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
                 {
                     if (!_mainModel.Stocks.Values.Any(s => s.Status != null && s.Status != "not_available_for_trading") 
-                        || (DateTime.Now.Hour < 10 && (DateTime.Now.Hour > 1 || DateTime.Now.Hour == 1 && DateTime.Now.Minute >= 45)))
+                        || IsTradeStoppedTime)
                     {
                         Thread.Sleep(1000);
                         continue;
@@ -209,9 +209,23 @@ namespace CoreNgine.Shared
                     await ResetConnection("Данные не поступали дольше 5 секунд");
                 }
 
+                _recentUpdatedStocksCount =
+                    _mainModel.Stocks.Values.Count(s => DateTime.Now.Subtract(s.LastUpdate).TotalSeconds < 2);
+
+                if (_recentUpdatedStocksCount < 10 && !IsTradeStoppedTime)
+                {
+                    await ResetConnection("Не приходило обновлений по большей части акций");
+                }
+
                 await Task.Delay(100);
             }
         }
+
+        public bool IsTradeStoppedTime => (DateTime.Now.Hour < 10 &&
+                                           (DateTime.Now.Hour > 1 ||
+                                            DateTime.Now.Hour == 1 && DateTime.Now.Minute >= 45));
+
+        private int _recentUpdatedStocksCount;
 
         private void LogError(string msg)
         {
@@ -237,6 +251,8 @@ namespace CoreNgine.Shared
             CommonConnectionActions.Clear();
             _subscribedFigi.Clear();
             _subscribedMinuteFigi.Clear();
+            await Task.Delay(10000);
+
             PrepareConnection();
             await UpdatePrices();
         }

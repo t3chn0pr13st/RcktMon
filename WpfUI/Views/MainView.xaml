@@ -93,6 +93,14 @@
 
                     </LayoutPanel>
 
+                    <LayoutPanel Orientation="Vertical">
+                        <LayoutAnchorablePane DockWidth="300">
+                            <LayoutAnchorable Title="График" ContentId="Chart">
+                                  
+                            </LayoutAnchorable>
+                        </LayoutAnchorablePane>
+                    </LayoutPanel>
+
                     <LayoutAnchorablePane Name="ToolsPane" DockMinWidth="250">
                         <LayoutAnchorable Title="Настройки" ContentId="Settings" AutoHideMinWidth="250">
                             <StackPanel Orientation="Vertical" DataContext="{Binding SettingsViewModel}">
