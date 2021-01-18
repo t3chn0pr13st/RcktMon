@@ -397,23 +397,23 @@ namespace CoreNgine.Shared
                 AddCandleToStock(Tuple.Create(stock, candle));
             }
 
-            monthAvgPrice = (monthLow + monthHigh) / 2;
-            yesterdayAvgPrice = (yesterdayMin + yesterdayMax) / 2;
+            monthAvgPrice = (monthLow + monthHigh) / 2 * stock.Lot;
+            yesterdayAvgPrice = (yesterdayMin + yesterdayMax) / 2 * stock.Lot;
+            avgDayPricePerMonthCost /= prices.Candles.Count * stock.Lot;
             avgDayVolumePerMonth = monthVolume / prices.Candles.Count;
-            avgDayPricePerMonthCost /= prices.Candles.Count;
-            
+
             stock.MonthOpen = monthOpen;
             stock.MonthHigh = monthHigh;
             stock.MonthLow = monthLow;
             stock.MonthVolume = monthVolume;
-            stock.MonthVolumeCost = monthVolume * monthAvgPrice * stock.Lot;
+            stock.MonthVolumeCost = monthVolume * monthAvgPrice;
             stock.AvgDayVolumePerMonth = Math.Round(avgDayVolumePerMonth);
             stock.AvgDayPricePerMonth = avgDayPricePerMonthCost;
-            stock.AvgDayVolumePerMonthCost = avgDayPricePerMonthCost * avgDayVolumePerMonth * stock.Lot;
+            stock.AvgDayVolumePerMonthCost = avgDayPricePerMonthCost * avgDayVolumePerMonth;
             stock.DayVolChgOfAvg = stock.DayVolume / stock.AvgDayVolumePerMonth;
+            stock.YesterdayAvgPrice = yesterdayAvgPrice;
             stock.YesterdayVolume = yesterdayVolume;
             stock.YesterdayVolumeCost = yesterdayVolume * yesterdayAvgPrice;
-            stock.YesterdayAvgPrice = yesterdayAvgPrice;
 
             return true;
         }

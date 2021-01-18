@@ -36,7 +36,7 @@ namespace CoreData
                 sumVolume += c.Volume;
                 volPrice += (c.Open + c.Close) / 2;
             }
-            volPrice = volPrice / candles.Length * sumVolume;
+            volPrice = volPrice / candles.Length * sumVolume * s.Lot;
             var volPriceF = volPrice.FormatPrice(s.Currency);
 
             decimal volPercentOfChange = sumVolume / s.AvgDayVolumePerMonth;
@@ -63,7 +63,7 @@ namespace CoreData
                 sumVolume += c.Volume;
                 volPrice += (c.Open + c.Close) / 2;
             }
-            volPrice = volPrice / candles.Length * sumVolume;
+            volPrice = volPrice / candles.Length * sumVolume * s.Lot;
             var volPriceF = volPrice.FormatPrice(s.Currency);
 
             decimal volPercentOfChange = sumVolume / s.AvgDayVolumePerMonth;
