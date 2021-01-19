@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -52,7 +53,10 @@ namespace CoreNgine.Shared
                 return long.TryParse(Settings.TgChatId, out long result ) ? result : long.MinValue;
             }
         }
-        
+
+        public DateTime? LastRestartTime => _lastRestartTime;
+        public TimeSpan ElapsedFromLastRestart => DateTime.Now.Subtract(_lastRestartTime ?? DateTime.Now);
+
         public TelegramManager Telegram => _telegram;
 
         private readonly IServiceProvider _services;
@@ -369,6 +373,9 @@ namespace CoreNgine.Shared
             {
                 return false;
             }
+
+            if (prices.Candles.Count == 0)
+                return false;
 
             decimal monthVolume = 0, monthHigh = 0, monthLow = 0, monthAvgPrice = 0, 
                 avgDayVolumePerMonth = 0, avgDayPricePerMonth = 0, monthOpen = -1,

@@ -22,6 +22,10 @@ namespace CoreNgine.Strategies
         public StocksManager StocksManager { get; }
         public ILogger<RocketMonitoringStrategy> Logger { get; }
 
+        private readonly DateTime _strategyLoaded = DateTime.Now;
+
+        public TimeSpan Elapsed => DateTime.Now.Subtract(_strategyLoaded);
+
         public RocketMonitoringStrategy(ISettingsProvider settingsProvider, IMainModel mainModel, StocksManager stocksManager, IEventAggregator2 eventAggregator, ILogger<RocketMonitoringStrategy> logger)
         {
             StocksManager = stocksManager;
@@ -30,6 +34,9 @@ namespace CoreNgine.Strategies
             Logger = logger;
             eventAggregator.SubscribeOnPublishedThread(this);
         }
+
+        public bool IsSendToTelegramEnabled =>
+            Settings.IsTelegramEnabled && Elapsed.TotalSeconds > 10;
 
         private async Task<bool> EnsureHistoryLoaded(IStockModel stock)
         {
@@ -78,7 +85,7 @@ namespace CoreNgine.Strategies
                 var volPerc = stock.DayVolume / stock.AvgDayVolumePerMonth;
                 if (volPerc > Settings.MinVolumeDeviationFromDailyAverage && Settings.MinVolumeDeviationFromDailyAverage > 0)
                 {
-                    if (Settings.IsTelegramEnabled)
+                    if (IsSendToTelegramEnabled)
                         StocksManager.Telegram.PostMessage(stock.GetDayChangeInfoText(), stock.Ticker);
 
                     MainModel.AddMessage(
@@ -104,7 +111,7 @@ namespace CoreNgine.Strategies
                 
                 var changeInfo = stock.GetMinutesChangeInfo(change.change, change.minutes, change.candles);
                 
-                if (Settings.IsTelegramEnabled)
+                if (IsSendToTelegramEnabled)
                 {
                     if (changeInfo.volPercent >= Settings.MinVolumeDeviationFromDailyAverage)
                         StocksManager.Telegram.PostMessage(changeInfo.message, stock.Ticker);
@@ -131,7 +138,7 @@ namespace CoreNgine.Strategies
                 
                 var changeInfo = stock.GetMinutesVolumeChangeInfo(change.change, change.minutes, change.candles);
                 
-                if (Settings.IsTelegramEnabled)
+                if (IsSendToTelegramEnabled)
                 {
                     if (changeInfo.volPercent >= Settings.MinVolumeDeviationFromDailyAverage)
                         StocksManager.Telegram.PostMessage(changeInfo.message, stock.Ticker);

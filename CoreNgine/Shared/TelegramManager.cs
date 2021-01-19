@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreData.Interfaces;
@@ -86,12 +87,37 @@ namespace CoreNgine.Shared
         private async Task BotMessageQueueLoopAsync()
         {
             var cancellationToken = _cancellationTokenSource.Token;
+
+            Func<Func<Task>, Action, Task<bool?>> botSend = async (action, onTooMuchRequests) =>
+            {
+                try
+                {
+                    await action();
+                }
+                catch (HttpRequestException httpEx)
+                {
+                    _logger.LogError(httpEx.Message);
+                    if (httpEx.Message.Contains("429"))
+                    {
+                        await Task.Delay(1000);
+                        onTooMuchRequests();
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    return null;
+                }
+                return true;
+            };
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 while (!cancellationToken.IsCancellationRequested && _botMessageQueue.TryDequeue(out var msg))
                 {
                     InlineKeyboardMarkup markup = null;
-                    bool sent = false;
+                    bool? sentState = null;
                     if (msg.ticker != null)
                     {
                         markup = new InlineKeyboardMarkup(
@@ -106,24 +132,22 @@ namespace CoreNgine.Shared
                         var chartUrl = GetStockChart(msg.ticker);
                         if (chartUrl != null)
                         {
-                            sent = true;
-                            try
-                            {
-                                await _bot.SendPhotoAsync(_chatId, new InputOnlineFile(chartUrl), msg.text,
-                                    ParseMode.Markdown, replyMarkup: markup);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex.Message);
-                                sent = false;
-                            }
+                            sentState = await botSend(async 
+                                    () => await _bot.SendPhotoAsync(_chatId, new InputOnlineFile(chartUrl), msg.text, ParseMode.Markdown, replyMarkup: markup), 
+                                    () => _botMessageQueue.Enqueue(msg));
+                            if (sentState == false)
+                                continue;
                         }
                     }
-                    if (!sent)
+                    if (sentState == null)
                     {
-                        await _bot.SendTextMessageAsync(_chatId, msg.text, replyMarkup: markup, parseMode: ParseMode.Markdown);
+                        sentState = await botSend(async 
+                            () => await _bot.SendTextMessageAsync(_chatId, msg.text, replyMarkup: markup, parseMode: ParseMode.Markdown),
+                            () => _botMessageQueue.Enqueue(msg));
+                        if (sentState == false)
+                            continue;
                     }
-                    await Task.Delay(200);
+                    await Task.Delay(300);
                 }
 
                 await Task.Delay(100);
