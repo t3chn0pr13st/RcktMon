@@ -39,7 +39,6 @@ namespace CoreNgine.Shared
         private Task CommonConnectionQueueTask;
         private Task[] _responseProcessingTasks;
 
-
         private Connection CommonConnection { get; set; }
         private Connection CandleConnection { get; set; }
         private Connection InstrumentInfoConnection { get; set; }
@@ -215,7 +214,7 @@ namespace CoreNgine.Shared
                     }
                 
                     _recentUpdatedStocksCount =
-                        _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds < 2);
+                        _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds < 5);
 
                     if (_recentUpdatedStocksCount < 10 && !IsTradeStoppedTime && !IsHolidays)
                     {
@@ -372,48 +371,43 @@ namespace CoreNgine.Shared
             }
 
             decimal monthVolume = 0, monthHigh = 0, monthLow = 0, monthAvgPrice = 0, 
-                avgDayVolumePerMonth = 0, avgDayPricePerMonthCost = 0, monthOpen = -1,
+                avgDayVolumePerMonth = 0, avgDayPricePerMonth = 0, monthOpen = -1,
                 yesterdayVolume = 0, yesterdayMin = 0, yesterdayMax = 0, yesterdayAvgPrice = 0;
 
             var todayCandle = prices.Candles[prices.Candles.Count-1];
             foreach (var candle in prices.Candles)
             {
-                if (candle == todayCandle)
-                {
-                    stock.DayVolume = candle.Volume;
-                }
-                else
-                {
-                    if (monthOpen == -1)
-                        monthOpen = candle.Open;
-                    monthLow = monthLow == 0 ? candle.Low : Math.Min(monthLow, candle.Low);
-                    monthHigh = monthHigh == 0 ? candle.High : Math.Min(monthHigh, candle.High);
-                    monthVolume += candle.Volume;
-                    avgDayPricePerMonthCost += (candle.High + candle.Low) / 2;
-                    yesterdayVolume = candle.Volume;
-                    yesterdayMin = candle.Low;
-                    yesterdayMax = candle.High;
-                }
+                if (monthOpen == -1)
+                    monthOpen = candle.Open;
+                
+                monthLow = monthLow == 0 ? candle.Low : Math.Min(monthLow, candle.Low);
+                monthHigh = monthHigh == 0 ? candle.High : Math.Min(monthHigh, candle.High);
+                monthVolume += candle.Volume;
+                avgDayPricePerMonth += (candle.High + candle.Low) / 2;
+                yesterdayVolume = candle.Volume;
+                yesterdayMin = candle.Low;
+                yesterdayMax = candle.High;
+
                 AddCandleToStock(Tuple.Create(stock, candle));
             }
 
-            monthAvgPrice = (monthLow + monthHigh) / 2 * stock.Lot;
-            yesterdayAvgPrice = (yesterdayMin + yesterdayMax) / 2 * stock.Lot;
-            avgDayPricePerMonthCost /= prices.Candles.Count * stock.Lot;
+            monthAvgPrice = (monthLow + monthHigh) / 2;
+            yesterdayAvgPrice = (yesterdayMin + yesterdayMax) / 2;
+            avgDayPricePerMonth /= prices.Candles.Count;
             avgDayVolumePerMonth = monthVolume / prices.Candles.Count;
 
             stock.MonthOpen = monthOpen;
             stock.MonthHigh = monthHigh;
             stock.MonthLow = monthLow;
             stock.MonthVolume = monthVolume;
-            stock.MonthVolumeCost = monthVolume * monthAvgPrice;
+            stock.MonthVolumeCost = monthVolume * monthAvgPrice * stock.Lot;
             stock.AvgDayVolumePerMonth = Math.Round(avgDayVolumePerMonth);
-            stock.AvgDayPricePerMonth = avgDayPricePerMonthCost;
-            stock.AvgDayVolumePerMonthCost = avgDayPricePerMonthCost * avgDayVolumePerMonth;
+            stock.AvgDayPricePerMonth = avgDayPricePerMonth;
+            stock.AvgDayVolumePerMonthCost = avgDayPricePerMonth * avgDayVolumePerMonth * stock.Lot;
             stock.DayVolChgOfAvg = stock.DayVolume / stock.AvgDayVolumePerMonth;
             stock.YesterdayAvgPrice = yesterdayAvgPrice;
             stock.YesterdayVolume = yesterdayVolume;
-            stock.YesterdayVolumeCost = yesterdayVolume * yesterdayAvgPrice;
+            stock.YesterdayVolumeCost = yesterdayVolume * yesterdayAvgPrice * stock.Lot;
 
             return true;
         }
