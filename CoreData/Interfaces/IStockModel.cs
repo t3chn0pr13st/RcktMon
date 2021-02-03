@@ -17,8 +17,8 @@ namespace CoreData.Interfaces
          DateTime TodayDate { get; set; }
          decimal TodayOpen { get; set; }
          decimal Price { get; set; }
-         decimal BestBidPrice { get; set; }
-         decimal BestAskPrice { get; set; }
+         decimal BestBidSpb { get; set; }
+         decimal BestAskSpb { get; set; }
          decimal DayChange { get; set; }
          decimal DayVolume { get; set; }
          decimal DayVolumeCost { get; }
@@ -35,7 +35,10 @@ namespace CoreData.Interfaces
          decimal BidSizeUSA { get; set; }
          decimal AskSizeUSA { get; set; }
          DateTime? LastTradeUSA { get; set; }
+         DateTime? LastUpdateUSA { get; set; }
          decimal DiffPercentUSA { get; set; }
+         decimal USBidRUAskDiff { get; set; }
+         decimal RUBidUSAskDiff { get; set; }
 
          decimal MonthOpen { get; set; }
          decimal MonthLow { get; set; }

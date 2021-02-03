@@ -20,8 +20,8 @@ namespace CoreData.Models
         public DateTime TodayDate { get; set; }
         public decimal TodayOpen { get; set; }
         public decimal Price { get; set; }
-        public decimal BestBidPrice { get; set; }
-        public decimal BestAskPrice { get; set; }
+        public decimal BestBidSpb { get; set; }
+        public decimal BestAskSpb { get; set; }
         public decimal DayChange { get; set; }
         public decimal DayVolume { get; set; }
         public decimal DayVolumeCost => DayVolume * AvgPrice;
@@ -38,7 +38,10 @@ namespace CoreData.Models
         public decimal BidSizeUSA { get; set; }
         public decimal AskSizeUSA { get; set; }
         public DateTime? LastTradeUSA { get; set; }
+        public DateTime? LastUpdateUSA { get; set; }
         public decimal DiffPercentUSA { get; set; }
+        public decimal USBidRUAskDiff { get; set; }
+        public decimal RUBidUSAskDiff { get; set; }
 
         public decimal MonthOpen { get; set; }
         public decimal MonthLow { get; set; }

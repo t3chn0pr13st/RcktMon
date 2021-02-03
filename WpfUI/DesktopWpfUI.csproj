@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
+    <Folder Include="Resources\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -81,6 +82,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="AuroraWrapper.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

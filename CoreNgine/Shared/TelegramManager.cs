@@ -17,14 +17,15 @@ namespace CoreNgine.Shared
 {
     public class TelegramManager
     {
-        private readonly TelegramBotClient _bot;
+        private TelegramBotClient _bot;
         private readonly long _chatId;
+        private readonly string _apiToken;
 
-        const string TinkoffInvestStocksUrl = "https://www.tinkoff.ru/invest/stocks/{0}/";
+        internal const string TinkoffInvestStocksUrl = "https://www.tinkoff.ru/invest/stocks/{0}/";
         
 
         private Task _messageQueueLoopTask;
-        private readonly ConcurrentQueue<(string text, string ticker)> _botMessageQueue = new ConcurrentQueue<(string text, string ticker)>();
+        private readonly ConcurrentQueue<TelegramMessage> _botMessageQueue = new ConcurrentQueue<TelegramMessage>();
 
         public bool IsEnabled => Settings.IsTelegramEnabled;
         public INgineSettings Settings { get; }
@@ -42,13 +43,14 @@ namespace CoreNgine.Shared
 
         public TelegramManager(IServiceProvider serviceProvider, string apiToken, long chatId)
         {
+            _apiToken = apiToken;
             _services = serviceProvider;
             _mainModel = serviceProvider.GetRequiredService<IMainModel>();
             Settings = serviceProvider.GetRequiredService<ISettingsProvider>().Settings;
             _logger = (ILogger<TelegramManager>) serviceProvider.GetService(typeof(ILogger<TelegramManager>));
             try
             {
-                _bot = new TelegramBotClient(apiToken);
+                _bot = new TelegramBotClient(_apiToken);
                 _chatId = chatId;
 
                 _messageQueueLoopTask = Task.Factory
@@ -64,19 +66,32 @@ namespace CoreNgine.Shared
             }
         }
 
-        public void PostMessage(string text, string ticker)
+        public void PostMessage(TelegramMessage message )
         {
-            _logger.LogTrace("Telegram message: {text}", text);
+            _logger.LogTrace("Telegram message: {text}", message.Text);
             if (IsEnabled)
             {
-                _botMessageQueue.Enqueue((text, ticker));
+                _botMessageQueue.Enqueue(message);
             }
         }
 
-        private string GetStockChart(string ticker)
+        public void PostMessage(string text, string ticker, long chatId = 0)
+        {
+            if (chatId == 0)
+                chatId = _chatId;
+            _logger.LogTrace("Telegram message: {text}", text);
+            var message = new TelegramMessage(ticker, text, chatId);
+            if (IsEnabled)
+            {
+                _botMessageQueue.Enqueue(message);
+            }
+        }
+
+        internal string GetStockChart(string ticker)
         {
             var stock = _mainModel.Stocks[ticker];
-            if (stock != null && stock.Currency.Equals("USD", StringComparison.InvariantCultureIgnoreCase))
+            if (stock != null && !ticker.Equals("TCS", StringComparison.InvariantCultureIgnoreCase) 
+                              && stock.Currency.Equals("USD", StringComparison.InvariantCultureIgnoreCase))
             {
                 return $"https://stockcharts.com/c-sc/sc?s={ticker}&p=D&yr=0&mn=3&dy=0&i=t8988066255c&r={DateTime.Now.ToFileTimeUtc()}";
             }
@@ -84,72 +99,49 @@ namespace CoreNgine.Shared
             return null;
         }
 
+        internal async Task<bool?> ExecuteWithBot(Func<TelegramBotClient, Task> botAction, TelegramMessage messageForEnqueueOnTooMuchRequests)
+        {
+            try
+            {
+                await botAction(_bot);
+            }
+            catch (HttpRequestException httpEx)
+            {
+                _logger.LogError(httpEx.Message);
+                if (httpEx.Message.Contains("429"))
+                {
+                    await Task.Delay(1000);
+                    if (messageForEnqueueOnTooMuchRequests != null)
+                        _botMessageQueue.Enqueue(messageForEnqueueOnTooMuchRequests);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+            return true;
+        }
+
         private async Task BotMessageQueueLoopAsync()
         {
             var cancellationToken = _cancellationTokenSource.Token;
-
-            Func<Func<Task>, Action, Task<bool?>> botSend = async (action, onTooMuchRequests) =>
-            {
-                try
-                {
-                    await action();
-                }
-                catch (HttpRequestException httpEx)
-                {
-                    _logger.LogError(httpEx.Message);
-                    if (httpEx.Message.Contains("429"))
-                    {
-                        await Task.Delay(1000);
-                        onTooMuchRequests();
-                        return false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex.Message);
-                    return null;
-                }
-                return true;
-            };
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 while (!cancellationToken.IsCancellationRequested && _botMessageQueue.TryDequeue(out var msg))
                 {
-                    InlineKeyboardMarkup markup = null;
-                    bool? sentState = null;
-                    if (msg.ticker != null)
+                    try
                     {
-                        markup = new InlineKeyboardMarkup(
-                            new[]
-                            {
-                                new[]
-                                {
-                                    InlineKeyboardButton.WithUrl($"Открыть {msg.ticker} в Инвестициях",
-                                        String.Format(TinkoffInvestStocksUrl, msg.ticker)),
-                                }
-                            });
-                        var chartUrl = GetStockChart(msg.ticker);
-                        if (chartUrl != null)
-                        {
-                            sentState = await botSend(async 
-                                    () => await _bot.SendPhotoAsync(_chatId, new InputOnlineFile(chartUrl), msg.text, ParseMode.Markdown, replyMarkup: markup), 
-                                    () => _botMessageQueue.Enqueue(msg));
-                            if (sentState == false)
-                                continue;
-                        }
+                        await msg.Send(this);
                     }
-                    if (sentState == null)
+                    catch (Exception ex)
                     {
-                        sentState = await botSend(async 
-                            () => await _bot.SendTextMessageAsync(_chatId, msg.text, replyMarkup: markup, parseMode: ParseMode.Markdown),
-                            () => _botMessageQueue.Enqueue(msg));
-                        if (sentState == false)
-                            continue;
+                        _logger.LogError(ex.Message);
+                        _bot = new TelegramBotClient(_apiToken);
                     }
                     await Task.Delay(300);
                 }
-
                 await Task.Delay(100);
             }
         }

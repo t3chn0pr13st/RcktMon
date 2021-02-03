@@ -6,9 +6,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media.Animation;
 using AutoMapper;
 using Caliburn.Micro;
 using CoreData;
@@ -33,6 +38,10 @@ namespace RcktMon.ViewModels
         private readonly SynchronizationContext _uiContext;
         private IServiceProvider _services;
 
+        private DateTime _lastViewUpdate = DateTime.Now;
+        private IStockModel _selectedStock;
+        private HttpClient _wrapperClient;
+
         public IDictionary<string, IStockModel> Stocks { get; } = new ConcurrentDictionary<string, IStockModel>();
         public IEnumerable<IMessageModel> Messages { get; } = new ObservableCollection<MessageViewModel>();
 
@@ -42,6 +51,8 @@ namespace RcktMon.ViewModels
         public StatusViewModel Status { get; }
 
         public INgineSettings Settings => _settingsProvider.Settings;
+
+        internal HttpClient WrapperClient => _wrapperClient ??= new HttpClient();
 
         public MainViewModel(IServiceProvider serviceProvider, ILogger<MainViewModel> logger, IEventAggregator2 eventAggregator, ISettingsProvider settingsProvider, StatusViewModel status)
         {
@@ -59,6 +70,50 @@ namespace RcktMon.ViewModels
         internal void LoadAppSettings()
         {
             _settingsProvider.ReadSettings();
+        }
+
+        public IStockModel SelectedStock
+        {
+            get => _selectedStock;
+            set
+            {
+                if (_selectedStock != value)
+                {
+                    _selectedStock = value;
+                }
+            }
+        }
+
+        public void OpenInAurora(string ticker)
+        {
+            Task.Run(async () =>
+            {
+                if (!Stocks.TryGetValue(ticker, out var stock) ||
+                    !stock.Currency.Equals("USD", StringComparison.InvariantCultureIgnoreCase)
+                    || stock.Ticker == "TCS")
+                    return;
+
+                try
+                {
+                    var process = Process.GetProcessesByName("Terminal").FirstOrDefault();
+                    if (process is null)
+                        throw new InvalidOperationException("Аврора не запущена.");
+
+                    process = Process.GetProcessesByName("AuroraWrapper").FirstOrDefault();
+                    if (process is null)
+                    {
+                        process = Process.Start(AppContext.BaseDirectory + "\\AuroraWrapper.exe");
+                        process.WaitForInputIdle();
+                        await Task.Delay(1000);
+                    }
+                    await WrapperClient.SendAsync(new HttpRequestMessage(HttpMethod.Get,
+                        $"http://localhost:8000/?ticker={ticker}&group=ffd450"));
+                }
+                catch (Exception ex)
+                {
+                    AddMessage("ERROR", DateTime.Now, ex.Message);
+                }
+            });
         }
 
         public IStockModel CreateStockModel(MarketInstrument instrument)
@@ -112,12 +167,17 @@ namespace RcktMon.ViewModels
             InitStocksManager();
         }
 
-        private DateTime _lastViewUpdate = DateTime.Now;
-
         public async Task OnStockUpdated(IStockModel stock)
         {
             if (stock.PriceUSA > 0 && stock.Price > 0)
                 stock.DiffPercentUSA = (stock.PriceUSA - stock.Price) / stock.PriceUSA;
+
+            if (stock.BestAskSpb > 0 && stock.BidUSA > 0)
+                stock.USBidRUAskDiff = (stock.BidUSA - stock.BestAskSpb) / stock.BestAskSpb;
+
+            if (stock.BestBidSpb > 0 && stock.AskUSA > 0)
+                stock.RUBidUSAskDiff = (stock.BestBidSpb - stock.AskUSA) / stock.AskUSA;
+            
             await _eventAggregator.PublishOnCurrentThreadAsync(stock);
             //if (DateTime.Now.Subtract(_lastViewUpdate).TotalMilliseconds > 500)
             //{
@@ -158,7 +218,7 @@ namespace RcktMon.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    AddMessage("ERR", DateTime.Now, "Не удалось получить список инструментов: " + ex.Message);
+                    AddMessage("ERROR", DateTime.Now, "Не удалось получить список инструментов: " + ex.Message);
                     success = false;
                 }
             }

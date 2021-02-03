@@ -57,6 +57,7 @@ namespace RcktMon
                 services.AddSingleton<ISettingsProvider, SettingsModel>();
                 services.AddSingleton<IUSADataManager, USADataManager>();
                 services.AddSingleton<StatusViewModel>();
+                services.AddSingleton<ArbitrageMonitoringStrategy>();
                 services.AddLogging(lb =>
                 {
                     lb.AddNLog("NLog.config");
@@ -99,6 +100,7 @@ namespace RcktMon
         {
             _container.RunMain();
             _container.Services.GetService<IUSADataManager>();
+            _container.Services.GetService<ArbitrageMonitoringStrategy>();
             this.DisplayRootViewFor<IMainModel>();
         }
 

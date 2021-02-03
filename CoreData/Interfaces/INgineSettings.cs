@@ -5,6 +5,7 @@
         string TiApiKey { get; set; }
         string TgBotApiKey { get; set; }
         string TgChatId { get; set; }
+        string TgChatIdRu { get; set; }
         decimal MinDayPriceChange { get; set; }
         decimal MinTenMinutesPriceChange { get; set; }
         decimal MinVolumeDeviationFromDailyAverage { get; set; }
@@ -16,6 +17,8 @@
         string USAQuotesURL { get; set; }
         string USAQuotesLogin { get; set; }
         string USAQuotesPassword { get; set; }
+        string TgArbitrageLongUSAChatId { get; set; }
+        string TgArbitrageShortUSAChatId { get; set; }
     }
 
     public interface ISettingsProvider

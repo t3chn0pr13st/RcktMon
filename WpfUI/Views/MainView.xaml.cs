@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Navigation;
 using System.Windows.Threading;
 using RcktMon.ViewModels;
 
@@ -23,6 +27,42 @@ namespace RcktMon.Views
             if (e.NewValue is MainViewModel mainViewModel && String.IsNullOrEmpty(mainViewModel.Settings.TiApiKey))
             {
                 KeySettings.IsExpanded = true;
+            }
+
+            if (!Environment.GetCommandLineArgs().Contains("/arbitrage"))
+            {
+                USADataSettingsExpander.Visibility = Visibility.Collapsed;
+                AskDiffUSAColumn.Visibility = Visibility.Collapsed;
+                BidAskUSAColumn.Visibility = Visibility.Collapsed;
+                BidDiffUSAColumn.Visibility = Visibility.Collapsed;
+                BidUSAColumn.Visibility = Visibility.Collapsed;
+                DiffUSAColumn.Visibility = Visibility.Collapsed;
+                PriceUSAColumn.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void HyperlinkCopyTicker_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is Hyperlink el && el.DataContext is MessageViewModel message)
+            {
+                Clipboard.SetText(message.Ticker);
+            }
+        }
+        private void HyperlinkOpenInAurora_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is Hyperlink el && el.DataContext is MessageViewModel message)
+            {
+                if (DataContext is MainViewModel main)
+                    main.OpenInAurora(message.Ticker);
+            }
+        }
+
+        private void StocksDataGrid_OnPreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is FrameworkElement el && el.DataContext is StockViewModel stock 
+                                                        && this.DataContext is MainViewModel main)
+            {
+                main.OpenInAurora(stock.Ticker);
             }
         }
     }

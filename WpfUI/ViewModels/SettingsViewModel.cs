@@ -12,6 +12,7 @@ namespace RcktMon.ViewModels
         public string TiApiKey { get; set; }
         public string TgBotApiKey { get; set; }
         public string TgChatId { get; set; }
+        public string TgChatIdRu { get; set; }
 
         public decimal MinDayPriceChangePercent { get; set; }
         public decimal MinTenMinutesPriceChangePercent { get; set; }
@@ -23,6 +24,8 @@ namespace RcktMon.ViewModels
         public string USAQuotesURL { get; set; }
         public string USAQuotesLogin { get; set; }
         public string USAQuotesPassword { get; set; }
+        public string TgArbitrageShortUSAChatId { get; set; }
+        public string TgArbitrageLongUSAChatId { get; set; }
 
         private ISettingsProvider _settingsProvider;
         private MainViewModel _mainViewModel;
@@ -44,6 +47,7 @@ namespace RcktMon.ViewModels
             TiApiKey = Settings.TiApiKey;
             TgBotApiKey = Settings.TgBotApiKey;
             TgChatId = Settings.TgChatId;
+            TgChatIdRu = Settings.TgChatIdRu;
             MinDayPriceChangePercent = Settings.MinDayPriceChange * 100m;
             MinTenMinutesPriceChangePercent = Settings.MinTenMinutesPriceChange * 100m;
             MinVolumeDeviationFromDailyAveragePercent = Settings.MinVolumeDeviationFromDailyAverage * 100m;
@@ -53,6 +57,8 @@ namespace RcktMon.ViewModels
             USAQuotesURL = Settings.USAQuotesURL;
             USAQuotesLogin = Settings.USAQuotesLogin;
             USAQuotesPassword = Settings.USAQuotesPassword;
+            TgArbitrageLongUSAChatId = Settings.TgArbitrageLongUSAChatId;
+            TgArbitrageShortUSAChatId = Settings.TgArbitrageShortUSAChatId;
             ResetKeys();
         }
 
@@ -71,6 +77,7 @@ namespace RcktMon.ViewModels
                 _settingsProvider.Settings.TgBotApiKey = TgBotApiKey;
 
             _settingsProvider.Settings.TgChatId = TgChatId;
+            _settingsProvider.Settings.TgChatIdRu = TgChatIdRu;
             _settingsProvider.SaveSettings(_settingsProvider.Settings);
             ResetKeys();
 
@@ -89,6 +96,8 @@ namespace RcktMon.ViewModels
             Settings.USAQuotesEnabled = USAQuotesEnabled;
             Settings.USAQuotesURL = USAQuotesURL;
             Settings.USAQuotesLogin = USAQuotesLogin;
+            Settings.TgArbitrageShortUSAChatId = TgArbitrageShortUSAChatId;
+            Settings.TgArbitrageLongUSAChatId = TgArbitrageLongUSAChatId;
             if (USAQuotesPassword != PasswordBehavior.PassReplacement)
             {
                 Settings.USAQuotesPassword = USAQuotesPassword;

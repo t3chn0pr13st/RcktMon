@@ -44,7 +44,8 @@
                                         VirtualizingPanel.IsVirtualizing="True" 
                                         VirtualizingPanel.IsContainerVirtualizable="True"
                                         VirtualizingPanel.VirtualizationMode="Recycling"
-                                        ScrollViewer.CanContentScroll="True"
+                                        SelectedItem="{Binding SelectedStock}"
+                                        ScrollViewer.CanContentScroll="True" PreviewMouseDoubleClick="StocksDataGrid_OnPreviewMouseDoubleClick"
                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
                                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
                                         AutoGenerateColumns="False" >
@@ -57,13 +58,15 @@
                                         <DataGridTextColumn Binding="{Binding DayChange, StringFormat=P2}" Header="Изменение" SortDirection="Descending" />
                                         <DataGridTextColumn Binding="{Binding DayVolume}" Header="Volume" />
                                         <DataGridTextColumn Binding="{Binding DayVolChgOfAvg, StringFormat=P2}" Header="% Avg Vol" />
-                                        <DataGridTextColumn Binding="{Binding BestBidPrice}" Header="Лучший бид" />
-                                        <DataGridTextColumn Binding="{Binding BestAskPrice}" Header="Лучший аск" />
+                                        <DataGridTextColumn Binding="{Binding BestBidSpb}" Header="Лучший бид" />
+                                        <DataGridTextColumn Binding="{Binding BestAskSpb}" Header="Лучший аск" />
                                         <DataGridTextColumn Binding="{Binding Status}" Header="Состояние" />
-                                        <DataGridTextColumn Binding="{Binding PriceUSA}" Header="Цена USA" />
-                                        <DataGridTextColumn Binding="{Binding DiffPercentUSA, StringFormat=P2}" Header="Разница с USA" />
-                                        <DataGridTextColumn Binding="{Binding BidUSA}" Header="Лучший бид USA" />
-                                        <DataGridTextColumn Binding="{Binding AskUSA}" Header="Лучший аск USA" />
+                                        <DataGridTextColumn Binding="{Binding PriceUSA}" Header="Цена USA" x:Name="PriceUSAColumn" />
+                                        <DataGridTextColumn Binding="{Binding DiffPercentUSA, StringFormat=P2}" Header="Diff USA" x:Name="DiffUSAColumn" />
+                                        <DataGridTextColumn Binding="{Binding BidUSA}" Header="BB USA" x:Name="BidUSAColumn" />
+                                        <DataGridTextColumn Binding="{Binding USBidRUAskDiff, StringFormat=P2}" Header="Bid Diff" x:Name="BidDiffUSAColumn"  />
+                                        <DataGridTextColumn Binding="{Binding AskUSA}" Header="BA USA" x:Name="BidAskUSAColumn" />
+                                        <DataGridTextColumn Binding="{Binding RUBidUSAskDiff, StringFormat=P2}" Header="Ask Diff" x:Name="AskDiffUSAColumn" />
                                         <DataGridTextColumn Binding="{Binding LastUpdate, StringFormat=HH:mm:ss.ff}" Header="Обновление" />
                                     </DataGrid.Columns>
                                 </DataGrid>          
@@ -84,6 +87,28 @@
                                         <DataGridTextColumn Binding="{Binding Volume}" Header="Объём" />
                                         <DataGridTextColumn Binding="{Binding Text}" Header="Сообщение" />
                                         <DataGridTextColumn Binding="{Binding Date}" Header="Дата события" />
+                                        <DataGridTemplateColumn Header="Действия">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Name="ActionsText">
+                                                        <Hyperlink Foreground="LightGoldenrodYellow" 
+                                                                   Click="HyperlinkCopyTicker_OnClick">
+                                                            Копировать тикер
+                                                        </Hyperlink>
+                                                        <Run></Run>
+                                                        <Hyperlink Foreground="LightGoldenrodYellow" 
+                                                                   Click="HyperlinkOpenInAurora_OnClick">
+                                                            Открыть в авроре
+                                                        </Hyperlink>
+                                                    </TextBlock>
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding Ticker}" Value="ERROR">
+                                                            <Setter TargetName="ActionsText" Property="Visibility" Value="Collapsed"></Setter>
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
                                     </DataGrid.Columns>
                                 </DataGrid>  
 
@@ -93,13 +118,13 @@
 
                     </LayoutPanel>
 
-                    <LayoutPanel Orientation="Vertical">
+                    <!--<LayoutPanel Orientation="Vertical">
                         <LayoutAnchorablePane DockWidth="300">
                             <LayoutAnchorable Title="График" ContentId="Chart">
                                   
                             </LayoutAnchorable>
                         </LayoutAnchorablePane>
-                    </LayoutPanel>
+                    </LayoutPanel>-->
 
                     <LayoutAnchorablePane Name="ToolsPane" DockMinWidth="250">
                         <LayoutAnchorable Title="Настройки" ContentId="Settings" AutoHideMinWidth="250">
@@ -118,15 +143,21 @@
                                         <TextBox Text="{Binding TgBotApiKey}" Margin="2" />
                                         <TextBlock Text="Telegram Chat Id" Margin="2 6 2 0" FontWeight="Bold" />
                                         <TextBlock Margin="2" TextWrapping="Wrap"
-                                                   Text="Это id чата в телеграмм, куда будет отправлять сообщения ваш бот. Можно пригласить бота в группу\канал, и вставить сюда chatId группы. Чтобы бот писал в лс, вставьте личный chatId (подойдет тот же telegram id что в pantini tools, узнать можно у @pantini_warden_bot или @username_to_id_bot)" />
+                                                   Text="Это id чата в телеграмм, куда будет отправлять сообщения ваш бот (по US акциям). Можно пригласить бота в группу\канал, и вставить сюда chatId группы. Чтобы бот писал в лс, вставьте личный chatId (подойдет тот же telegram id что в pantini tools, узнать можно у @pantini_warden_bot или @username_to_id_bot)" />
                                         <TextBox Text="{Binding TgChatId}" Margin="2" />
+                                        <TextBlock Text="Telegram Chat Id для акций ММВБ" Margin="2 6 2 0" FontWeight="Bold" />
+                                        <TextBlock Margin="2" TextWrapping="Wrap"
+                                                   Text="Это id чата в телеграмм для сообщений по русским акциям. Если не хотите их получать, оставьте поле пустым. Можно указать такой же канал как для US акций (выше)" />
+                                        <TextBox Text="{Binding TgChatIdRu}" Margin="2" />
                                         <Button Margin="2 10 2 6" cal:Message.Attach="AcceptKeys">Применить</Button>
                                     </StackPanel>
                                 </Expander>
-                                <Expander Header="USA Data" Visibility="Collapsed">
+                                <Expander Header="USA Data" Visibility="Visible" x:Name="USADataSettingsExpander">
                                     <StackPanel Orientation="Vertical">
                                         <mah:ToggleSwitch IsOn="{Binding USAQuotesEnabled}" FontSize="12.5"
-                                                          Content="Включить поиск расхождений" />
+                                                          Content="Включить источник данных США" />
+                                        <TextBlock Text="Адрес сервера котировок" Margin="2" />
+                                        <TextBox Text="{Binding USAQuotesURL}" Margin="2" />
                                         <TextBlock Text="Логин от сервиса котировок" Margin="2" />
                                         <TextBox Text="{Binding USAQuotesLogin}" Margin="2" />
                                         <TextBlock Text="Пароль от сервиса котировок" Margin="2" />
@@ -135,6 +166,10 @@
                                                 <views:PasswordBehavior />
                                             </b:Interaction.Behaviors>
                                         </TextBox>
+                                        <TextBlock Text="Канал для уведомлений LONG" Margin="2" />
+                                        <TextBox Text="{Binding TgArbitrageLongUSAChatId}" Margin="2" />
+                                        <TextBlock Text="Канал для уведомлений SHORT" Margin="2" />
+                                        <TextBox Text="{Binding TgArbitrageShortUSAChatId}" Margin="2" />
                                         <Button Margin="2 10 2 6" cal:Message.Attach="AcceptOptions">Применить</Button>
                                     </StackPanel>
                                 </Expander>

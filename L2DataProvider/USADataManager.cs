@@ -70,7 +70,7 @@ namespace USADataProvider
 
         public void SubscribeTicker(string ticker)
         {
-            if (ticker.Contains('@'))
+            if (ticker.Contains('@') || ticker == "TCS")
                 return;
             lock (_subscribedTickers)
             {
@@ -93,7 +93,7 @@ namespace USADataProvider
             dynamic result = JObject.Parse(await response.Content.ReadAsStringAsync());
             if (result.code.name != "Ok")
             {
-                MainModel.AddMessage("ERR", DateTime.Now, "L2DataService: " + result.message);
+                MainModel.AddMessage("ERROR", DateTime.Now, "L2DataService: " + result.message);
                 return false;
             }
             _sessionId = result.sid;
@@ -123,6 +123,8 @@ namespace USADataProvider
                     continue;
                 }
 
+                bool hasError = false;
+
                 try
                 {
                     int totalParts = (int)Math.Ceiling(tickers.Count / 100m);
@@ -141,7 +143,8 @@ namespace USADataProvider
                         }
                         catch (Exception ex)
                         {
-                            MainModel.AddMessage("ERR", DateTime.Now, "L2DataService: " + ex.Message);
+                            MainModel.AddMessage("ERROR", DateTime.Now, "L2DataService: " + ex.Message);
+                            hasError = true;
                         }
                     });
                     while (!runResult.IsCompleted )
@@ -149,8 +152,11 @@ namespace USADataProvider
                 }
                 catch (Exception ex)
                 {
-                    MainModel.AddMessage("ERR", DateTime.Now, "L2DataService: " + ex.Message);
+                    MainModel.AddMessage("ERROR", DateTime.Now, "L2DataService: " + ex.Message);
                 }
+
+                if (hasError)
+                    await Authorize(Settings.USAQuotesLogin, Settings.USAQuotesPassword);
 
                 await Task.Delay(1000, token);
             }
@@ -242,6 +248,7 @@ namespace USADataProvider
                 stock.BidSizeUSA = quote.BidSize;
                 stock.AskSizeUSA = quote.AskSize;
                 stock.LastTradeUSA = quote.LastTrade;
+                stock.LastUpdateUSA = DateTime.Now;
                 MainModel.OnStockUpdated(stock);
             }
         }
@@ -249,7 +256,7 @@ namespace USADataProvider
         public async Task HandleAsync(IEnumerable<IStockModel> message, CancellationToken cancellationToken)
         {
             var tickers = message
-                .Where(s => s.Currency.Equals("Usd", StringComparison.InvariantCultureIgnoreCase) &&
+                .Where(s => s.Currency.Equals("Usd", StringComparison.InvariantCultureIgnoreCase) && s.Ticker != "TCS" &&
                             !s.Ticker.Contains("@"))
                 .Select(s => s.Ticker.ToLower()).ToList();
             lock (_subscribedTickers)

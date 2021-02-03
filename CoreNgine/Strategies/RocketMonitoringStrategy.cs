@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -50,7 +51,7 @@ namespace CoreNgine.Strategies
             catch (Exception ex)
             {
                 var errorText = $"Не удалось загрузить историю {stock.Ticker}: {ex.Message}";
-                MainModel.AddMessage("ERR", DateTime.Now, errorText);
+                MainModel.AddMessage("ERROR", DateTime.Now, errorText);
                 Logger?.LogError(ex, errorText);
                 return false;
             }
@@ -58,7 +59,7 @@ namespace CoreNgine.Strategies
             if (stock.AvgDayVolumePerMonth < 0.01m)
             {
                 var errorText = $"Не удалось загрузить историю {stock.Ticker}";
-                MainModel.AddMessage("ERR", DateTime.Now, errorText);
+                MainModel.AddMessage("ERROR", DateTime.Now, errorText);
                 Logger?.LogError(errorText);
                 return false;
             }
@@ -85,8 +86,13 @@ namespace CoreNgine.Strategies
                 var volPerc = stock.DayVolume / stock.AvgDayVolumePerMonth;
                 if (volPerc > Settings.MinVolumeDeviationFromDailyAverage && Settings.MinVolumeDeviationFromDailyAverage > 0)
                 {
-                    if (IsSendToTelegramEnabled)
-                        StocksManager.Telegram.PostMessage(stock.GetDayChangeInfoText(), stock.Ticker);
+                    string chatId = Settings.TgChatId;
+                    if (stock.Currency.Equals("RUB", StringComparison.InvariantCultureIgnoreCase) ||
+                        stock.Ticker == "TCS")
+                        chatId = Settings.TgChatIdRu;
+
+                    if (IsSendToTelegramEnabled && long.TryParse(chatId, out var lChatId) && lChatId != 0)
+                        StocksManager.Telegram.PostMessage(stock.GetDayChangeInfoText(), stock.Ticker, lChatId);
 
                     MainModel.AddMessage(
                         stock.Ticker,
@@ -111,10 +117,15 @@ namespace CoreNgine.Strategies
                 
                 var changeInfo = stock.GetMinutesChangeInfo(change.change, change.minutes, change.candles);
                 
-                if (IsSendToTelegramEnabled)
+                string chatId = Settings.TgChatId;
+                if (stock.Currency.Equals("RUB", StringComparison.InvariantCultureIgnoreCase) ||
+                    stock.Ticker == "TCS")
+                    chatId = Settings.TgChatIdRu;
+
+                if (IsSendToTelegramEnabled && long.TryParse(chatId, out var lChatId) && lChatId != 0)
                 {
                     if (changeInfo.volPercent >= Settings.MinVolumeDeviationFromDailyAverage)
-                        StocksManager.Telegram.PostMessage(changeInfo.message, stock.Ticker);
+                        StocksManager.Telegram.PostMessage(changeInfo.message, stock.Ticker, lChatId);
                 }
 
                 int lastIdx = change.candles.Length - 1;

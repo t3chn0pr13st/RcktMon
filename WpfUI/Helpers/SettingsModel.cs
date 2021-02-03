@@ -20,6 +20,7 @@ namespace RcktMon.Helpers
         public string TiApiKey { get; set; }
         public string TgBotApiKey { get; set; }
         public string TgChatId { get; set; }
+        public string TgChatIdRu { get; set; }
         public decimal MinDayPriceChange { get; set; }
         public decimal MinTenMinutesPriceChange { get; set; }
         public decimal MinVolumeDeviationFromDailyAverage { get; set; }
@@ -31,6 +32,8 @@ namespace RcktMon.Helpers
         public string USAQuotesURL { get; set; }
         public string USAQuotesLogin { get; set; }
         public string USAQuotesPassword { get; set; }
+        public string TgArbitrageLongUSAChatId { get; set; }
+        public string TgArbitrageShortUSAChatId { get; set; }
 
         #endregion App Settings
 
@@ -53,11 +56,11 @@ namespace RcktMon.Helpers
                 var text = File.ReadAllText("settings.json");
                 var definition = new 
                 {
-                    TiApiKey, TgBotApiKey, TgChatId, 
+                    TiApiKey, TgBotApiKey, TgChatId, TgChatIdRu,
                     MinDayPriceChange, MinTenMinutesPriceChange, 
                     MinVolumeDeviationFromDailyAverage, MinTenMinutesVolPercentChange,
                     IsTelegramEnabled, CheckRockets,
-                    USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, USAQuotesPassword
+                    USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, USAQuotesPassword, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
                 };
                 var obj = JsonConvert.DeserializeAnonymousType(text, definition);
                 var config = new MapperConfiguration(cfg => 
@@ -67,6 +70,7 @@ namespace RcktMon.Helpers
                 try { this.TiApiKey = CryptoHelper.Decrypt(this.TiApiKey); } catch { }
                 try { this.TgBotApiKey = CryptoHelper.Decrypt(this.TgBotApiKey); } catch { }
                 try { this.TgChatId = CryptoHelper.Decrypt(this.TgChatId); } catch { }
+                try { this.TgChatIdRu = CryptoHelper.Decrypt(this.TgChatIdRu); } catch { }
                 try { this.USAQuotesPassword = CryptoHelper.Decrypt(this.USAQuotesPassword); } catch { }
             }
 
@@ -91,11 +95,12 @@ namespace RcktMon.Helpers
             TiApiKey = CryptoHelper.Encrypt(TiApiKey),
             TgBotApiKey = CryptoHelper.Encrypt(TgBotApiKey),
             TgChatId = CryptoHelper.Encrypt(TgChatId),
+            TgChatIdRu = CryptoHelper.Encrypt(TgChatIdRu),
             USAQuotesPassword = CryptoHelper.Encrypt(USAQuotesPassword),
             MinDayPriceChange, MinTenMinutesPriceChange, 
             MinVolumeDeviationFromDailyAverage, MinTenMinutesVolPercentChange,
             IsTelegramEnabled, CheckRockets,
-            USAQuotesEnabled, USAQuotesURL, USAQuotesLogin
+            USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
         };
 
         public void SaveSettings(INgineSettings settings)

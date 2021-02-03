@@ -54,6 +54,9 @@ namespace CoreNgine.Shared
             }
         }
 
+        public IDictionary<string, OrderbookModel> OrderbookInfoSpb { get; } =
+            new ConcurrentDictionary<string, OrderbookModel>();
+
         public DateTime? LastRestartTime => _lastRestartTime;
         public TimeSpan ElapsedFromLastRestart => DateTime.Now.Subtract(_lastRestartTime ?? DateTime.Now);
 
@@ -169,7 +172,7 @@ namespace CoreNgine.Shared
                     }
                 }
 
-                await Task.Delay(100);
+                await Task.Delay(100, cancellationToken);
             }
         }
 
@@ -330,8 +333,12 @@ namespace CoreNgine.Shared
                         var stock = _mainModel.Stocks.Values.FirstOrDefault(s => s.Figi == or.Payload.Figi);
                         if (stock != null && or.Payload.Asks.Count > 0 && or.Payload.Bids.Count > 0)
                         {
-                            stock.BestBidPrice = or.Payload.Bids[0][0];
-                            stock.BestAskPrice = or.Payload.Asks[0][0];
+                            var bids = or.Payload.Bids.Where(b => b[1] >= 1).ToList();
+                            var asks = or.Payload.Asks.Where(a => a[1] >= 1).ToList();
+                            OrderbookInfoSpb[stock.Ticker] = new OrderbookModel(or.Payload.Depth, bids, asks,
+                                or.Payload.Figi, stock.Ticker, stock.Isin);
+                            stock.BestBidSpb = bids[0][0];
+                            stock.BestAskSpb = asks[0][0];
                             _stockProcessingQueue.Enqueue(stock); // raise stock update (but only in sync with other updates)
                         }
 
@@ -528,7 +535,7 @@ namespace CoreNgine.Shared
                     QueueBrokerAction(b => b.SendStreamingRequestAsync(request),
                         $"Подписка на дневную свечу {stock.Ticker} ({stock.Figi})");
 
-                    var request2 = new OrderbookSubscribeRequest(stock.Figi, 2);
+                    var request2 = new OrderbookSubscribeRequest(stock.Figi, 5);
                     QueueBrokerAction(b => CandleConnection.SendStreamingRequestAsync(request2),
                         $"Подписка на стакан {stock.Ticker} ({stock.Figi}");
 
