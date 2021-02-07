@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreData.Interfaces;
+using CoreData.Models;
+using CoreNgine.Infra;
 using CoreNgine.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,6 +37,7 @@ namespace CoreNgine.Shared
         private readonly IServiceProvider _services;
         private readonly ILogger<TelegramManager> _logger;
         private readonly IMainModel _mainModel;
+        private readonly IEventAggregator2 _eventAggregator;
 
         public void Stop()
         {
@@ -48,6 +51,7 @@ namespace CoreNgine.Shared
             _mainModel = serviceProvider.GetRequiredService<IMainModel>();
             Settings = serviceProvider.GetRequiredService<ISettingsProvider>().Settings;
             _logger = (ILogger<TelegramManager>) serviceProvider.GetService(typeof(ILogger<TelegramManager>));
+            _eventAggregator = (IEventAggregator2)serviceProvider.GetService(typeof(IEventAggregator2));
             try
             {
                 _bot = new TelegramBotClient(_apiToken);
@@ -140,7 +144,10 @@ namespace CoreNgine.Shared
                         _logger.LogError(ex.Message);
                         _bot = new TelegramBotClient(_apiToken);
                     }
-                    await Task.Delay(300);
+
+                    await _eventAggregator.PublishOnCurrentThreadAsync(new CommonInfoMessage() { TelegramMessageQuery = _botMessageQueue.Count });
+                    await Task.Delay( 300 );
+                    
                 }
                 await Task.Delay(100);
             }

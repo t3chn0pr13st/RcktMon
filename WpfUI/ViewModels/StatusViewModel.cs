@@ -11,12 +11,16 @@ using CoreNgine.Infra;
 
 namespace RcktMon.ViewModels
 {
-    public class StatusViewModel : PropertyChangedBase, IHandler<StatsUpdateMessage>
+    public class StatusViewModel : PropertyChangedBase, IHandler<StatsUpdateMessage>, IHandler<CommonInfoMessage>
     {
         public string StatusProgressText { get; set; }
         public string StatusInfoText { get; set; }
         public int StatusPercent { get; set; }
         public bool ShowStatus { get; set; }
+
+        public int TelegramQueryDepth { get; set; }
+        public int StocksUpdatedIn1Sec { get;set; }
+        public int StocksUpdatedIn5Sec { get; set; }
 
         public IEventAggregator2 EventAggregator { get; }
 
@@ -28,10 +32,26 @@ namespace RcktMon.ViewModels
 
         public Task HandleAsync(StatsUpdateMessage message, CancellationToken cancellationToken)
         {
-            ShowStatus = !message.Finished;
+            //ShowStatus = !message.Finished;
+            ShowStatus = true;
             StatusProgressText = message.ToString();
             StatusPercent = message.Percent;
             StatusInfoText = "Загрузка исторических данных...";
+            if (message.Finished)
+            {
+                StatusInfoText = "Загрузка истории завершена.";
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(CommonInfoMessage message, CancellationToken cancellationToken)
+        {
+            if (message.TelegramMessageQuery.HasValue)
+                TelegramQueryDepth = message.TelegramMessageQuery.Value;
+            if (message.TotalStocksUpdatedInFiveSec.HasValue)
+                StocksUpdatedIn5Sec = message.TotalStocksUpdatedInFiveSec.Value;
+            if (message.TotalStocksUpdatedInLastSec.HasValue)
+                StocksUpdatedIn1Sec = message.TotalStocksUpdatedInLastSec.Value;
             return Task.CompletedTask;
         }
     }

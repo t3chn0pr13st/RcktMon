@@ -29,7 +29,7 @@ namespace RcktMon.Views
                 KeySettings.IsExpanded = true;
             }
 
-            if (!Environment.GetCommandLineArgs().Contains("/arbitrage"))
+            if (!Environment.GetCommandLineArgs().Contains("/arbitrage") && !Environment.MachineName.Equals("E5-2678-V3"))
             {
                 USADataSettingsExpander.Visibility = Visibility.Collapsed;
                 AskDiffUSAColumn.Visibility = Visibility.Collapsed;
@@ -45,7 +45,14 @@ namespace RcktMon.Views
         {
             if (e.OriginalSource is Hyperlink el && el.DataContext is MessageViewModel message)
             {
-                Clipboard.SetText(message.Ticker);
+                try
+                {
+                    Clipboard.SetText(message.Ticker);
+                }
+                catch
+                {
+
+                }
             }
         }
         private void HyperlinkOpenInAurora_OnClick(object sender, RoutedEventArgs e)

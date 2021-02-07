@@ -25,4 +25,11 @@ namespace CoreData.Models
             return $"{Processed} из {Total} ( Запросов: {NumApiRequests} )";
         }
     }
+
+    public struct CommonInfoMessage
+    {
+        public int? TelegramMessageQuery { get; set; }
+        public int? TotalStocksUpdatedInLastSec { get; set; }
+        public int? TotalStocksUpdatedInFiveSec { get; set; }
+    }
 }

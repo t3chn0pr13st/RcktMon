@@ -219,9 +219,12 @@ namespace CoreNgine.Shared
 
                         await ResetConnection("Данные не поступали дольше 5 секунд");
                     }
-                
+                    
                     _recentUpdatedStocksCount =
-                        _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds < 5);
+                        _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds <= 5);
+                    var updatePerSecond = _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds <= 1);
+
+                    await EventAggregator.PublishOnCurrentThreadAsync(new CommonInfoMessage() { TotalStocksUpdatedInFiveSec = _recentUpdatedStocksCount, TotalStocksUpdatedInLastSec = updatePerSecond });
 
                     if (_recentUpdatedStocksCount < 10 && !IsTradeStoppedTime && !IsHolidays)
                     {
@@ -545,14 +548,14 @@ namespace CoreNgine.Shared
             }
 
             int n = 0;
-            foreach (var stock in toSubscribeInstr)
+            foreach ( var stock in toSubscribeInstr )
             {
                 var request3 = new InstrumentInfoSubscribeRequest( stock.Figi );
                 QueueBrokerAction( b => InstrumentInfoConnection.SendStreamingRequestAsync( request3 ),
                     $"Подписка на статус {stock.Ticker} ({stock.Figi}" );
 
-                if (++n % 100 == 0)
-                    await Task.Delay(1000);
+                if ( ++n % 100 == 0 )
+                    await Task.Delay( 1000 );
             }
         }
 
