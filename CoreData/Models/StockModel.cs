@@ -15,6 +15,8 @@ namespace CoreData.Models
         public string Ticker { get; set; }
         public string Isin { get; set; }
         public string Currency { get; set; }
+        public bool IsDead { get; set; }
+        public string Exchange { get;set; }
         public int Lot { get; set; }
         public decimal MinPriceIncrement { get; set; }
         public DateTime TodayDate { get; set; }
@@ -56,8 +58,8 @@ namespace CoreData.Models
         public decimal YesterdayVolumeCost { get; set; }
         public decimal YesterdayAvgPrice { get; set; }
 
-        public string TodayOpenF => TodayOpen.FormatPrice(Currency);
-        public string PriceF => Price.FormatPrice(Currency);
+        public string TodayOpenF => TodayOpen.FormatPrice(Currency, true);
+        public string PriceF => Price.FormatPrice(Currency, true);
         public string AvgPriceF => AvgPrice.FormatPrice(Currency);
         public string YesterdayVolumeCostF => YesterdayVolumeCost.FormatPrice(Currency);
         public string YesterdayAvgPriceF => YesterdayAvgPrice.FormatPrice(Currency);

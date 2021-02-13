@@ -20,15 +20,29 @@ using static Tinkoff.Trading.OpenApi.Models.StreamingRequest;
 
 namespace CoreNgine.Shared
 {
+    public readonly struct ExchangeStatus
+    {
+        public string Exchange { get; }
+        public string Status { get; }
+
+        public ExchangeStatus(string exchange, string status)
+        {
+            Exchange = exchange;
+            Status = status;
+        }
+    }
+
     public class StocksManager
     {
         private readonly IMainModel _mainModel;
         private DateTime? _lastEventReceived = null;
         private int _recentUpdatedStocksCount;
         private DateTime? _lastRestartTime;
+        private DateTime _lastUIUpdate;
 
         private readonly ILogger<StocksManager> _logger;
-        
+
+        private TinkoffStocksInfo _tinkoffStocksInfo = new TinkoffStocksInfo();
         private readonly HashSet<string> _subscribedFigi = new HashSet<string>();
         private readonly HashSet<string> _subscribedMinuteFigi = new HashSet<string>();
         private TelegramManager _telegram;
@@ -44,6 +58,8 @@ namespace CoreNgine.Shared
         private Connection CandleConnection { get; set; }
         private Connection InstrumentInfoConnection { get; set; }
 
+        public ExchangeStatus[] ExchangeStatus { get; private set; }
+
         internal string TiApiToken => Settings.TiApiKey;
         internal string TgBotToken => Settings.TgBotApiKey;
         internal long TgChatId 
@@ -58,6 +74,9 @@ namespace CoreNgine.Shared
             new ConcurrentDictionary<string, OrderbookModel>();
 
         public DateTime? LastRestartTime => _lastRestartTime;
+
+        public DateTime LastInstrumentsUpdate { get; private set; }
+
         public TimeSpan ElapsedFromLastRestart => DateTime.Now.Subtract(_lastRestartTime ?? DateTime.Now);
 
         public TelegramManager Telegram => _telegram;
@@ -110,9 +129,9 @@ namespace CoreNgine.Shared
 
             CommonConnection = ConnectionFactory.GetConnection(TiApiToken);
             CandleConnection = ConnectionFactory.GetConnection(TiApiToken);
-            InstrumentInfoConnection = ConnectionFactory.GetConnection(TiApiToken);
+            //InstrumentInfoConnection = ConnectionFactory.GetConnection(TiApiToken);
             CandleConnection.StreamingEventReceived += Broker_StreamingEventReceived;
-            InstrumentInfoConnection.StreamingEventReceived += Broker_StreamingEventReceived;
+            //InstrumentInfoConnection.StreamingEventReceived += Broker_StreamingEventReceived;
             CommonConnection.StreamingEventReceived += Broker_StreamingEventReceived;
 
             RunMonthUpdateTaskIfNotRunning();
@@ -188,6 +207,60 @@ namespace CoreNgine.Shared
             CommonConnectionActions.Enqueue(brAct);
         }
 
+        private async Task UpdateCounters()
+        {
+            _recentUpdatedStocksCount =
+                _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds <= 5);
+            var updatePerSecond = _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds <= 1);
+
+            await EventAggregator.PublishOnCurrentThreadAsync(new CommonInfoMessage() { TotalStocksUpdatedInFiveSec = _recentUpdatedStocksCount, TotalStocksUpdatedInLastSec = updatePerSecond });
+            _lastUIUpdate = DateTime.Now;
+        }
+
+        private async Task UpdateInstrumentsInfo()
+        {
+            try
+            {
+                var info = await _tinkoffStocksInfo.GetInstrumentsInfo();
+                if (info.Status.Equals("Ok", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    LastInstrumentsUpdate = DateTime.Now;
+                    var infoDict = info.Payload.Values.ToDictionary(v => v.Symbol.Ticker);
+
+                    ExchangeStatus = info.Payload.Values
+                        .Select(v => new { v.Symbol.Exchange, v.ExchangeStatus }).Distinct()
+                        .Select(s => new ExchangeStatus(s.Exchange, s.ExchangeStatus)).ToArray();
+
+                    foreach (var stockRecord in _mainModel.Stocks)
+                    {
+                        var stock = stockRecord.Value;
+                        if (infoDict.ContainsKey(stockRecord.Key))
+                        {
+                            var instrumentInfo = infoDict[stockRecord.Key];
+                            if (stock.Status != instrumentInfo.InstrumentStatusShortDesc)
+                                stock.Status = instrumentInfo.InstrumentStatusShortDesc;
+                            if (stock.Exchange != instrumentInfo.Symbol.Exchange)
+                                stock.Exchange = instrumentInfo.Symbol.Exchange;
+                        }
+                        else
+                        {
+                            stock.Status = "Инструмент не торгуется";
+                            stock.IsDead = true;
+                        }
+                    }
+                }
+                else
+                {
+                    throw new Exception(info.Status);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Ошибка получения сведений об инструментах: {ex.Message}");
+                LastInstrumentsUpdate = DateTime.MinValue;
+            }
+        }
+
         private async Task BrokerQueueLoopAsync()
         {
             var cancellationToken = _cancellationTokenSource.Token;
@@ -196,6 +269,9 @@ namespace CoreNgine.Shared
             {
                 while (CommonConnectionActions.TryDequeue(out BrokerAction act))
                 {
+                    if (DateTime.Now.Subtract(_lastUIUpdate).TotalMilliseconds > 900)
+                        await UpdateCounters().ConfigureAwait(false);
+
                     try
                     {
                         //var msg = $"{DateTime.Now} Выполнение операции '{act.Description}'...";
@@ -208,8 +284,17 @@ namespace CoreNgine.Shared
                         //CommonConnectionActions.Push(act);
                         var errorMsg = $"Ошибка при выполнении операции '{act.Description}': {ex.Message}";
                         LogError(errorMsg);
-                        await ResetConnection(errorMsg);
+                        await ResetConnection(errorMsg).ConfigureAwait(false);
                     }
+                }
+
+                if (DateTime.Now.Subtract(_lastUIUpdate).TotalMilliseconds > 500)
+                    await UpdateCounters().ConfigureAwait(false);
+
+                if (DateTime.Now.Subtract(LastInstrumentsUpdate).TotalSeconds > 20)
+                {
+                    LastInstrumentsUpdate = DateTime.Now;
+                    _ = UpdateInstrumentsInfo().ConfigureAwait(false);
                 }
 
                 if (_lastRestartTime.HasValue && DateTime.Now.Subtract(_lastRestartTime.Value).TotalSeconds > 10)
@@ -217,7 +302,7 @@ namespace CoreNgine.Shared
 
                     if (_lastEventReceived != null && DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
                     {
-                        if (IsTradeStoppedTime) // || IsHolidays)
+                        if (ExchangeClosed) // || IsHolidays)
                         {
                             Thread.Sleep(1000);
                             continue;
@@ -225,14 +310,8 @@ namespace CoreNgine.Shared
 
                         await ResetConnection("Данные не поступали дольше 5 секунд");
                     }
-                    
-                    _recentUpdatedStocksCount =
-                        _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds <= 5);
-                    var updatePerSecond = _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds <= 1);
 
-                    await EventAggregator.PublishOnCurrentThreadAsync(new CommonInfoMessage() { TotalStocksUpdatedInFiveSec = _recentUpdatedStocksCount, TotalStocksUpdatedInLastSec = updatePerSecond });
-
-                    if (_recentUpdatedStocksCount < 10 && !IsTradeStoppedTime && !IsHolidays)
+                    if (_recentUpdatedStocksCount < 10 && !ExchangeClosed)
                     {
                         await ResetConnection("Не приходило обновлений по большей части акций");
                     }
@@ -243,13 +322,7 @@ namespace CoreNgine.Shared
             }
         }
 
-        public bool IsHolidays => _mainModel.Stocks.Count(s => !String.IsNullOrEmpty(s.Value.Status) 
-                                                               && s.Value.Status != "not_available_for_trading") 
-                                  < _mainModel.Stocks.Count(s => s.Value.Price > 0) / 4;
-
-        public bool IsTradeStoppedTime => (DateTime.Now.Hour < 10 &&
-                                           (DateTime.Now.Hour > 1 ||
-                                            DateTime.Now.Hour == 1 && DateTime.Now.Minute >= 45));
+        public bool ExchangeClosed => ExchangeStatus.All(s => s.Status == "Close");
 
         private void LogError(string msg)
         {
@@ -538,6 +611,9 @@ namespace CoreNgine.Shared
             var toSubscribeInstr = new HashSet<IStockModel>();
             foreach (var stock in _mainModel.Stocks.Values)
             {
+                if (stock.IsDead)
+                    continue;
+
                 if (!_subscribedFigi.Contains(stock.Figi))
                 {
                     var request = new CandleSubscribeRequest(stock.Figi, CandleInterval.Day);
@@ -582,6 +658,7 @@ namespace CoreNgine.Shared
         {
             if (CommonConnection == null)
                 return;
+
             var stocks = await CommonConnection.Context.MarketStocksAsync();
             var stocksToAdd = new HashSet<IStockModel>();
             foreach (var instr in stocks.Instruments)
@@ -594,6 +671,9 @@ namespace CoreNgine.Shared
                 }
             }
             await _mainModel.AddStocks(stocksToAdd);
+
+            await UpdateInstrumentsInfo();
+
             await UpdatePrices();
             //_mainModel.IsNotifying = false;
         }

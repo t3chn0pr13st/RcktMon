@@ -13,6 +13,8 @@ namespace CoreData.Interfaces
          string Ticker { get; set; }
          string Currency { get; set; }
          int Lot { get; set; }
+         bool IsDead { get; set; }
+         string Exchange { get;set; }
          decimal MinPriceIncrement { get; set; }
          DateTime TodayDate { get; set; }
          decimal TodayOpen { get; set; }

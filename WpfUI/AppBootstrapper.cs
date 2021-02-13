@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection.Metadata;
 using System.Windows;
 using Caliburn.Micro;
 using CoreData.Interfaces;
@@ -51,6 +53,12 @@ namespace RcktMon
             ViewLocator.AddNamespaceMapping("CoreNgine.Models", "RcktMon.Views");
             ViewLocator.NameTransformer.AddRule("IMainModel", "MainViewModel");
 
+            string version = null;
+            try
+            {
+                version = File.ReadAllText(AppContext.BaseDirectory + "version.txt");
+            } catch { }
+
             _container.Configure(services =>
             {
                 services.AddSingleton<IWindowManager, AppWindowManager>();
@@ -59,6 +67,7 @@ namespace RcktMon
                 services.AddSingleton<IUSADataManager, USADataManager>();
                 services.AddSingleton<StatusViewModel>();
                 services.AddSingleton<ArbitrageMonitoringStrategy>();
+                services.AddSingleton(new AutoUpdate(currentVersion: version));
                 services.AddLogging(lb =>
                 {
                     lb.AddNLog("NLog.config");

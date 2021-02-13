@@ -7,6 +7,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Navigation;
 using System.Windows.Threading;
+using RcktMon.Helpers;
 using RcktMon.ViewModels;
 
 namespace RcktMon.Views
@@ -24,9 +25,10 @@ namespace RcktMon.Views
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (e.NewValue is MainViewModel mainViewModel && String.IsNullOrEmpty(mainViewModel.Settings.TiApiKey))
+            if (e.NewValue is MainViewModel mainViewModel)
             {
-                KeySettings.IsExpanded = true;
+                if (String.IsNullOrEmpty(mainViewModel.Settings.TiApiKey))
+                    KeySettings.IsExpanded = true;
             }
 
             if (!Environment.GetCommandLineArgs().Contains("/arbitrage") && !Environment.MachineName.Equals("E5-2678-V3"))

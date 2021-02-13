@@ -22,6 +22,8 @@ namespace RcktMon.ViewModels
         public string Isin { get; set; }
         public string Currency { get; set; }
         public int Lot { get; set; }
+        public bool IsDead { get; set; }
+        public string Exchange { get;set; }
         public decimal MinPriceIncrement { get; set; }
         public DateTime TodayDate { get; set; }
         public decimal TodayOpen { get; set; }

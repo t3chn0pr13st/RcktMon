@@ -45,17 +45,24 @@ namespace RcktMon.ViewModels
         public IDictionary<string, IStockModel> Stocks { get; } = new ConcurrentDictionary<string, IStockModel>();
         public IEnumerable<IMessageModel> Messages { get; } = new ObservableCollection<MessageViewModel>();
 
-        public StocksManager StocksManager =>
-            _stocksManager ?? (_stocksManager = _services.GetRequiredService<StocksManager>());
+        public StocksManager StocksManager => _stocksManager ??= _services.GetRequiredService<StocksManager>();
         public SettingsViewModel SettingsViewModel { get; }
         public StatusViewModel Status { get; }
+
+        public ReleaseInfo LastRelease { get; private set; }
+
+        public AutoUpdate Updater { get; }
+
+        public IServiceProvider Services => _services;
 
         public INgineSettings Settings => _settingsProvider.Settings;
 
         internal HttpClient WrapperClient => _wrapperClient ??= new HttpClient();
 
-        public MainViewModel(IServiceProvider serviceProvider, ILogger<MainViewModel> logger, IEventAggregator2 eventAggregator, ISettingsProvider settingsProvider, StatusViewModel status)
+        public MainViewModel(IServiceProvider serviceProvider, ILogger<MainViewModel> logger, IEventAggregator2 eventAggregator, 
+            ISettingsProvider settingsProvider, StatusViewModel status, AutoUpdate updater)
         {
+            Updater = updater;
             _services = serviceProvider;
             _logger = logger;
             _uiContext = SynchronizationContext.Current;
@@ -65,11 +72,35 @@ namespace RcktMon.ViewModels
 
             LoadAppSettings();
             SettingsViewModel = new SettingsViewModel(_settingsProvider, this);
+            CheckUpdates();
         }
 
         internal void LoadAppSettings()
         {
             _settingsProvider.ReadSettings();
+        }
+
+        internal void CheckUpdates()
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var releaseInfo = await Updater.GetLastRelease();
+                    if (!releaseInfo.InvalidData)
+                    {
+                        if (LastRelease == null || releaseInfo.Version > LastRelease.Version)
+                        {
+                            LastRelease = releaseInfo;
+                            NotifyOfPropertyChange(nameof(LastRelease));
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Ошибка при проверке новой версии: {Error}", ex.Message);
+                }
+            });
         }
 
         public IStockModel SelectedStock
@@ -179,14 +210,6 @@ namespace RcktMon.ViewModels
                 stock.RUBidUSAskDiff = (stock.BestBidSpb - stock.AskUSA) / stock.AskUSA;
             
             await _eventAggregator.PublishOnCurrentThreadAsync(stock);
-            //if (DateTime.Now.Subtract(_lastViewUpdate).TotalMilliseconds > 500)
-            //{
-            //    _lastViewUpdate = DateTime.Now;
-            //    _uiContext.Post(obj =>
-            //    {
-            //        CollectionViewSource.GetDefaultView(Stocks.Values).Refresh();
-            //    }, null);
-            //}
         }
 
         public Task AddStocks(IEnumerable<IStockModel> stocks)
@@ -222,10 +245,6 @@ namespace RcktMon.ViewModels
                     success = false;
                 }
             }
-            //var l2data = _services.GetRequiredService<L2DataConnector>();
-            //await l2data.ConnectAsync();
-            //var message = "+[" + String.Join(",", Stocks.Where(s => s.Currency == "Usd").Select(s => s.Ticker)) + "]";
-            //await l2data.SendMessageAsync(message);
         }
 
         public async Task RefreshAll()

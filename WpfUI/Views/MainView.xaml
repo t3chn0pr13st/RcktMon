@@ -60,6 +60,7 @@
                                         <DataGridTextColumn Binding="{Binding DayVolChgOfAvg, StringFormat=P2}" Header="% Avg Vol" />
                                         <DataGridTextColumn Binding="{Binding BestBidSpb}" Header="Лучший бид" />
                                         <DataGridTextColumn Binding="{Binding BestAskSpb}" Header="Лучший аск" />
+                                        <DataGridTextColumn Binding="{Binding Exchange}" Header="Биржа" />
                                         <DataGridTextColumn Binding="{Binding Status}" Header="Состояние" />
                                         <DataGridTextColumn Binding="{Binding PriceUSA}" Header="Цена USA" x:Name="PriceUSAColumn" />
                                         <DataGridTextColumn Binding="{Binding DiffPercentUSA, StringFormat=P2}" Header="Diff USA" x:Name="DiffUSAColumn" />

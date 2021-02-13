@@ -16,7 +16,7 @@ namespace RcktMon.ViewModels
         public string StatusProgressText { get; set; }
         public string StatusInfoText { get; set; }
         public int StatusPercent { get; set; }
-        public bool ShowStatus { get; set; }
+        public bool ShowStatus { get; set; } = true;
 
         public int TelegramQueryDepth { get; set; }
         public int StocksUpdatedIn1Sec { get;set; }
@@ -33,7 +33,6 @@ namespace RcktMon.ViewModels
         public Task HandleAsync(StatsUpdateMessage message, CancellationToken cancellationToken)
         {
             //ShowStatus = !message.Finished;
-            ShowStatus = true;
             StatusProgressText = message.ToString();
             StatusPercent = message.Percent;
             StatusInfoText = "Загрузка исторических данных...";
