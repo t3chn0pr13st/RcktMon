@@ -45,7 +45,7 @@ namespace CoreData
             return (@$"
 `{s.Ticker}` {candles[candles.Length-1].Time.ToLocalTime():ddd, dd.MM.yy, H:mm} → {s.LastUpdate:H:mm:ss}
 *{s.Ticker}* *({s.Name})*
-{change.Arrow()} {change.FormatPercent()} in {minutes}m ({candles[candles.Length-1].Open.FormatPrice(s.Currency),2} → {candles[0].Close.FormatPrice(s.Currency), -2}) 🔸 Vol {sumVolume} ({volPercentOfChange.FormatPercent()}), {volPriceF}
+{change.Arrow()} {change.FormatPercent()} in {minutes}m ({candles[candles.Length-1].Open.FormatPrice(s.Currency, true),2} → {candles[0].Close.FormatPrice(s.Currency, true), -2}) 🔸 Vol {sumVolume} ({volPercentOfChange.FormatPercent()}), {volPriceF}
 {s.DayChange.Arrow()} {s.DayChangeF} today ({s.TodayOpenF} → {s.PriceF}) 🔹 Vol {s.DayVolume} ({volPercentOfDay.FormatPercent()}), {s.DayVolumeCostF}
 ❇️ Yesterday AVG {s.YesterdayAvgPriceF} ◽️ Vol {s.YesterdayVolume.FormatNumber()} ({s.YesterdayVolumeCostF})
 ✳️ Month       AVG {s.AvgDayPricePerMonthF} ◽️ Vol {s.AvgDayVolumePerMonth.FormatNumber()} ({s.AvgDayVolumePerMonthCostF})
@@ -82,46 +82,52 @@ namespace CoreData
         }
 
         public static (decimal change, decimal volChange, int minutes, CandlePayload[] candles, bool volumeTrigger) 
-            GetLast10MinChange(this IStockModel s, decimal threshold, decimal volThreshold)
+            GetLastXMinChange(this IStockModel s, int minutesPrc, int minutesVol, decimal threshold, decimal volThreshold)
         {
             var startTime = DateTime.Now;
+            int maxMins = Math.Max(minutesPrc, minutesVol);
             startTime = startTime.AddMilliseconds(-startTime.Millisecond)
-                .AddSeconds(-startTime.Second).AddMinutes(-10);
+                .AddSeconds(-startTime.Second).AddMinutes(-maxMins);
 
-            var last10minCandles = s.MinuteCandles
+            var lastXminCandles = s.MinuteCandles
                 .Where(p => p.Key >= startTime)
                 .OrderBy(p => p.Key)
                 .Select(p => p.Value)
                 .ToList();
 
-            if (last10minCandles.Count == 0)
+            if (lastXminCandles.Count == 0)
                 return (0, 0, 0, Array.Empty<CandlePayload>(), false);
 
-            decimal close = last10minCandles[last10minCandles.Count-1].Close;
+            decimal close = lastXminCandles[lastXminCandles.Count-1].Close;
             decimal volsum = 0;
             int numMin = 0;
             decimal change = 0, volChange = 0;
             bool checkVol = s.AvgDayVolumePerMonth > 0;
 
             HashSet<CandlePayload> candles = new HashSet<CandlePayload>();
-            for (int i = last10minCandles.Count - 1; i >= 0; i--)
+
+            int minChangeMinIdx = lastXminCandles.Count - minutesPrc;
+            int minVolMinIdx = lastXminCandles.Count - minutesVol;
+
+            for (int i = lastXminCandles.Count - 1; i >= 0; i--)
             {
-                candles.Add(last10minCandles[i]);
-                decimal open = last10minCandles[i].Open;
+                candles.Add(lastXminCandles[i]);
+                decimal open = lastXminCandles[i].Open;
                 change = (close - open) / open;
-                decimal vol = last10minCandles[i].Volume;
+                decimal vol = lastXminCandles[i].Volume;
                 volsum += vol;
                 if (checkVol)
                     volChange = volsum / s.AvgDayVolumePerMonth;
 
-                if (change > threshold || change < -threshold)
+                if (i >= minChangeMinIdx && change > threshold || change < -threshold)
                 {
                     var candlesArray = candles.ToArray();
                     numMin = (int)Math.Round(candlesArray[0].Time.Subtract(candlesArray[candlesArray.Length-1].Time)
                         .TotalMinutes, 0) + 1;
                     return (change, volChange, numMin, candles.ToArray(), false);
                 }
-                if (volChange >= volThreshold)
+
+                if (i >= minVolMinIdx && volChange >= volThreshold)
                 {
                     var candlesArray = candles.ToArray();
                     numMin = (int)Math.Round(candlesArray[0].Time.Subtract(candlesArray[candlesArray.Length-1].Time)

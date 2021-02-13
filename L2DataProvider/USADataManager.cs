@@ -274,6 +274,9 @@ namespace USADataProvider
             else if (_wasStarted && _login != message.USAQuotesLogin && _password != message.USAQuotesPassword)
             {
                 Run();
+            } else if (_wasStarted && !message.USAQuotesEnabled)
+            {
+                Stop();
             }
         }
 

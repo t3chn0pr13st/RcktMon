@@ -86,7 +86,7 @@ namespace CoreNgine.Strategies
                 var volPerc = stock.DayVolume / stock.AvgDayVolumePerMonth;
                 if (volPerc > Settings.MinVolumeDeviationFromDailyAverage && Settings.MinVolumeDeviationFromDailyAverage > 0)
                 {
-                    string chatId = Settings.TgChatId;
+                    string chatId = Settings.TgChatId; 
                     if (stock.Currency.Equals("RUB", StringComparison.InvariantCultureIgnoreCase) ||
                         stock.Ticker == "TCS")
                         chatId = Settings.TgChatIdRu;
@@ -104,11 +104,14 @@ namespace CoreNgine.Strategies
                 }
              }
 
-            var change = stock.GetLast10MinChange(Settings.MinTenMinutesPriceChange, Settings.MinTenMinutesVolPercentChange);
+            var change = stock.GetLastXMinChange(
+                Settings.NumOfMinToCheck,
+                Settings.NumOfMinToCheckVol,
+                Settings.MinXMinutesPriceChange,
+                Settings.MinXMinutesVolChange);
 
-            if (!change.volumeTrigger && Settings.MinTenMinutesPriceChange > 0 && Math.Abs(change.change) > Settings.MinTenMinutesPriceChange 
-                && stock.DayChange > Settings.MinTenMinutesPriceChange && (stock.LastAboveThresholdCandleTime == null
-                || stock.LastAboveThresholdCandleTime < candle.Time.AddMinutes(-change.minutes)))
+            if (!change.volumeTrigger && Settings.MinXMinutesPriceChange > 0 && Math.Abs(change.change) > Settings.MinXMinutesPriceChange 
+                && (stock.LastAboveThresholdCandleTime == null || stock.LastAboveThresholdCandleTime < candle.Time.AddMinutes(-change.minutes)))
             {
                 stock.LastAboveThresholdCandleTime = candle.Time;
 
@@ -138,8 +141,8 @@ namespace CoreNgine.Strategies
                 );
             }
 
-            if (change.volumeTrigger && Settings.MinTenMinutesVolPercentChange > 0 && 
-                change.volChange > Settings.MinTenMinutesVolPercentChange && (stock.LastAboveVolThresholdCandleTime == null
+            if (change.volumeTrigger && Settings.MinXMinutesVolChange > 0 && 
+                change.volChange > Settings.MinXMinutesVolChange && (stock.LastAboveVolThresholdCandleTime == null
                 || stock.LastAboveVolThresholdCandleTime < candle.Time.AddMinutes(-change.minutes)))
             {
                 stock.LastAboveVolThresholdCandleTime = candle.Time;
@@ -149,10 +152,15 @@ namespace CoreNgine.Strategies
                 
                 var changeInfo = stock.GetMinutesVolumeChangeInfo(change.change, change.minutes, change.candles);
                 
-                if (IsSendToTelegramEnabled)
+                string chatId = Settings.TgChatId;
+                if (stock.Currency.Equals("RUB", StringComparison.InvariantCultureIgnoreCase) ||
+                    stock.Ticker == "TCS")
+                    chatId = Settings.TgChatIdRu;
+
+                if (IsSendToTelegramEnabled && long.TryParse(chatId, out var lChatId) && lChatId != 0)
                 {
                     if (changeInfo.volPercent >= Settings.MinVolumeDeviationFromDailyAverage)
-                        StocksManager.Telegram.PostMessage(changeInfo.message, stock.Ticker);
+                        StocksManager.Telegram.PostMessage(changeInfo.message, stock.Ticker, lChatId);
                 }
 
                 int lastIdx = change.candles.Length - 1;

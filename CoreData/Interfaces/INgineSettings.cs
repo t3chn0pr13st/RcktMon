@@ -7,9 +7,11 @@
         string TgChatId { get; set; }
         string TgChatIdRu { get; set; }
         decimal MinDayPriceChange { get; set; }
-        decimal MinTenMinutesPriceChange { get; set; }
+        decimal MinXMinutesPriceChange { get; set; }
+        int NumOfMinToCheck { get; set; }
+        int NumOfMinToCheckVol { get; set; }
         decimal MinVolumeDeviationFromDailyAverage { get; set; }
-        decimal MinTenMinutesVolPercentChange { get; set; }
+        decimal MinXMinutesVolChange { get; set; }
         bool IsTelegramEnabled { get; set; }
         bool CheckRockets { get; set; }
         

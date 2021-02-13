@@ -70,7 +70,13 @@ namespace CoreNgine.Shared
         public INgineSettings Settings => _settingsProvider.Settings;
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        
+
+        public void Shutdown()
+        {
+            _cancellationTokenSource.Cancel();
+            Telegram.Stop();
+        }
+
         public StocksManager(IServiceProvider services, IMainModel mainModel, ILogger<StocksManager> logger, ISettingsProvider settingsProvider, IEventAggregator2 eventAggregator)
         {
             _settingsProvider = settingsProvider;
@@ -172,7 +178,7 @@ namespace CoreNgine.Shared
                     }
                 }
 
-                await Task.Delay(100, cancellationToken);
+                await Task.Delay(100);
             }
         }
 
@@ -211,7 +217,7 @@ namespace CoreNgine.Shared
 
                     if (_lastEventReceived != null && DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
                     {
-                        if (IsHolidays || IsTradeStoppedTime)
+                        if (IsTradeStoppedTime) // || IsHolidays)
                         {
                             Thread.Sleep(1000);
                             continue;
@@ -547,16 +553,16 @@ namespace CoreNgine.Shared
                 }
             }
 
-            int n = 0;
-            foreach ( var stock in toSubscribeInstr )
-            {
-                var request3 = new InstrumentInfoSubscribeRequest( stock.Figi );
-                QueueBrokerAction( b => InstrumentInfoConnection.SendStreamingRequestAsync( request3 ),
-                    $"Подписка на статус {stock.Ticker} ({stock.Figi}" );
+            //int n = 0;
+            //foreach ( var stock in toSubscribeInstr )
+            //{
+            //    var request3 = new InstrumentInfoSubscribeRequest( stock.Figi );
+            //    QueueBrokerAction( b => InstrumentInfoConnection.SendStreamingRequestAsync( request3 ),
+            //        $"Подписка на статус {stock.Ticker} ({stock.Figi}" );
 
-                if ( ++n % 100 == 0 )
-                    await Task.Delay( 1000 );
-            }
+            //    if ( ++n % 100 == 0 )
+            //        await Task.Delay( 1000 );
+            //}
         }
 
         private void AddCandleToStock(object data)

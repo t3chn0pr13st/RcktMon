@@ -103,8 +103,6 @@
     <PackageReference Include="Caliburn.Micro" Version="4.0.136-rc" />
     <PackageReference Include="Dirkster.AvalonDock" Version="4.50.1" />
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.50.1" />
-    <PackageReference Include="Easy.MessageHub" Version="5.0.0" />
-    <PackageReference Include="JKang.EventBus" Version="1.1.0" />
     <PackageReference Include="MahApps.Metro" Version="2.4.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
@@ -121,7 +119,7 @@
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
     <PackageReference Include="System.Composition.Hosting" Version="5.0.0" />
     <PackageReference Include="Telegram.Bot" Version="15.7.1" />
-    <PackageReference Include="Tinkoff.Trading.OpenApi" Version="1.6.0" />
+    <PackageReference Include="Tinkoff.Trading.OpenApi" Version="1.7.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreNgine\CoreNgine.csproj" />

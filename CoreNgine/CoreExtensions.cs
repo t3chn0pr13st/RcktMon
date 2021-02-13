@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreNgine.Models;
 using CoreNgine.Shared;
+using HellBrick.Collections;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -50,6 +51,15 @@ namespace CoreNgine
             while (queue.TryDequeue(out _))
             {
                 // just go next
+            }
+        }
+
+        public static async Task Clear<T>(this AsyncQueue<T> queue)
+        {
+            while (queue.Count > 0)
+            {
+                if (queue.Count > 0)
+                    await queue.TakeAsync();
             }
         }
 

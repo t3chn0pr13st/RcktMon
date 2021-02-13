@@ -177,14 +177,48 @@
                                     <StackPanel Orientation="Vertical">
                                         <mah:ToggleSwitch IsOn="{Binding IsTelegramEnabled}" FontSize="12.5"
                                                           Content="Слать уведомления в телеграм" />
+                                        
                                         <TextBlock Text="При изменении цены за день (%)" Margin="2" />
                                         <TextBox Text="{Binding MinDayPriceChangePercent}" Margin="2" />
-                                        <TextBlock Text="При изменении цены за 10 минут (%)" Margin="2" />
-                                        <TextBox Text="{Binding MinTenMinutesPriceChangePercent}" Margin="2" />
+                                        
+                                        <TextBlock Text="{Binding NumOfMinToCheck, StringFormat={}При изменении цены за {0} минут (%)}" 
+                                                   Margin="2" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                            </Grid.ColumnDefinitions>
+                                            <mah:NumericUpDown
+                                                Margin="2" Minimum="1" Maximum="120"
+                                                Value="{Binding NumOfMinToCheck}"></mah:NumericUpDown>
+                                            <TextBlock Grid.Column="1" Margin="2" VerticalAlignment="Center">мин.</TextBlock>
+                                            <TextBox Grid.Column="2" 
+                                                     Text="{Binding MinXMinutesPriceChangePercent}" Margin="2" />    
+                                            <TextBlock Grid.Column="3" Margin="2" VerticalAlignment="Center">%</TextBlock>
+                                        </Grid>
+                                        
                                         <TextBlock Text="Мин. объем при изменении цены &#10; (% от среднего объема за день)" TextWrapping="Wrap" Margin="2" />
                                         <TextBox Text="{Binding MinVolumeDeviationFromDailyAveragePercent}" Margin="2" />
-                                        <TextBlock Text="При изменении объёма за 10 минут &#10; (% от среднего объёма за день)" Margin="2" />
-                                        <TextBox Text="{Binding MinTenMinutesVolPercentChangePercent}" Margin="2" />
+
+                                        <TextBlock Text="{Binding NumOfMinToCheckVol, StringFormat={}При изменении объёма за {0} минут &#10; (% от среднего объёма за день)}" Margin="2" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                            </Grid.ColumnDefinitions>
+                                            <mah:NumericUpDown
+                                                Margin="2" Minimum="1" Maximum="120"
+                                                Value="{Binding NumOfMinToCheckVol}"></mah:NumericUpDown>
+                                            <TextBlock Grid.Column="1" Margin="2" VerticalAlignment="Center">мин.</TextBlock>
+                                            <TextBox Grid.Column="2" 
+                                                     Text="{Binding MinXMinutesVolPercentChangePercent}" Margin="2" />    
+                                            <TextBlock Grid.Column="3" Margin="2" VerticalAlignment="Center">%</TextBlock>
+                                        </Grid>
+
                                         <Button Margin="2 10 2 6" cal:Message.Attach="AcceptOptions">Применить</Button>
                                     </StackPanel>
                                 </Expander>

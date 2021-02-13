@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using Caliburn.Micro;
 using CoreData.Interfaces;
@@ -107,6 +108,14 @@ namespace RcktMon
         protected override void OnExit(object sender, EventArgs e)
         {
             base.OnExit(sender, e);
+            try
+            {
+                Process.GetCurrentProcess().Kill();
+            }
+            catch
+            {
+
+            }
         }
     }
 }

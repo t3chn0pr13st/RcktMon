@@ -15,9 +15,11 @@ namespace RcktMon.ViewModels
         public string TgChatIdRu { get; set; }
 
         public decimal MinDayPriceChangePercent { get; set; }
-        public decimal MinTenMinutesPriceChangePercent { get; set; }
+        public decimal MinXMinutesPriceChangePercent { get; set; }
         public decimal MinVolumeDeviationFromDailyAveragePercent { get; set; }
-        public decimal MinTenMinutesVolPercentChangePercent { get; set; }
+        public decimal MinXMinutesVolPercentChangePercent { get; set; }
+        public int NumOfMinToCheck { get; set; }
+        public int NumOfMinToCheckVol { get; set; }
         public bool IsTelegramEnabled { get; set; }
 
         public bool USAQuotesEnabled { get; set; }
@@ -49,9 +51,11 @@ namespace RcktMon.ViewModels
             TgChatId = Settings.TgChatId;
             TgChatIdRu = Settings.TgChatIdRu;
             MinDayPriceChangePercent = Settings.MinDayPriceChange * 100m;
-            MinTenMinutesPriceChangePercent = Settings.MinTenMinutesPriceChange * 100m;
+            MinXMinutesPriceChangePercent = Settings.MinXMinutesPriceChange * 100m;
             MinVolumeDeviationFromDailyAveragePercent = Settings.MinVolumeDeviationFromDailyAverage * 100m;
-            MinTenMinutesVolPercentChangePercent = Settings.MinTenMinutesVolPercentChange * 100m;
+            MinXMinutesVolPercentChangePercent = Settings.MinXMinutesVolChange * 100m;
+            NumOfMinToCheck = Settings.NumOfMinToCheck;
+            NumOfMinToCheckVol = Settings.NumOfMinToCheckVol;
             IsTelegramEnabled = Settings.IsTelegramEnabled;
             USAQuotesEnabled = Settings.USAQuotesEnabled;
             USAQuotesURL = Settings.USAQuotesURL;
@@ -88,10 +92,12 @@ namespace RcktMon.ViewModels
         public void AcceptOptions()
         {
             Settings.MinDayPriceChange = MinDayPriceChangePercent / 100m;
-            Settings.MinTenMinutesPriceChange = MinTenMinutesPriceChangePercent / 100m;
+            Settings.MinXMinutesPriceChange = MinXMinutesPriceChangePercent / 100m;
             Settings.MinVolumeDeviationFromDailyAverage = MinVolumeDeviationFromDailyAveragePercent / 100m;
-            Settings.MinTenMinutesVolPercentChange = MinTenMinutesVolPercentChangePercent / 100m;
+            Settings.MinXMinutesVolChange = MinXMinutesVolPercentChangePercent / 100m;
             Settings.IsTelegramEnabled = IsTelegramEnabled;
+            Settings.NumOfMinToCheck = NumOfMinToCheck;
+            Settings.NumOfMinToCheckVol = NumOfMinToCheckVol;
 
             Settings.USAQuotesEnabled = USAQuotesEnabled;
             Settings.USAQuotesURL = USAQuotesURL;

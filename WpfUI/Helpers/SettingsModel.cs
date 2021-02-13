@@ -22,9 +22,11 @@ namespace RcktMon.Helpers
         public string TgChatId { get; set; }
         public string TgChatIdRu { get; set; }
         public decimal MinDayPriceChange { get; set; }
-        public decimal MinTenMinutesPriceChange { get; set; }
+        public decimal MinXMinutesPriceChange { get; set; }
         public decimal MinVolumeDeviationFromDailyAverage { get; set; }
-        public decimal MinTenMinutesVolPercentChange { get; set; }
+        public decimal MinXMinutesVolChange { get; set; }
+        public int NumOfMinToCheck { get; set; }
+        public int NumOfMinToCheckVol { get; set; }
         public bool IsTelegramEnabled { get; set; }
         public bool CheckRockets { get; set; }
 
@@ -57,8 +59,9 @@ namespace RcktMon.Helpers
                 var definition = new 
                 {
                     TiApiKey, TgBotApiKey, TgChatId, TgChatIdRu,
-                    MinDayPriceChange, MinTenMinutesPriceChange, 
-                    MinVolumeDeviationFromDailyAverage, MinTenMinutesVolPercentChange,
+                    MinDayPriceChange, MinXMinutesPriceChange, 
+                    MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
+                    NumOfMinToCheck, NumOfMinToCheckVol,
                     IsTelegramEnabled, CheckRockets,
                     USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, USAQuotesPassword, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
                 };
@@ -82,10 +85,14 @@ namespace RcktMon.Helpers
             }
             if (MinVolumeDeviationFromDailyAverage == 0)
                 MinVolumeDeviationFromDailyAverage = 0.002m;
-            if (MinTenMinutesVolPercentChange == 0)
-                MinTenMinutesVolPercentChange = 0.05m;
-            if (MinTenMinutesVolPercentChange == 0)
-                MinTenMinutesVolPercentChange = 0.07m;
+            if (MinXMinutesPriceChange == 0)
+                MinXMinutesPriceChange = 0.03m;
+            if (MinXMinutesVolChange == 0)
+                MinXMinutesVolChange = 0.5m;
+            if (NumOfMinToCheck == 0)
+                NumOfMinToCheck = 10;
+            if (NumOfMinToCheckVol == 0)
+                NumOfMinToCheckVol = 10;
 
             return this;
         }
@@ -97,8 +104,9 @@ namespace RcktMon.Helpers
             TgChatId = CryptoHelper.Encrypt(TgChatId),
             TgChatIdRu = CryptoHelper.Encrypt(TgChatIdRu),
             USAQuotesPassword = CryptoHelper.Encrypt(USAQuotesPassword),
-            MinDayPriceChange, MinTenMinutesPriceChange, 
-            MinVolumeDeviationFromDailyAverage, MinTenMinutesVolPercentChange,
+            MinDayPriceChange, MinXMinutesPriceChange, 
+            MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
+            NumOfMinToCheck, NumOfMinToCheckVol,
             IsTelegramEnabled, CheckRockets,
             USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
         };

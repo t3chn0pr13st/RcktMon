@@ -9,10 +9,13 @@ namespace CoreData
 
         public static string FormatPercent(this decimal val) => val.ToString("P2", CultureInfo.InvariantCulture).Replace(" ", "");
 
-        public static string FormatNumber(this decimal price)
+        public static string FormatNumber(this decimal price, bool sixSigns = false)
         {
             string mod = "";
-            price = Math.Round(price, 2);
+            if (price < 0.1m)
+                sixSigns = true;
+
+            price = Math.Round(price, sixSigns ? 6 : 2);
             if (price > 1_000_000_000)
             {
                 mod = "G";
@@ -35,9 +38,9 @@ namespace CoreData
             return $"{price.ToString(CultureInfo.InvariantCulture)}{mod}";
         }
 
-        public static string FormatPrice(this decimal price, string currency)
+        public static string FormatPrice(this decimal price, string currency, bool sixSignsPrecision = false)
         {
-            var priceStr = price.FormatNumber();
+            var priceStr = price.FormatNumber(sixSignsPrecision);
             switch (currency.ToUpper())
             {
                 case "RUB":
