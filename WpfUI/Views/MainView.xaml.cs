@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -57,6 +58,12 @@ namespace RcktMon.Views
                 }
             }
         }
+
+        private void CloseUpdateNotificationHyperlinkClick(object sender, RoutedEventArgs e)
+        {
+            UpdateNotificationBorder.Visibility = Visibility.Collapsed;
+        }
+
         private void HyperlinkOpenInAurora_OnClick(object sender, RoutedEventArgs e)
         {
             if (e.OriginalSource is Hyperlink el && el.DataContext is MessageViewModel message)
@@ -73,6 +80,28 @@ namespace RcktMon.Views
             {
                 main.OpenInAurora(stock.Ticker);
             }
+        }
+
+        private void ShowUpdateDetailsHyperlinkClicked(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel main)
+            {
+                try
+                {
+                    Process.Start("explorer", main.LastRelease.DetailsUrl);
+                } 
+                catch
+                {
+
+                }
+            }
+                
+        }
+
+        private void InstallUpdateHyperlinkClicked(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel main)
+                _ = main.InstallUpdate();
         }
     }
 }

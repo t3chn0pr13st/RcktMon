@@ -16,11 +16,12 @@
                 <componentmodel:SortDescription PropertyName="DayChange" Direction="Descending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
-          <CollectionViewSource Source="{Binding Messages}" x:Key="EventsCollectionView">
+        <CollectionViewSource Source="{Binding Messages}" x:Key="EventsCollectionView">
             <CollectionViewSource.SortDescriptions>
                 <componentmodel:SortDescription PropertyName="Date" Direction="Descending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+        <InverseBoolToVisibilityConverter x:Key="InvertedBoolToVisConverter" />
     </UserControl.Resources>
     <Grid x:Name="LayoutGrid">
         <Grid.RowDefinitions>
@@ -28,18 +29,43 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
+
+        <Border Background="#c05102" Padding="8 6" Name="UpdateNotificationBorder"
+                Visibility="{Binding LastRelease.IsNewer, Converter={StaticResource BooleanToVisibilityConverter}}">
+
+            <Grid VerticalAlignment="Center" TextBlock.FontSize="14"  ToolTip="{Binding LastRelease}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock>
+                    <Run Text="{Binding LastRelease.Version, StringFormat={}Доступно обновление до версии {0}.}" />&#160;
+                    <Hyperlink Click="ShowUpdateDetailsHyperlinkClicked" Foreground="LightGoldenrodYellow">Посмотреть детали обновления</Hyperlink>&#160;
+                    <Hyperlink Click="InstallUpdateHyperlinkClicked"
+                               Foreground="LightGoldenrodYellow" Cursor="Hand">
+                        <Run Text="{Binding UpdateLinkText}" />
+                    </Hyperlink>
+                </TextBlock>
+                 
+                <TextBlock Grid.Column="2">
+                    <Hyperlink Click="CloseUpdateNotificationHyperlinkClick" Foreground="LightGoldenrodYellow"
+                                       FontStyle="Italic" FontWeight="Normal"><Run Text="[x]"/></Hyperlink>
+                </TextBlock>
+            </Grid>
+        </Border>
+
         <DockingManager Grid.Row="1">
             <DockingManager.Theme>
                 <Vs2013DarkTheme />
             </DockingManager.Theme>
-            
+
             <LayoutRoot>
                 <LayoutPanel>
                     <LayoutPanel Orientation="Vertical">
                         <LayoutDocumentPane>
                             <LayoutDocument ContentId="Stocks" Title="Котировки" x:Name="StocksDoc">
-                                  
+
                                 <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource StocksCollectionView}}" 
                                         VirtualizingPanel.IsVirtualizing="True" 
                                         VirtualizingPanel.IsContainerVirtualizable="True"
@@ -70,9 +96,9 @@
                                         <DataGridTextColumn Binding="{Binding RUBidUSAskDiff, StringFormat=P2}" Header="Ask Diff" x:Name="AskDiffUSAColumn" />
                                         <DataGridTextColumn Binding="{Binding LastUpdate, StringFormat=HH:mm:ss.ff}" Header="Обновление" />
                                     </DataGrid.Columns>
-                                </DataGrid>          
-                                  
-                            </LayoutDocument>        
+                                </DataGrid>
+
+                            </LayoutDocument>
 
                         </LayoutDocumentPane>
 
@@ -111,7 +137,7 @@
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
                                     </DataGrid.Columns>
-                                </DataGrid>  
+                                </DataGrid>
 
                             </LayoutAnchorable>
 
@@ -174,14 +200,14 @@
                                         <Button Margin="2 10 2 6" cal:Message.Attach="AcceptOptions">Применить</Button>
                                     </StackPanel>
                                 </Expander>
-                                 <Expander Header="Настройки уведомлений" IsExpanded="True">
+                                <Expander Header="Настройки уведомлений" IsExpanded="True">
                                     <StackPanel Orientation="Vertical">
                                         <mah:ToggleSwitch IsOn="{Binding IsTelegramEnabled}" FontSize="12.5"
                                                           Content="Слать уведомления в телеграм" />
-                                        
+
                                         <TextBlock Text="При изменении цены за день (%)" Margin="2" />
                                         <TextBox Text="{Binding MinDayPriceChangePercent}" Margin="2" />
-                                        
+
                                         <TextBlock Text="{Binding NumOfMinToCheck, StringFormat={}При изменении цены за {0} минут (%)}" 
                                                    Margin="2" />
                                         <Grid>
@@ -196,10 +222,10 @@
                                                 Value="{Binding NumOfMinToCheck}"></mah:NumericUpDown>
                                             <TextBlock Grid.Column="1" Margin="2" VerticalAlignment="Center">мин.</TextBlock>
                                             <TextBox Grid.Column="2" 
-                                                     Text="{Binding MinXMinutesPriceChangePercent}" Margin="2" />    
+                                                     Text="{Binding MinXMinutesPriceChangePercent}" Margin="2" />
                                             <TextBlock Grid.Column="3" Margin="2" VerticalAlignment="Center">%</TextBlock>
                                         </Grid>
-                                        
+
                                         <TextBlock Text="Мин. объем при изменении цены &#10; (% от среднего объема за день)" TextWrapping="Wrap" Margin="2" />
                                         <TextBox Text="{Binding MinVolumeDeviationFromDailyAveragePercent}" Margin="2" />
 
@@ -216,7 +242,7 @@
                                                 Value="{Binding NumOfMinToCheckVol}"></mah:NumericUpDown>
                                             <TextBlock Grid.Column="1" Margin="2" VerticalAlignment="Center">мин.</TextBlock>
                                             <TextBox Grid.Column="2" 
-                                                     Text="{Binding MinXMinutesVolPercentChangePercent}" Margin="2" />    
+                                                     Text="{Binding MinXMinutesVolPercentChangePercent}" Margin="2" />
                                             <TextBlock Grid.Column="3" Margin="2" VerticalAlignment="Center">%</TextBlock>
                                         </Grid>
 
@@ -238,7 +264,7 @@
                         </LayoutAnchorGroup>  
                     </LayoutAnchorSide>
                 </LayoutRoot.BottomSide>-->
-               
+
             </LayoutRoot>
         </DockingManager>
         <StatusBar Grid.Row="2">

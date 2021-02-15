@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using Caliburn.Micro;
+using RcktMon.ViewModels;
 
 namespace RcktMon
 {
@@ -31,9 +32,14 @@ namespace RcktMon
                 }
                 else
                 {
+                    string version = null;
+                    if (model is MainViewModel mainViewModel)
+                        version = mainViewModel.Updater.CurrentVersion.ToString();
+
                     window = new MainWindow
                     {
-                        Content = view
+                        Content = view,
+                        Title = $"TI RCKTMON v{version ?? "Unknown"}"
                         //SizeToContent = SizeToContent.Manual,
                         //WindowState = WindowState.Maximized
                     };

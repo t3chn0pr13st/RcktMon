@@ -297,14 +297,14 @@ namespace CoreNgine.Shared
                     _ = UpdateInstrumentsInfo().ConfigureAwait(false);
                 }
 
-                if (_lastRestartTime.HasValue && DateTime.Now.Subtract(_lastRestartTime.Value).TotalSeconds > 10)
+                if (_mainModel.Stocks.Count > 0 && _lastRestartTime.HasValue && DateTime.Now.Subtract(_lastRestartTime.Value).TotalSeconds > 10)
                 {
 
                     if (_lastEventReceived != null && DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
                     {
                         if (ExchangeClosed) // || IsHolidays)
                         {
-                            Thread.Sleep(1000);
+                            await Task.Delay(1000);
                             continue;
                         }
 
@@ -322,7 +322,7 @@ namespace CoreNgine.Shared
             }
         }
 
-        public bool ExchangeClosed => ExchangeStatus.All(s => s.Status == "Close");
+        public bool ExchangeClosed => ExchangeStatus == null || ExchangeStatus.All(s => s.Status == "Close" || s.Status == "Suspend");
 
         private void LogError(string msg)
         {
@@ -351,7 +351,7 @@ namespace CoreNgine.Shared
             await Task.Delay(10000);
 
             PrepareConnection();
-            await UpdatePrices();
+            await SubscribeToStockEvents();
         }
 
         private async Task CandleProcessingProc(CandleResponse cr)
@@ -606,7 +606,7 @@ namespace CoreNgine.Shared
                     _cancellationTokenSource.Token);
         }
 
-        public async Task UpdatePrices()
+        public async Task SubscribeToStockEvents()
         {
             var toSubscribeInstr = new HashSet<IStockModel>();
             foreach (var stock in _mainModel.Stocks.Values)
@@ -654,7 +654,7 @@ namespace CoreNgine.Shared
             }
         }
 
-        public async Task UpdateStocks()
+        public async Task UpdateStocks(bool subscribeToPrices = true)
         {
             if (CommonConnection == null)
                 return;
@@ -674,7 +674,8 @@ namespace CoreNgine.Shared
 
             await UpdateInstrumentsInfo();
 
-            await UpdatePrices();
+            if (subscribeToPrices)
+                await SubscribeToStockEvents();
             //_mainModel.IsNotifying = false;
         }
     }
