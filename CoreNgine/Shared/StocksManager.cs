@@ -304,7 +304,7 @@ namespace CoreNgine.Shared
                     {
                         if (ExchangeClosed) // || IsHolidays)
                         {
-                            Thread.Sleep(1000);
+                            await Task.Delay(1000);
                             continue;
                         }
 
@@ -322,7 +322,7 @@ namespace CoreNgine.Shared
             }
         }
 
-        public bool ExchangeClosed => ExchangeStatus.All(s => s.Status == "Close");
+        public bool ExchangeClosed => ExchangeStatus == null || ExchangeStatus.All(s => s.Status == "Close");
 
         private void LogError(string msg)
         {
@@ -348,7 +348,7 @@ namespace CoreNgine.Shared
             CommonConnectionActions.Clear();
             _subscribedFigi.Clear();
             _subscribedMinuteFigi.Clear();
-            await Task.Delay(10000);
+            await Task.Delay(5000);
 
             PrepareConnection();
             await UpdatePrices();
@@ -550,7 +550,7 @@ namespace CoreNgine.Shared
 
         private async Task ReportStatsCheckerProgress()
         {
-            var stocks = _mainModel.Stocks.Values.Where(s => s.Price > 0).ToList();
+            var stocks = _mainModel.Stocks.Values.Where(s => !s.IsDead).ToList();
             var completed = stocks.Count(s => !s.MonthStatsExpired);
             await EventAggregator.PublishOnCurrentThreadAsync(new StatsUpdateMessage(completed, stocks.Count,
                 completed == stocks.Count, _apiCount));

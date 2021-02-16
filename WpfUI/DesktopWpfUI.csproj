@@ -98,7 +98,7 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
     <Content Include="iconfinder_rocket_406798.ico" />
-    <Content Include="version.txt">
+    <Content Include="version">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

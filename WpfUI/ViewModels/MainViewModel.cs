@@ -84,21 +84,28 @@ namespace RcktMon.ViewModels
         {
             Task.Run(async () =>
             {
-                try
+                while (true)
                 {
-                    var releaseInfo = await Updater.GetLastRelease();
-                    if (!releaseInfo.InvalidData)
+                    try
                     {
-                        if (LastRelease == null || releaseInfo.Version > LastRelease.Version)
+                        var releaseInfo = await Updater.GetLastRelease();
+                        if (!releaseInfo.InvalidData)
                         {
-                            LastRelease = releaseInfo;
-                            NotifyOfPropertyChange(nameof(LastRelease));
+                            if (LastRelease == null || releaseInfo.Version > LastRelease.Version)
+                            {
+                                LastRelease = releaseInfo;
+                                NotifyOfPropertyChange(nameof(LastRelease));
+                            }
                         }
+
+                        await Task.Delay(50000);
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Ошибка при проверке новой версии: {Error}", ex.Message);
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Ошибка при проверке новой версии: {Error}", ex.Message);
+                    }
+
+                    await Task.Delay(5000);
                 }
             });
         }

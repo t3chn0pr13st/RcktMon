@@ -57,6 +57,12 @@ namespace RcktMon.Views
                 }
             }
         }
+
+        private void CloseUpdateNotificationHyperlinkClick(object sender, RoutedEventArgs e)
+        {
+            UpdateNotificationBorder.Visibility = Visibility.Collapsed;
+        }
+
         private void HyperlinkOpenInAurora_OnClick(object sender, RoutedEventArgs e)
         {
             if (e.OriginalSource is Hyperlink el && el.DataContext is MessageViewModel message)
@@ -73,6 +79,19 @@ namespace RcktMon.Views
             {
                 main.OpenInAurora(stock.Ticker);
             }
+        }
+
+        private void ShowUpdateDetailsHyperlinkClicked(object sender, RoutedEventArgs e)
+        {
+            UpdateInfoPopup.IsOpen = true;
+            //if (DataContext is MainViewModel main)
+            //    main.LastRelease
+        }
+
+        private void InstallUpdateHyperlinkClicked(object sender, RoutedEventArgs e)
+        {
+            //if (DataContext is MainViewModel main)
+            //    main.LastRelease;
         }
     }
 }
