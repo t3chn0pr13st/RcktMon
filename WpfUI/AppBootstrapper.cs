@@ -56,7 +56,7 @@ namespace RcktMon
             string version = null;
             try
             {
-                version = File.ReadAllText(AppContext.BaseDirectory + "version.txt");
+                version = File.ReadAllText(AppContext.BaseDirectory + "version");
             } catch { }
 
             _container.Configure(services =>

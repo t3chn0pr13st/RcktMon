@@ -24,7 +24,6 @@ using CoreNgine.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using RcktMon.Helpers;
 using Tinkoff.Trading.OpenApi.Models;
 
 namespace RcktMon.ViewModels
@@ -49,9 +48,12 @@ namespace RcktMon.ViewModels
         public SettingsViewModel SettingsViewModel { get; }
         public StatusViewModel Status { get; }
 
-        public ReleaseInfo LastRelease { get; private set; }
+        public ReleaseInfo LastRelease { get; private set; } = new ReleaseInfo();
 
         public AutoUpdate Updater { get; }
+
+        public string UpdateLinkText { get; set; } = "Установить обновление";
+        public bool UpdateInProgress { get; set; }
 
         public IServiceProvider Services => _services;
 
@@ -108,6 +110,26 @@ namespace RcktMon.ViewModels
                     await Task.Delay(5000);
                 }
             });
+        }
+
+        public async Task InstallUpdate()
+        {
+            if (UpdateInProgress)
+                return;
+            UpdateInProgress = true;
+            try
+            {
+                await Updater.InstallUpdate(LastRelease, status =>
+                {
+                    UpdateLinkText = status;
+                });
+            } catch (Exception ex)
+            {
+                AddMessage("ERROR", DateTime.Now, $"Ошибка при установке обновления: {ex.Message}");
+            }
+
+            UpdateLinkText = "Установить обновление";
+            UpdateInProgress = false;
         }
 
         public IStockModel SelectedStock
@@ -235,6 +257,18 @@ namespace RcktMon.ViewModels
             return Task.WhenAll(_eventAggregator.PublishOnCurrentThreadAsync(stocks), tcs.Task);
         }
 
+        private Task ExecuteOnUI(System.Action action)
+        {
+            var tcs = new TaskCompletionSource();
+            _uiContext.Post(obj =>
+            {
+                action();
+                tcs.SetResult();
+            }, null);
+
+            return tcs.Task;
+        }
+
         public async Task InitStocksManager()
         {
             bool success = false;
@@ -248,20 +282,39 @@ namespace RcktMon.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    AddMessage("ERROR", DateTime.Now, "Не удалось получить список инструментов: " + ex.Message);
                     success = false;
+                    if (ex.Message.StartsWith("Unauthorized"))
+                    {
+                        AddMessage("ERROR", DateTime.Now, "Не удалось получить список инструментов: указан неверный токен Тинькофф Инвестиции (нет доступа)");
+                        break;
+                    }
+                    else
+                    {
+                        AddMessage("ERROR", DateTime.Now, "Не удалось получить список инструментов: " + ex.Message);
+                    }                    
                 }
             }
         }
 
         public async Task RefreshAll()
         {
-            await StocksManager.UpdateStocks();
-        }
+            await StocksManager.UpdateStocks(false);
 
-        public async Task RefreshStocks()
-        {
-            await StocksManager.UpdatePrices();
+            await ExecuteOnUI(() =>
+            {
+                foreach (var stock in Stocks.Values.ToList())
+                {
+                    if (stock.IsDead || stock.Ticker.EndsWith("_old", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        Debug.WriteLine($"Removing {stock.Ticker}");
+                        Stocks.Remove(stock.Ticker);
+                    }
+                }
+
+                NotifyOfPropertyChange(nameof(Stocks));
+            });
+
+            await StocksManager.SubscribeToStockEvents();
         }
 
     }

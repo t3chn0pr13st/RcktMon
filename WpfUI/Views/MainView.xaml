@@ -21,6 +21,7 @@
                 <componentmodel:SortDescription PropertyName="Date" Direction="Descending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+        <InverseBoolToVisibilityConverter x:Key="InvertedBoolToVisConverter" />
     </UserControl.Resources>
     <Grid x:Name="LayoutGrid">
         <Grid.RowDefinitions>
@@ -32,7 +33,7 @@
         <Border Background="#c05102" Padding="8 6" Name="UpdateNotificationBorder"
                 Visibility="{Binding LastRelease.IsNewer, Converter={StaticResource BooleanToVisibilityConverter}}">
 
-            <Grid VerticalAlignment="Center" TextBlock.FontSize="14">
+            <Grid VerticalAlignment="Center" TextBlock.FontSize="14"  ToolTip="{Binding LastRelease}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -41,18 +42,18 @@
                 <TextBlock>
                     <Run Text="{Binding LastRelease.Version, StringFormat={}Доступно обновление до версии {0}.}" />&#160;
                     <Hyperlink Click="ShowUpdateDetailsHyperlinkClicked" Foreground="LightGoldenrodYellow">Посмотреть детали обновления</Hyperlink>&#160;
-                    <Hyperlink Click="InstallUpdateHyperlinkClicked" Foreground="LightGoldenrodYellow">Установить обновление</Hyperlink>
+                    <Hyperlink Click="InstallUpdateHyperlinkClicked"
+                               Foreground="LightGoldenrodYellow" Cursor="Hand">
+                        <Run Text="{Binding UpdateLinkText}" />
+                    </Hyperlink>
                 </TextBlock>
+                 
                 <TextBlock Grid.Column="2">
                     <Hyperlink Click="CloseUpdateNotificationHyperlinkClick" Foreground="LightGoldenrodYellow"
                                        FontStyle="Italic" FontWeight="Normal"><Run Text="[x]"/></Hyperlink>
                 </TextBlock>
             </Grid>
         </Border>
-
-        <Popup Name="UpdateInfoPopup">
-            <TextBlock Text="{Binding LastRelease.Changelog}" />
-        </Popup>
 
         <DockingManager Grid.Row="1">
             <DockingManager.Theme>

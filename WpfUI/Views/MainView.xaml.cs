@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -83,15 +84,24 @@ namespace RcktMon.Views
 
         private void ShowUpdateDetailsHyperlinkClicked(object sender, RoutedEventArgs e)
         {
-            UpdateInfoPopup.IsOpen = true;
-            //if (DataContext is MainViewModel main)
-            //    main.LastRelease
+            if (DataContext is MainViewModel main)
+            {
+                try
+                {
+                    Process.Start("explorer", main.LastRelease.DetailsUrl);
+                } 
+                catch
+                {
+
+                }
+            }
+                
         }
 
         private void InstallUpdateHyperlinkClicked(object sender, RoutedEventArgs e)
         {
-            //if (DataContext is MainViewModel main)
-            //    main.LastRelease;
+            if (DataContext is MainViewModel main)
+                _ = main.InstallUpdate();
         }
     }
 }

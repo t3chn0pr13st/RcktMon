@@ -110,7 +110,7 @@ namespace CoreNgine.Models
 
         public async Task RefreshStocks()
         {
-            await StocksManager.UpdatePrices();
+            await StocksManager.SubscribeToStockEvents();
         }
     }
 }

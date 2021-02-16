@@ -39,7 +39,6 @@
     </ApplicationDefinition>
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="AppWindowManager.cs" />
-    <Compile Include="Helpers\AutoUpdate.cs" />
     <Compile Include="Helpers\CryptoHelper.cs" />
     <Compile Include="Helpers\SettingsModel.cs" />
     <Compile Include="ViewModels\MessageViewModel.cs" />
