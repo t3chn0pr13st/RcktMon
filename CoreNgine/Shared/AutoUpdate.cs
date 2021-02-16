@@ -52,7 +52,7 @@ namespace CoreNgine.Shared
         private string _checkUrlPathRegex;
         private readonly WebClient _webClient = new WebClient();
 
-        public Version CurrentVersion { get; }
+        public Version CurrentVersion { get; set; }
 
         public ReleaseInfo LastRelease { get; private set; }
 
@@ -60,7 +60,26 @@ namespace CoreNgine.Shared
         {
             if (Version.TryParse(currentVersion, out var ver))
                 CurrentVersion = ver;
+            else
+                DetectCurrentVersion();
+
             SetCheckUrl(checkUrl);
+        }
+
+        private void DetectCurrentVersion()
+        {
+            Version currentVersion = Version.Parse("1.1.1");
+            try
+            {
+                var currentVersionString = Process.GetCurrentProcess().MainModule.FileVersionInfo.ProductVersion;
+                currentVersion = Version.Parse(currentVersionString);
+            }
+            catch
+            {
+
+            }
+
+            CurrentVersion = currentVersion;
         }
 
         public bool InProgress { get; set; }

@@ -7,10 +7,10 @@
     <RootNamespace>RcktMon</RootNamespace>
     <EnableDefaultItems>False</EnableDefaultItems>
     <ApplicationIcon>iconfinder_rocket_406798.ico</ApplicationIcon>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
+    <AssemblyVersion>1.5.4.0</AssemblyVersion>
+    <FileVersion>1.5.4.0</FileVersion>
     <AssemblyName>RcktMon</AssemblyName>
-    <Version>1.4</Version>
+    <Version>1.5.4</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -82,6 +82,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="App.config" />
     <None Include="AuroraWrapper.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -97,9 +98,6 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
     <Content Include="iconfinder_rocket_406798.ico" />
-    <Content Include="version">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />

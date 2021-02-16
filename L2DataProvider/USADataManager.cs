@@ -256,8 +256,7 @@ namespace USADataProvider
         public async Task HandleAsync(IEnumerable<IStockModel> message, CancellationToken cancellationToken)
         {
             var tickers = message
-                .Where(s => s.Currency.Equals("Usd", StringComparison.InvariantCultureIgnoreCase) && s.Ticker != "TCS" &&
-                            !s.Ticker.Contains("@"))
+                .Where(s => !s.IsDead && s.Exchange == "SPB")
                 .Select(s => s.Ticker.ToLower()).ToList();
             lock (_subscribedTickers)
             {

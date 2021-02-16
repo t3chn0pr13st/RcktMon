@@ -217,8 +217,11 @@ namespace CoreNgine.Shared
             _lastUIUpdate = DateTime.Now;
         }
 
-        private async Task UpdateInstrumentsInfo()
+        private async Task UpdateInstrumentsInfo(HashSet<IStockModel> stocks = null)
         {
+            if (stocks == null)
+                stocks = new HashSet<IStockModel>(_mainModel.Stocks.Values);
+
             try
             {
                 var info = await _tinkoffStocksInfo.GetInstrumentsInfo();
@@ -231,12 +234,11 @@ namespace CoreNgine.Shared
                         .Select(v => new { v.Symbol.Exchange, v.ExchangeStatus }).Distinct()
                         .Select(s => new ExchangeStatus(s.Exchange, s.ExchangeStatus)).ToArray();
 
-                    foreach (var stockRecord in _mainModel.Stocks)
+                    foreach (var stock in stocks)
                     {
-                        var stock = stockRecord.Value;
-                        if (infoDict.ContainsKey(stockRecord.Key))
+                        if (infoDict.ContainsKey(stock.Ticker))
                         {
-                            var instrumentInfo = infoDict[stockRecord.Key];
+                            var instrumentInfo = infoDict[stock.Ticker];
                             if (stock.Status != instrumentInfo.InstrumentStatusShortDesc)
                                 stock.Status = instrumentInfo.InstrumentStatusShortDesc;
                             if (stock.Exchange != instrumentInfo.Symbol.Exchange)
@@ -344,6 +346,7 @@ namespace CoreNgine.Shared
         public async Task ResetConnection()
         {
             _lastEventReceived = null;
+            _lastRestartTime = null;
             _stockProcessingQueue.Clear();
             CommonConnectionActions.Clear();
             _subscribedFigi.Clear();
@@ -670,9 +673,10 @@ namespace CoreNgine.Shared
                     stocksToAdd.Add(stock);
                 }
             }
-            await _mainModel.AddStocks(stocksToAdd);
 
-            await UpdateInstrumentsInfo();
+            await UpdateInstrumentsInfo(stocksToAdd);
+
+            await _mainModel.AddStocks(stocksToAdd);
 
             if (subscribeToPrices)
                 await SubscribeToStockEvents();

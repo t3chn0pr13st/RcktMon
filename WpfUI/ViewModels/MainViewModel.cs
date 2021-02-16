@@ -248,6 +248,8 @@ namespace RcktMon.ViewModels
             {
                 stocks.ToList().ForEach(s =>
                 {
+                    if (s.IsDead || s.Ticker.EndsWith("_old", StringComparison.InvariantCultureIgnoreCase))
+                        return;
                     Stocks[s.Ticker] = s;
                 });
                 tcs.SetResult();
@@ -305,10 +307,7 @@ namespace RcktMon.ViewModels
                 foreach (var stock in Stocks.Values.ToList())
                 {
                     if (stock.IsDead || stock.Ticker.EndsWith("_old", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        Debug.WriteLine($"Removing {stock.Ticker}");
                         Stocks.Remove(stock.Ticker);
-                    }
                 }
 
                 NotifyOfPropertyChange(nameof(Stocks));
