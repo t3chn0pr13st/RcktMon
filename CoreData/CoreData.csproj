@@ -1,14 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
-		<LangVersion>8.0</LangVersion>
-		<Nullable>enable</Nullable>
-		<NullableContextOptions>enable</NullableContextOptions>
-	</PropertyGroup>
+<PropertyGroup>
+	<TargetFramework>net5.0</TargetFramework>
+</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tinkoff.Trading.OpenApi" Version="1.6.0" />
+    <PackageReference Include="Tinkoff.Trading.OpenApi" Version="1.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CodeGenerators\CodeGenerators.csproj" 
+					  OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

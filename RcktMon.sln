@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebUIBlazorServer", "WebUIB
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebUIReact", "WebUIReact\WebUIReact.csproj", "{79E32170-E300-447F-A6AE-1B2B447AC8D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "USADataProvider", "L2DataProvider\USADataProvider.csproj", "{CAE7ADA1-0B03-4C13-90BC-8FD5122CB78D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "USADataProvider", "L2DataProvider\USADataProvider.csproj", "{CAE7ADA1-0B03-4C13-90BC-8FD5122CB78D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenerators", "CodeGenerators\CodeGenerators.csproj", "{EF852158-0483-4B9A-8692-B8D5B3076B51}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{CAE7ADA1-0B03-4C13-90BC-8FD5122CB78D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAE7ADA1-0B03-4C13-90BC-8FD5122CB78D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAE7ADA1-0B03-4C13-90BC-8FD5122CB78D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF852158-0483-4B9A-8692-B8D5B3076B51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF852158-0483-4B9A-8692-B8D5B3076B51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF852158-0483-4B9A-8692-B8D5B3076B51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF852158-0483-4B9A-8692-B8D5B3076B51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

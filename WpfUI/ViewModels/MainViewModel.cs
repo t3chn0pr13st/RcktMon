@@ -43,6 +43,7 @@ namespace RcktMon.ViewModels
 
         public IDictionary<string, IStockModel> Stocks { get; } = new ConcurrentDictionary<string, IStockModel>();
         public IEnumerable<IMessageModel> Messages { get; } = new ObservableCollection<MessageViewModel>();
+        
 
         public StocksManager StocksManager => _stocksManager ??= _services.GetRequiredService<StocksManager>();
         public SettingsViewModel SettingsViewModel { get; }
@@ -224,7 +225,7 @@ namespace RcktMon.ViewModels
 
         public void Start()
         {
-            InitStocksManager();
+            _ = InitStocksManager();
         }
 
         public async Task OnStockUpdated(IStockModel stock)

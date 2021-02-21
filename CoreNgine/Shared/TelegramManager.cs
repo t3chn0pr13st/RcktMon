@@ -120,7 +120,7 @@ namespace CoreNgine.Shared
                     return false;
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return null;
             }

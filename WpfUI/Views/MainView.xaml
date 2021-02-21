@@ -64,7 +64,7 @@
                 <LayoutPanel>
                     <LayoutPanel Orientation="Vertical">
                         <LayoutDocumentPane>
-                            <LayoutDocument ContentId="Stocks" Title="Котировки" x:Name="StocksDoc">
+                            <LayoutDocument ContentId="Stocks" Title="Мониторинг" x:Name="StocksDoc">
 
                                 <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource StocksCollectionView}}" 
                                         VirtualizingPanel.IsVirtualizing="True" 
@@ -94,6 +94,36 @@
                                         <DataGridTextColumn Binding="{Binding USBidRUAskDiff, StringFormat=P2}" Header="Bid Diff" x:Name="BidDiffUSAColumn"  />
                                         <DataGridTextColumn Binding="{Binding AskUSA}" Header="BA USA" x:Name="BidAskUSAColumn" />
                                         <DataGridTextColumn Binding="{Binding RUBidUSAskDiff, StringFormat=P2}" Header="Ask Diff" x:Name="AskDiffUSAColumn" />
+                                        <DataGridTextColumn Binding="{Binding LastUpdate, StringFormat=HH:mm:ss.ff}" Header="Last Upd" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                            </LayoutDocument>
+
+                            <LayoutDocument ContentId="InstrumentsStatus" Title="Состояние торгов" x:Name="InstrumentStatusDoc">
+
+                                <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource StocksCollectionView}}" 
+                                        VirtualizingPanel.IsVirtualizing="True" 
+                                        VirtualizingPanel.IsContainerVirtualizable="True"
+                                        VirtualizingPanel.VirtualizationMode="Recycling"
+                                        SelectedItem="{Binding SelectedInstrument}"
+                                        ScrollViewer.CanContentScroll="True"
+                                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                        AutoGenerateColumns="False" >
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Width="220" Binding="{Binding Name}" Header="Company name" />
+                                        <DataGridTextColumn Binding="{Binding Ticker}" Header="Tick" />
+                                        <DataGridTextColumn Binding="{Binding Currency}" Header="Cur" />
+                                        <DataGridTextColumn Binding="{Binding TodayOpen}" Header="Open" />
+                                        <DataGridTextColumn Binding="{Binding Price}" Header="Last" />
+                                        <DataGridTextColumn Binding="{Binding DayChange, StringFormat=P2}" Header="Chg" SortDirection="Descending" />
+                                        <DataGridTextColumn Binding="{Binding DayVolume}" Header="Day Vol" />
+                                        <DataGridTextColumn Binding="{Binding DayVolChgOfAvg, StringFormat=P2}" Header="% Avg" />
+                                        <DataGridTextColumn Binding="{Binding BestBidSpb}" Header="BB TI" />
+                                        <DataGridTextColumn Binding="{Binding BestAskSpb}" Header="BA TI" />
+                                        <DataGridTextColumn Binding="{Binding Exchange}" Header="EXCHG" />
+                                        <DataGridTextColumn Binding="{Binding Status}" Header="Status" Width="80" />
                                         <DataGridTextColumn Binding="{Binding LastUpdate, StringFormat=HH:mm:ss.ff}" Header="Last Upd" />
                                     </DataGrid.Columns>
                                 </DataGrid>

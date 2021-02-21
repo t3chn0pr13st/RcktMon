@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using CoreNgine.Data;
 using CoreNgine.Infra;
 using CoreNgine.Models;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Tinkoff.Trading.OpenApi.Models;
 using Tinkoff.Trading.OpenApi.Network;
 using static Tinkoff.Trading.OpenApi.Models.StreamingRequest;
@@ -42,7 +44,7 @@ namespace CoreNgine.Shared
 
         private readonly ILogger<StocksManager> _logger;
 
-        private TinkoffStocksInfo _tinkoffStocksInfo = new TinkoffStocksInfo();
+        private TinkoffStocksInfoCollection _tinkoffStocksInfoCollection = new TinkoffStocksInfoCollection();
         private readonly HashSet<string> _subscribedFigi = new HashSet<string>();
         private readonly HashSet<string> _subscribedMinuteFigi = new HashSet<string>();
         private TelegramManager _telegram;
@@ -72,6 +74,9 @@ namespace CoreNgine.Shared
 
         public IDictionary<string, OrderbookModel> OrderbookInfoSpb { get; } =
             new ConcurrentDictionary<string, OrderbookModel>();
+
+        public ConcurrentDictionary<string, InstrumentInfo> Instruments { get; } =
+            new ConcurrentDictionary<string, InstrumentInfo>();
 
         public DateTime? LastRestartTime => _lastRestartTime;
 
@@ -217,6 +222,18 @@ namespace CoreNgine.Shared
             _lastUIUpdate = DateTime.Now;
         }
 
+        internal static async Task<TinkoffStocksInfoCollection.Root> GetInstrumentsInfo()
+        {
+            using (var webClient = new WebClient())
+            {
+                var json = await webClient.DownloadStringTaskAsync(
+                        "https://api.tinkoff.ru/trading/stocks/list?sortType=ByName&orderType=Asc&country=All")
+                    .ConfigureAwait(false);
+                var root = JsonConvert.DeserializeObject<TinkoffStocksInfoCollection.Root>(json);
+                return root;
+            }
+        }
+
         private async Task UpdateInstrumentsInfo(HashSet<IStockModel> stocks = null)
         {
             if (stocks == null)
@@ -224,11 +241,11 @@ namespace CoreNgine.Shared
 
             try
             {
-                var info = await _tinkoffStocksInfo.GetInstrumentsInfo();
+                var info = await GetInstrumentsInfo();
                 if (info.Status.Equals("Ok", StringComparison.InvariantCultureIgnoreCase))
                 {
                     LastInstrumentsUpdate = DateTime.Now;
-                    var infoDict = info.Payload.Values.ToDictionary(v => v.Symbol.Ticker);
+                    var instruments = info.Payload.Values.ToDictionary(v => v.Symbol.Ticker);
 
                     ExchangeStatus = info.Payload.Values
                         .Select(v => new { v.Symbol.Exchange, v.ExchangeStatus }).Distinct()
@@ -236,13 +253,18 @@ namespace CoreNgine.Shared
 
                     foreach (var stock in stocks)
                     {
-                        if (infoDict.ContainsKey(stock.Ticker))
+                        if (instruments.ContainsKey(stock.Ticker))
                         {
-                            var instrumentInfo = infoDict[stock.Ticker];
+                            var instrumentInfo = new InstrumentInfo(instruments[stock.Ticker]);
+                            if (Instruments.ContainsKey(stock.Ticker))
+                                Instruments[stock.Ticker].ReadFrom(instrumentInfo);
+                            else
+                                Instruments[stock.Ticker] = instrumentInfo;
+
                             if (stock.Status != instrumentInfo.InstrumentStatusShortDesc)
                                 stock.Status = instrumentInfo.InstrumentStatusShortDesc;
-                            if (stock.Exchange != instrumentInfo.Symbol.Exchange)
-                                stock.Exchange = instrumentInfo.Symbol.Exchange;
+                            if (stock.Exchange != instrumentInfo.Exchange)
+                                stock.Exchange = instrumentInfo.Exchange;
                         }
                         else
                         {
@@ -261,6 +283,11 @@ namespace CoreNgine.Shared
                 LogError($"Ошибка получения сведений об инструментах: {ex.Message}");
                 LastInstrumentsUpdate = DateTime.MinValue;
             }
+        }
+
+        private async Task CheckSubscription()
+        {
+            
         }
 
         private async Task BrokerQueueLoopAsync()
@@ -313,10 +340,10 @@ namespace CoreNgine.Shared
                         await ResetConnection("Данные не поступали дольше 5 секунд");
                     }
 
-                    if (_recentUpdatedStocksCount < 10 && !ExchangeClosed)
-                    {
-                        await ResetConnection("Не приходило обновлений по большей части акций");
-                    }
+                    //if (_recentUpdatedStocksCount < 10 && !ExchangeClosed)
+                    //{
+                    //    await ResetConnection("Не приходило обновлений по большей части акций");
+                    //}
 
                 }
 

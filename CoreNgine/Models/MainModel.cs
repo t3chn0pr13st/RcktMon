@@ -40,7 +40,7 @@ namespace CoreNgine.Models
 
         public void Start()
         {
-            InitStocksManager();
+            _ = InitStocksManager();
         }
 
         protected virtual void LoadAppSettings()

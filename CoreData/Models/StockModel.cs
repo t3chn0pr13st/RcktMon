@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using CoreData.Interfaces;
-using Newtonsoft.Json;
 using Tinkoff.Trading.OpenApi.Models;
 
 namespace CoreData.Models
