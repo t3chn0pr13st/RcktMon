@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreData;
 using CoreData.Interfaces;
+using CoreData.Models;
 using CoreNgine.Infra;
 using CoreNgine.Models;
 using CoreNgine.Shared;
@@ -51,7 +52,7 @@ namespace CoreNgine.Strategies
             catch (Exception ex)
             {
                 var errorText = $"Не удалось загрузить историю {stock.Ticker}: {ex.Message}";
-                MainModel.AddMessage("ERROR", DateTime.Now, errorText);
+                MainModel.AddErrorMessage(errorText);
                 Logger?.LogError(ex, errorText);
                 return false;
             }
@@ -59,7 +60,7 @@ namespace CoreNgine.Strategies
             if (stock.AvgDayVolumePerMonth < 0.01m)
             {
                 var errorText = $"Не удалось загрузить историю {stock.Ticker}";
-                MainModel.AddMessage("ERROR", DateTime.Now, errorText);
+                MainModel.AddErrorMessage(errorText);
                 Logger?.LogError(errorText);
                 return false;
             }
@@ -95,6 +96,7 @@ namespace CoreNgine.Strategies
                         StocksManager.Telegram.PostMessage(stock.GetDayChangeInfoText(), stock.Ticker, lChatId);
 
                     MainModel.AddMessage(
+                        MessageKind.DayChange,
                         stock.Ticker,
                         DateTime.Now,
                         stock.DayChange,
@@ -133,6 +135,7 @@ namespace CoreNgine.Strategies
 
                 int lastIdx = change.candles.Length - 1;
                 MainModel.AddMessage(
+                    MessageKind.MinutesChanges,
                     stock.Ticker,
                     DateTime.Now,
                     stock.DayChange,
@@ -165,6 +168,7 @@ namespace CoreNgine.Strategies
 
                 int lastIdx = change.candles.Length - 1;
                 MainModel.AddMessage(
+                    MessageKind.VolumeChange,
                     stock.Ticker,
                     DateTime.Now,
                     stock.DayChange,

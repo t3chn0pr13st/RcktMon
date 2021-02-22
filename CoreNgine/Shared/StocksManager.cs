@@ -358,11 +358,7 @@ namespace CoreNgine.Shared
 
         private void LogError(string msg)
         {
-            _mainModel.AddMessage(
-                ticker: "ERROR",
-                date: DateTime.Now,
-                text: msg
-            );
+            _mainModel.AddErrorMessage(msg);
             _logger.LogError(msg);
             //Debug.WriteLine(msg);
         }

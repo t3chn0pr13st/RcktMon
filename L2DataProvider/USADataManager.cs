@@ -93,7 +93,7 @@ namespace USADataProvider
             dynamic result = JObject.Parse(await response.Content.ReadAsStringAsync());
             if (result.code.name != "Ok")
             {
-                MainModel.AddMessage("ERROR", DateTime.Now, "L2DataService: " + result.message);
+                MainModel.AddErrorMessage("L2DataService: " + result.message);
                 return false;
             }
             _sessionId = result.sid;
@@ -143,7 +143,7 @@ namespace USADataProvider
                         }
                         catch (Exception ex)
                         {
-                            MainModel.AddMessage("ERROR", DateTime.Now, "L2DataService: " + ex.Message);
+                            MainModel.AddErrorMessage("L2DataService: " + ex.Message);
                             hasError = true;
                         }
                     });
@@ -152,7 +152,7 @@ namespace USADataProvider
                 }
                 catch (Exception ex)
                 {
-                    MainModel.AddMessage("ERROR", DateTime.Now, "L2DataService: " + ex.Message);
+                    MainModel.AddErrorMessage("L2DataService: " + ex.Message);
                 }
 
                 if (hasError)

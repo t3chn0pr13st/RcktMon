@@ -8,7 +8,9 @@ namespace CoreData.Models
         DayChange,
         MinutesChanges,
         VolumeChange,
-        Error
+        Error,
+        ArbitrageLong,
+        ArbitrageShort
     }
 
     public class MessageModel : IMessageModel

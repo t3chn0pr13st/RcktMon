@@ -92,7 +92,7 @@ namespace CoreNgine.Strategies
 
                 line =
                     $"SPB ASK *{stock.BestAskSpb.FormatPrice(stock.Currency)}* USA BID *{stock.BidUSA.FormatPrice(stock.Currency)}* Diff {diff.FormatPrice(stock.Currency)} ({stock.USBidRUAskDiff.FormatPercent()})";
-                MainModel.AddMessage(stock.Ticker, DateTime.Now, diff, quote.BidSize, line);
+                MainModel.AddMessage(MessageKind.ArbitrageLong, stock.Ticker, DateTime.Now, diff, quote.BidSize, line);
             }
 
             if (stock.RUBidUSAskDiff > 0.01m)
@@ -108,7 +108,7 @@ namespace CoreNgine.Strategies
 
                 line =
                     $"USA ASK *{stock.AskUSA.FormatPrice(stock.Currency)}* SPB BID *{stock.BestBidSpb.FormatPrice(stock.Currency)}* Diff {diff.FormatPrice(stock.Currency)} ({stock.RUBidUSAskDiff.FormatPercent()})";
-                MainModel.AddMessage(stock.Ticker, DateTime.Now, diff, quote.AskSize, line);
+                MainModel.AddMessage(MessageKind.ArbitrageShort, stock.Ticker, DateTime.Now, diff, quote.AskSize, line);
             }
 
             if (message.Length > 0)
