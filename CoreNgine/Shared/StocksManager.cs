@@ -38,6 +38,7 @@ namespace CoreNgine.Shared
     {
         private readonly IMainModel _mainModel;
         private DateTime? _lastEventReceived = null;
+        private DateTime _lastSubscriptionCheck = DateTime.Now;
         private int _recentUpdatedStocksCount;
         private DateTime? _lastRestartTime;
         private DateTime _lastUIUpdate;
@@ -285,11 +286,6 @@ namespace CoreNgine.Shared
             }
         }
 
-        private async Task CheckSubscription()
-        {
-            
-        }
-
         private async Task BrokerQueueLoopAsync()
         {
             var cancellationToken = _cancellationTokenSource.Token;
@@ -347,6 +343,13 @@ namespace CoreNgine.Shared
 
                 }
 
+                if (_lastSubscriptionCheck.Elapsed().TotalMinutes > 1)
+                {
+                    CheckSubscription();
+                    _lastSubscriptionCheck = DateTime.Now;
+                }
+
+
                 await Task.Delay(100);
             }
         }
@@ -381,7 +384,7 @@ namespace CoreNgine.Shared
             await Task.Delay(5000);
 
             PrepareConnection();
-            await SubscribeToStockEvents();
+            SubscribeToStockEvents();
         }
 
         private async Task CandleProcessingProc(CandleResponse cr)
@@ -411,6 +414,7 @@ namespace CoreNgine.Shared
                             QueueBrokerAction(b => b.SendStreamingRequestAsync(
                                     SubscribeCandle(stock.Figi, CandleInterval.Minute)),
                                 $"Подписка на минутную свечу {stock.Ticker} ({stock.Figi})");
+                            _subscribedMinuteFigi.Add(stock.Figi);
                         }
                     }
                     else if (candle.Interval == CandleInterval.Minute)
@@ -635,8 +639,38 @@ namespace CoreNgine.Shared
                     () => MonthStatsCheckerLoop().ConfigureAwait(false), 
                     _cancellationTokenSource.Token);
         }
+        public void CheckSubscription()
+        {
+            foreach (var stock in _mainModel.Stocks.Values)
+            {
+                if ( stock.LastUpdate.Elapsed().TotalMinutes > 1 && Instruments[stock.Ticker].IsActive )
+                {
+                    if ( _subscribedFigi.Contains( stock.Figi ) )
+                    {
+                        var request = new CandleUnsubscribeRequest(stock.Figi, CandleInterval.Day);
+                        QueueBrokerAction(b => b.SendStreamingRequestAsync(request),
+                            $"Отписка от дневной свечи {stock.Ticker} ({stock.Figi})");
 
-        public async Task SubscribeToStockEvents()
+                        var request2 = new OrderbookUnsubscribeRequest(stock.Figi, 5);
+                        QueueBrokerAction(b => CandleConnection.SendStreamingRequestAsync(request2),
+                            $"Отписка от стакана {stock.Ticker} ({stock.Figi}");
+
+                        _subscribedFigi.Remove(stock.Figi);
+                    }
+                    if (_subscribedMinuteFigi.Contains( stock.Figi ) )
+                    {
+                        QueueBrokerAction(b => b.SendStreamingRequestAsync(
+                                    UnsubscribeCandle(stock.Figi, CandleInterval.Minute)),
+                                $"Отписка от минутной свечи {stock.Ticker} ({stock.Figi})");
+
+                        _subscribedMinuteFigi.Remove(stock.Figi);
+                    }
+                }
+            }
+            SubscribeToStockEvents();
+        }
+
+        public void SubscribeToStockEvents()
         {
             var toSubscribeInstr = new HashSet<IStockModel>();
             foreach (var stock in _mainModel.Stocks.Values)
@@ -658,7 +692,6 @@ namespace CoreNgine.Shared
                     _subscribedFigi.Add(stock.Figi);
                 }
             }
-
             //int n = 0;
             //foreach ( var stock in toSubscribeInstr )
             //{
@@ -706,7 +739,7 @@ namespace CoreNgine.Shared
             await _mainModel.AddStocks(stocksToAdd);
 
             if (subscribeToPrices)
-                await SubscribeToStockEvents();
+                SubscribeToStockEvents();
             //_mainModel.IsNotifying = false;
         }
     }

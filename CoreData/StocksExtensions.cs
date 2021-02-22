@@ -9,7 +9,12 @@ using Tinkoff.Trading.OpenApi.Models;
 namespace CoreData
 {
      public static class StockExt
-    {
+     {
+        public static TimeSpan Elapsed(this DateTime date )
+        {
+            return DateTime.Now.Subtract(date);
+        }
+
         public static IStockModel GetStockByMessage(this IMessageModel message, IEnumerable<IStockModel> stocks)
         {
             return stocks.FirstOrDefault(s => s.Ticker == message.Ticker) as IStockModel;

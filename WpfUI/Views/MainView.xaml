@@ -16,6 +16,11 @@
                 <componentmodel:SortDescription PropertyName="DayChange" Direction="Descending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+         <CollectionViewSource IsLiveSortingRequested="True" Source="{Binding Instruments.Values}" x:Key="InstrumentsCollectionView">
+            <CollectionViewSource.SortDescriptions>
+                <componentmodel:SortDescription PropertyName="Ticker" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
         <CollectionViewSource Source="{Binding Messages}" x:Key="EventsCollectionView">
             <CollectionViewSource.SortDescriptions>
                 <componentmodel:SortDescription PropertyName="Date" Direction="Descending" />
@@ -100,9 +105,9 @@
 
                             </LayoutDocument>
 
-                            <LayoutDocument ContentId="InstrumentsStatus" Title="Состояние торгов" x:Name="InstrumentStatusDoc">
+                            <LayoutDocument ContentId="InstrumentsStatus" Title="Статус инструментов" x:Name="InstrumentStatusDoc">
 
-                                <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource StocksCollectionView}}" 
+                                <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource InstrumentsCollectionView}}" 
                                         VirtualizingPanel.IsVirtualizing="True" 
                                         VirtualizingPanel.IsContainerVirtualizable="True"
                                         VirtualizingPanel.VirtualizationMode="Recycling"
@@ -112,19 +117,16 @@
                                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
                                         AutoGenerateColumns="False" >
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Width="220" Binding="{Binding Name}" Header="Company name" />
-                                        <DataGridTextColumn Binding="{Binding Ticker}" Header="Tick" />
-                                        <DataGridTextColumn Binding="{Binding Currency}" Header="Cur" />
-                                        <DataGridTextColumn Binding="{Binding TodayOpen}" Header="Open" />
-                                        <DataGridTextColumn Binding="{Binding Price}" Header="Last" />
-                                        <DataGridTextColumn Binding="{Binding DayChange, StringFormat=P2}" Header="Chg" SortDirection="Descending" />
-                                        <DataGridTextColumn Binding="{Binding DayVolume}" Header="Day Vol" />
-                                        <DataGridTextColumn Binding="{Binding DayVolChgOfAvg, StringFormat=P2}" Header="% Avg" />
-                                        <DataGridTextColumn Binding="{Binding BestBidSpb}" Header="BB TI" />
-                                        <DataGridTextColumn Binding="{Binding BestAskSpb}" Header="BA TI" />
-                                        <DataGridTextColumn Binding="{Binding Exchange}" Header="EXCHG" />
-                                        <DataGridTextColumn Binding="{Binding Status}" Header="Status" Width="80" />
-                                        <DataGridTextColumn Binding="{Binding LastUpdate, StringFormat=HH:mm:ss.ff}" Header="Last Upd" />
+                                        <DataGridTextColumn Binding="{Binding Ticker}" Header="Ticker" />
+                                        <DataGridTextColumn Binding="{Binding Isin}" Header="Isin" />
+                                        <DataGridTextColumn Binding="{Binding Sector}" Header="Sector" />
+                                        <DataGridTextColumn Binding="{Binding Exchange}" Header="Exchange" />
+                                        <DataGridTextColumn Binding="{Binding MarketStartTime}" Header="Mrkt Strt" />
+                                        <DataGridTextColumn Binding="{Binding MarketEndTime}" Header="Mrkt End" />
+                                        <DataGridTextColumn Binding="{Binding ShortIsEnabled}" Header="Short" />
+                                        <DataGridTextColumn Binding="{Binding ExchangeStatus}" Header="Exchg Status" />
+                                        <DataGridTextColumn Binding="{Binding InstrumentStatus}" Header="Instr Status" />
+                                        <DataGridTextColumn Binding="{Binding InstrumentStatusShortDesc}" Header="Instr Status Descr" />
                                     </DataGrid.Columns>
                                 </DataGrid>
 

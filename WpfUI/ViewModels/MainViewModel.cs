@@ -18,6 +18,7 @@ using AutoMapper;
 using Caliburn.Micro;
 using CoreData;
 using CoreData.Interfaces;
+using CoreData.Models;
 using CoreNgine.Infra;
 using CoreNgine.Models;
 using CoreNgine.Shared;
@@ -42,6 +43,7 @@ namespace RcktMon.ViewModels
         private HttpClient _wrapperClient;
 
         public IDictionary<string, IStockModel> Stocks { get; } = new ConcurrentDictionary<string, IStockModel>();
+        public IDictionary<string, InstrumentInfo> Instruments => StocksManager.Instruments;
         public IEnumerable<IMessageModel> Messages { get; } = new ObservableCollection<MessageViewModel>();
         
 
@@ -144,6 +146,8 @@ namespace RcktMon.ViewModels
                 }
             }
         }
+
+        public InstrumentInfo SelectedIstrument { get; set; }
 
         public void OpenInAurora(string ticker)
         {
@@ -255,6 +259,7 @@ namespace RcktMon.ViewModels
                 });
                 tcs.SetResult();
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(Stocks)));
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Instruments)));
             }, null);
 
             return Task.WhenAll(_eventAggregator.PublishOnCurrentThreadAsync(stocks), tcs.Task);
@@ -314,7 +319,7 @@ namespace RcktMon.ViewModels
                 NotifyOfPropertyChange(nameof(Stocks));
             });
 
-            await StocksManager.SubscribeToStockEvents();
+            StocksManager.SubscribeToStockEvents();
         }
 
     }

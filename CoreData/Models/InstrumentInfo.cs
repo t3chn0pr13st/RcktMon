@@ -14,8 +14,8 @@ namespace CoreData.Models
         public string Logo { get; private set; }
         public string Sector { get; private set; }
         public string Exchange { get; private set; }
-        public string MarketStartTime { get; private set; }
-        public string MarketEndTime { get; private set; }
+        public TimeSpan MarketStartTime { get; private set; }
+        public TimeSpan MarketEndTime { get; private set; }
         public bool ShortIsEnabled { get; private set; }
         public string ExchangeStatus { get; private set; }
         public string InstrumentStatus { get; private set; }
@@ -26,14 +26,34 @@ namespace CoreData.Models
             
         }
 
+        public DateTimeOffset CurrentDateMsk => DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(3));
+
+        public bool IsActive
+        {
+            get
+            {
+                var currentMsk = CurrentDateMsk;
+                return (( currentMsk.Hour == MarketStartTime.Hours 
+                       && currentMsk.Minute >= MarketStartTime.Minutes) 
+                       || currentMsk.Hour > MarketStartTime.Hours)
+                       && (currentMsk.Hour < MarketEndTime.Hours 
+                       || (currentMsk.Hour == MarketEndTime.Hours 
+                       && currentMsk.Minute < MarketEndTime.Minutes)) 
+                       && ExchangeStatus == "Open" 
+                       && InstrumentStatus == "OpenAll";
+            }
+        }
+
         public InstrumentInfo(TinkoffStocksInfoCollection.Value payloadValue)
         {
             Ticker = payloadValue.Symbol.Ticker;
             Isin = payloadValue.Symbol.Isin;
             Logo = payloadValue.Symbol.LogoName;
             Sector = payloadValue.Symbol.Sector;
-            MarketStartTime = payloadValue.Symbol.MarketStartTime;
-            MarketEndTime = payloadValue.Symbol.MarketEndTime;
+            if (TimeSpan.TryParse(payloadValue.Symbol.MarketStartTime, out var marketStartTime))
+                MarketStartTime = marketStartTime;
+            if (TimeSpan.TryParse(payloadValue.Symbol.MarketEndTime, out var marketEndTime))
+                MarketEndTime = marketEndTime;
             ShortIsEnabled = payloadValue.Symbol.ShortIsEnabled;
             ExchangeStatus = payloadValue.ExchangeStatus;
             InstrumentStatus = payloadValue.InstrumentStatus;

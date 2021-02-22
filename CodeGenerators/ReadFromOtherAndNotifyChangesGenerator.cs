@@ -56,16 +56,16 @@ namespace {AttributeNamespace}
 
             foreach (var p in c.Members.OfType<PropertyDeclarationSyntax>())
             {
+                if (p.AccessorList?.Accessors.Any(a => a.Keyword.ValueText == "set") != true)
+                    continue;
+
                 var propName = p.Identifier.ToString();
                 sb.Append($@"
-
             if (this.{propName} != other.{propName}) 
             {{
                 this.{propName} = other.{propName};
                 this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof({propName})));
-            }}
-            
-                ");
+            }}");
             }
 
             return @$"
@@ -79,8 +79,7 @@ namespace {ns}
         public event PropertyChangedEventHandler PropertyChanged;
 
         public void ReadFrom({c.Identifier.ToString()} other)
-        {{
-            {sb}
+        {{{sb}
         }}
     }}
 }}

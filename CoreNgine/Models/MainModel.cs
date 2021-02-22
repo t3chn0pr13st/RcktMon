@@ -108,9 +108,9 @@ namespace CoreNgine.Models
             await StocksManager.UpdateStocks();
         }
 
-        public async Task RefreshStocks()
+        public void RefreshStocks()
         {
-            await StocksManager.SubscribeToStockEvents();
+            StocksManager.SubscribeToStockEvents();
         }
     }
 }
