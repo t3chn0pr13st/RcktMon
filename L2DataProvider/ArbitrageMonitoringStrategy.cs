@@ -20,6 +20,14 @@ using Tinkoff.Trading.OpenApi.Models;
 
 namespace CoreNgine.Strategies
 {
+    public struct ArbitrageEventData
+    {
+        public string Ticker { get; set; }
+        public decimal BestBidSpb { get; set; }
+        public decimal BestAskSpb { get; set; }
+        public DateTimeOffset EventTime { get; set; }
+    }
+
     public class ArbitrageMonitoringStrategy : IHandler<IStockModel>, IHandler<INgineSettings>
     {
         public INgineSettings Settings { get; }
@@ -30,7 +38,7 @@ namespace CoreNgine.Strategies
 
         private readonly DateTime _strategyLoaded = DateTime.Now;
 
-        private ConcurrentDictionary<string, DateTime> _arbitrageEvents = new ConcurrentDictionary<string, DateTime>();
+        private ConcurrentDictionary<string, ArbitrageEventData> _arbitrageEvents = new ConcurrentDictionary<string, ArbitrageEventData>();
 
         private long _chatIdLong, _chatIdShort;
 
@@ -69,7 +77,10 @@ namespace CoreNgine.Strategies
             if (stock.LastUpdateUSA == null || Math.Abs(stock.LastUpdate.Subtract(stock.LastUpdateUSA.Value).TotalMinutes) > 1)
                 return;
 
-            if (_arbitrageEvents.ContainsKey(stock.Ticker) && DateTime.Now.Subtract(_arbitrageEvents[stock.Ticker]).TotalMinutes < 1)
+            if (_arbitrageEvents.ContainsKey(stock.Ticker) 
+                && _arbitrageEvents[stock.Ticker] is ArbitrageEventData arbitrageEvent 
+                && (arbitrageEvent.EventTime.Elapsed().TotalMinutes < 1 
+                || (arbitrageEvent.BestAskSpb == stock.BestAskSpb && arbitrageEvent.BestBidSpb == stock.BestBidSpb)))
                 return;
 
             var message = new StringBuilder();
@@ -113,7 +124,12 @@ namespace CoreNgine.Strategies
 
             if (message.Length > 0)
             {
-                _arbitrageEvents[stock.Ticker] = DateTime.Now;
+                _arbitrageEvents[stock.Ticker] = new ArbitrageEventData() {
+                    EventTime = DateTime.Now,
+                    Ticker = stock.Ticker,
+                    BestBidSpb = stock.BestBidSpb,
+                    BestAskSpb = stock.BestAskSpb
+                };
 
                 message.AppendLine("`");
                 int i = 0;

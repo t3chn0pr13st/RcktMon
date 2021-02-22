@@ -354,7 +354,9 @@ namespace CoreNgine.Shared
             }
         }
 
-        public bool ExchangeClosed => ExchangeStatus == null || ExchangeStatus.All(s => s.Status == "Close" || s.Status == "Suspend");
+        public bool ExchangeClosed => ExchangeStatus == null 
+            || ExchangeStatus.All(s => s.Status == "Close" || s.Status == "Suspend")
+            || Instruments.All(instrument => instrument.Value.IsActive) == false;
 
         private void LogError(string msg)
         {

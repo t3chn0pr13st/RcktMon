@@ -15,6 +15,11 @@ namespace CoreData
             return DateTime.Now.Subtract(date);
         }
 
+        public static TimeSpan Elapsed(this DateTimeOffset date )
+        {
+            return DateTimeOffset.Now.Subtract(date);
+        }
+
         public static IStockModel GetStockByMessage(this IMessageModel message, IEnumerable<IStockModel> stocks)
         {
             return stocks.FirstOrDefault(s => s.Ticker == message.Ticker) as IStockModel;

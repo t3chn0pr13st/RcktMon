@@ -128,14 +128,18 @@ namespace CoreNgine.Shared
 
                 await _webClient.DownloadFileTaskAsync(relInfo.Url, localZipPath);
 
-                statusCallback?.Invoke("Распаковка...");
+                statusCallback?.Invoke("Установка обновления...");
 
                 ZipFile.ExtractToDirectory(localZipPath, tempDir);
                 File.Delete(localZipPath);
 
-                statusCallback?.Invoke("Установка обновления...");
+                statusCallback?.Invoke("Ща будет перезапуск, но вы этого сообщения уже не увидите...");
 
-                Process.Start(new ProcessStartInfo("cmd", @"/c ping -n 2 127.0.0.1 && move /y * .. && cd .. && RcktMon.exe&")
+                string args = "";
+                if (Environment.CommandLine.Contains('/'))
+                    args = "/" + String.Join(" /", Environment.CommandLine.Split('/').Skip(1));
+
+                Process.Start(new ProcessStartInfo("cmd", @$"/c ping -n 2 127.0.0.1 && move /y * .. && cd .. && RcktMon.exe {args}")
                 {
                     WorkingDirectory = tempDir,
                     CreateNoWindow = true,
