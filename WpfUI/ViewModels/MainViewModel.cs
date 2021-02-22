@@ -128,7 +128,7 @@ namespace RcktMon.ViewModels
                 });
             } catch (Exception ex)
             {
-                AddMessage("ERROR", DateTime.Now, $"Ошибка при установке обновления: {ex.Message}");
+                AddMessage(MessageKind.Error, "ERROR", DateTime.Now, $"Ошибка при установке обновления: {ex.Message}");
             }
 
             UpdateLinkText = "Установить обновление";
@@ -176,7 +176,7 @@ namespace RcktMon.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    AddMessage("ERROR", DateTime.Now, ex.Message);
+                    AddMessage(MessageKind.Error, "ERROR", DateTime.Now, ex.Message);
                 }
             });
         }
@@ -194,10 +194,11 @@ namespace RcktMon.ViewModels
             };
         }
 
-        public IMessageModel AddMessage(string ticker, DateTime date, string text)
+        public IMessageModel AddMessage(MessageKind messageKind, string ticker, DateTime date, string text)
         {
             var message = new MessageViewModel()
             {
+                MessageKind = messageKind,
                 Ticker = ticker,
                 Date = date,
                 Text = text
@@ -209,11 +210,12 @@ namespace RcktMon.ViewModels
             return message;
         }
 
-        public IMessageModel AddMessage(string ticker, DateTime date, decimal change,
+        public IMessageModel AddMessage(MessageKind messageKind, string ticker, DateTime date, decimal change,
             decimal volume, string text)
         {
             var message = new MessageViewModel()
             {
+                MessageKind = messageKind,
                 Ticker = ticker,
                 Date = date,
                 Change = change,
@@ -293,12 +295,12 @@ namespace RcktMon.ViewModels
                     success = false;
                     if (ex.Message.StartsWith("Unauthorized"))
                     {
-                        AddMessage("ERROR", DateTime.Now, "Не удалось получить список инструментов: указан неверный токен Тинькофф Инвестиции (нет доступа)");
+                        AddMessage(MessageKind.Error, "ERROR", DateTime.Now, "Не удалось получить список инструментов: указан неверный токен Тинькофф Инвестиции (нет доступа)");
                         break;
                     }
                     else
                     {
-                        AddMessage("ERROR", DateTime.Now, "Не удалось получить список инструментов: " + ex.Message);
+                        AddMessage(MessageKind.Error, "ERROR", DateTime.Now, "Не удалось получить список инструментов: " + ex.Message);
                     }                    
                 }
             }

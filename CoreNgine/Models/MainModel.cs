@@ -66,7 +66,7 @@ namespace CoreNgine.Models
             };
         }
 
-        public virtual IMessageModel AddMessage(string ticker, DateTime date, string text)
+        public virtual IMessageModel AddMessage(MessageKind messageKind, string ticker, DateTime date, string text)
         {
             var message = new MessageModel()
             {
@@ -78,7 +78,7 @@ namespace CoreNgine.Models
             return message;
         }
 
-        public virtual IMessageModel AddMessage(string ticker, DateTime date, decimal change, decimal volume, string text)
+        public virtual IMessageModel AddMessage(MessageKind messageKind, string ticker, DateTime date, decimal change, decimal volume, string text)
         {
             var message = new MessageModel()
             {

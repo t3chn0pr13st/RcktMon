@@ -1,16 +1,13 @@
 ﻿using System;
 using Caliburn.Micro;
 using CoreData.Interfaces;
+using CoreData.Models;
 using CoreNgine.Models;
 
 namespace RcktMon.ViewModels
 {
-    public class MessageViewModel : PropertyChangedBase, IMessageModel
+    public partial class MessageViewModel : MessageModel, IMessageModel
     {
-        public DateTime Date { get; set; }
-        public string Ticker { get; set; }
-        public string Text { get; set; }
-        public decimal Change { get; set; }
-        public decimal Volume { get; set; }
+
     }
 }
