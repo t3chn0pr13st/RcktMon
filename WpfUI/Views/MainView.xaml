@@ -92,6 +92,8 @@
                                         <DataGridTextColumn Binding="{Binding BestBidSpb}" Header="BB TI" />
                                         <DataGridTextColumn Binding="{Binding BestAskSpb}" Header="BA TI" />
                                         <DataGridTextColumn Binding="{Binding Exchange}" Header="EXCHG" />
+                                        <DataGridTextColumn Binding="{Binding LimitDown}" Header="DWN LIM" />
+                                        <DataGridTextColumn Binding="{Binding LimitUp}" Header="UP LIM" />
                                         <DataGridTextColumn Binding="{Binding Status}" Header="Status" Width="80" />
                                         <DataGridTextColumn Binding="{Binding PriceUSA}" Header="USA LAST" x:Name="PriceUSAColumn" />
                                         <DataGridTextColumn Binding="{Binding DiffPercentUSA, StringFormat=P2}" Header="USA Diff" x:Name="DiffUSAColumn" />

@@ -119,7 +119,8 @@ namespace CoreNgine.Strategies
 
                 line =
                     $"USA ASK *{stock.AskUSA.FormatPrice(stock.Currency)}* SPB BID *{stock.BestBidSpb.FormatPrice(stock.Currency)}* Diff {diff.FormatPrice(stock.Currency)} ({stock.RUBidUSAskDiff.FormatPercent()})";
-                MainModel.AddMessage(MessageKind.ArbitrageShort, stock.Ticker, DateTime.Now, diff, quote.AskSize, line);
+                if (stock.CanBeShorted)
+                    MainModel.AddMessage(MessageKind.ArbitrageShort, stock.Ticker, DateTime.Now, diff, quote.AskSize, line);
             }
 
             if (message.Length > 0)
@@ -153,7 +154,7 @@ namespace CoreNgine.Strategies
                         MessageMode = ParseMode.MarkdownV2
                     });
 
-                if (_chatIdShort != 0 && bShort)
+                if (_chatIdShort != 0 && bShort && stock.CanBeShorted)
                     StocksManager.Telegram.PostMessage(new TelegramMessage(stock.Ticker, text, _chatIdShort)
                     {
                         AddTickerImage = false,

@@ -15,8 +15,11 @@ namespace CoreData.Models
         public string Isin { get; set; }
         public string Currency { get; set; }
         public bool IsDead { get; set; }
+        public bool CanBeShorted { get; set; }
         public string Exchange { get;set; }
         public int Lot { get; set; }
+        public decimal LimitDown { get; set; }
+        public decimal LimitUp { get; set; }
         public decimal MinPriceIncrement { get; set; }
         public DateTime TodayDate { get; set; }
         public decimal TodayOpen { get; set; }

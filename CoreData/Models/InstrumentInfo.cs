@@ -28,19 +28,45 @@ namespace CoreData.Models
 
         public DateTimeOffset CurrentDateMsk => DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(3));
 
+        public DateTimeOffset MarketStartDate
+        {
+            get
+            {
+                var currentMsk = CurrentDateMsk;
+
+                return currentMsk.Date.AddHours(
+                    currentMsk.Hour < MarketStartTime.Hours 
+                    ? ( currentMsk.Hour > MarketEndTime.Hours ? MarketStartTime.TotalHours : MarketStartTime.TotalHours - 24 )
+                    : MarketStartTime.TotalHours
+                );
+            }
+        }            
+
+        public DateTimeOffset MarketEndDate
+        {
+            get
+            {
+                var currentMsk = CurrentDateMsk;
+
+                return currentMsk.Date.AddHours(
+                   ( MarketEndTime.TotalHours < MarketStartTime.TotalHours
+                    ? ( currentMsk.Hour < MarketStartTime.Hours ? MarketEndTime.TotalHours : 24 + MarketEndTime.TotalHours )
+                    : MarketEndTime.TotalHours )
+                );
+            }
+        }
+            
+
         public bool IsActive
         {
             get
             {
                 var currentMsk = CurrentDateMsk;
-                return (( currentMsk.Hour == MarketStartTime.Hours 
-                       && currentMsk.Minute >= MarketStartTime.Minutes) 
-                       || currentMsk.Hour > MarketStartTime.Hours)
-                       && (currentMsk.Hour < MarketEndTime.Hours 
-                       || (currentMsk.Hour == MarketEndTime.Hours 
-                       && currentMsk.Minute < MarketEndTime.Minutes)) 
+
+                return currentMsk >= MarketStartDate 
+                       && currentMsk < MarketEndDate 
                        && ExchangeStatus == "Open" 
-                       && InstrumentStatus == "OpenAll";
+                       && InstrumentStatus?.StartsWith("Open") == true;
             }
         }
 
