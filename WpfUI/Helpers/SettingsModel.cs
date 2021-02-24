@@ -70,11 +70,11 @@ namespace RcktMon.Helpers
                     cfg.CreateMap(obj.GetType(), this.GetType()));
                 var mapper = new Mapper(config);
                 mapper.Map(obj, this, obj.GetType(), this.GetType());
-                try { this.TiApiKey = CryptoHelper.Decrypt(this.TiApiKey); } catch { }
-                try { this.TgBotApiKey = CryptoHelper.Decrypt(this.TgBotApiKey); } catch { }
-                try { this.TgChatId = CryptoHelper.Decrypt(this.TgChatId); } catch { }
-                try { this.TgChatIdRu = CryptoHelper.Decrypt(this.TgChatIdRu); } catch { }
-                try { this.USAQuotesPassword = CryptoHelper.Decrypt(this.USAQuotesPassword); } catch { }
+                try { this.TiApiKey = CryptoHelper.Decrypt(this.TiApiKey); } catch { TiApiKey = null; }
+                try { this.TgBotApiKey = CryptoHelper.Decrypt(this.TgBotApiKey); } catch { TgBotApiKey = null; }
+                try { this.TgChatId = CryptoHelper.Decrypt(this.TgChatId); } catch { TgChatId = null; }
+                try { this.TgChatIdRu = CryptoHelper.Decrypt(this.TgChatIdRu); } catch { TgChatIdRu = null; }
+                try { this.USAQuotesPassword = CryptoHelper.Decrypt(this.USAQuotesPassword); } catch { USAQuotesPassword = null; }
             }
 
             if (MinDayPriceChange == 0)

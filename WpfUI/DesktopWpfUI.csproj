@@ -120,10 +120,10 @@
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
     <PackageReference Include="System.Composition.Hosting" Version="5.0.0" />
     <PackageReference Include="Telegram.Bot" Version="15.7.1" />
-    <PackageReference Include="Tinkoff.Trading.OpenApi" Version="1.7.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreNgine\CoreNgine.csproj" />
+    <ProjectReference Include="..\invest-openapi-csharp-sdk\src\Tinkoff.Trading.OpenApi\Tinkoff.Trading.OpenApi.csproj" />
     <ProjectReference Include="..\L2DataProvider\USADataProvider.csproj" />
   </ItemGroup>
 
