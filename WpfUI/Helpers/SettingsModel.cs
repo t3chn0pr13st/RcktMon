@@ -38,7 +38,7 @@ namespace RcktMon.Helpers
                     TiApiKey, TgBotApiKey, TgChatId, TgChatIdRu,
                     MinDayPriceChange, MinXMinutesPriceChange, 
                     MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
-                    NumOfMinToCheck, NumOfMinToCheckVol,
+                    NumOfMinToCheck, NumOfMinToCheckVol, ChartUrlTemplate,
                     IsTelegramEnabled, CheckRockets, SubscribeInstrumentStatus, HideRussianStocks,
                     USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, USAQuotesPassword, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
                 };
@@ -71,6 +71,11 @@ namespace RcktMon.Helpers
             if (NumOfMinToCheckVol == 0)
                 NumOfMinToCheckVol = 10;
 
+            if (String.IsNullOrWhiteSpace(ChartUrlTemplate))
+                ChartUrlTemplate = "https://stockcharts.com/c-sc/sc?s={0}&p=D&yr=0&mn=3&dy=0&i=t8988066255c";
+            else if (ChartUrlTemplate == "!disabled")
+                ChartUrlTemplate = "";
+
             return base.ReadSettings();
         }
 
@@ -83,7 +88,7 @@ namespace RcktMon.Helpers
             USAQuotesPassword = CryptoHelper.Encrypt(USAQuotesPassword),
             MinDayPriceChange, MinXMinutesPriceChange, 
             MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
-            NumOfMinToCheck, NumOfMinToCheckVol,
+            NumOfMinToCheck, NumOfMinToCheckVol, ChartUrlTemplate,
             IsTelegramEnabled, CheckRockets, SubscribeInstrumentStatus, HideRussianStocks,
             USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
         };
@@ -94,6 +99,8 @@ namespace RcktMon.Helpers
             {
                 if (settings is SettingsModel sm)
                 {
+                    if (String.IsNullOrWhiteSpace(sm.ChartUrlTemplate))
+                        sm.ChartUrlTemplate = "!disabled";
                     System.IO.File.WriteAllText("settings.json", 
                         JsonConvert.SerializeObject(sm.AnonymousSettingsObj, Formatting.Indented));
                     _eventAggregator.PublishOnCurrentThreadAsync(new SettingsChangeEventArgs(LastSettings, settings));

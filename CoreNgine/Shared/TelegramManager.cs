@@ -93,11 +93,14 @@ namespace CoreNgine.Shared
 
         internal string GetStockChart(string ticker)
         {
+            if (String.IsNullOrWhiteSpace(Settings.ChartUrlTemplate) || Settings.ChartUrlTemplate == "!disabled")
+                return null;
+
             var stock = _mainModel.Stocks[ticker];
             if (stock != null && !ticker.Equals("TCS", StringComparison.InvariantCultureIgnoreCase) 
                               && stock.Currency.Equals("USD", StringComparison.InvariantCultureIgnoreCase))
             {
-                return $"https://stockcharts.com/c-sc/sc?s={ticker}&p=D&yr=0&mn=3&dy=0&i=t8988066255c&r={DateTime.Now.ToFileTimeUtc()}";
+                return String.Format(Settings.ChartUrlTemplate, ticker);
             }
 
             return null;

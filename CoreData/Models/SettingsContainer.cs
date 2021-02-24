@@ -34,10 +34,11 @@ namespace CoreData.Models
         public string USAQuotesPassword { get; set; }
         public string TgArbitrageLongUSAChatId { get; set; }
         public string TgArbitrageShortUSAChatId { get; set; }
+        public string ChartUrlTemplate { get; set; }
 
         #endregion App Settings
 
-        protected INgineSettings LastSettings;
+        public INgineSettings LastSettings { get; protected set; }
 
         public INgineSettings Settings => this;
 

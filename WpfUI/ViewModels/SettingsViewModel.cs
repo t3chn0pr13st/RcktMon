@@ -31,6 +31,7 @@ namespace RcktMon.ViewModels
         public string USAQuotesPassword { get; set; }
         public string TgArbitrageShortUSAChatId { get; set; }
         public string TgArbitrageLongUSAChatId { get; set; }
+        public string ChartUrlTemplate { get; set; }
 
         private ISettingsProvider _settingsProvider;
         private MainViewModel _mainViewModel;
@@ -68,6 +69,7 @@ namespace RcktMon.ViewModels
             TgArbitrageShortUSAChatId = Settings.TgArbitrageShortUSAChatId;
             SubscribeInstrumentStatus = Settings.SubscribeInstrumentStatus;
             HideRussianStocks = Settings.HideRussianStocks;
+            ChartUrlTemplate = Settings.ChartUrlTemplate;
             ResetKeys();
         }
 
@@ -81,24 +83,30 @@ namespace RcktMon.ViewModels
         public async Task AcceptKeys()
         {
             if (TiApiKey != PasswordBehavior.PassReplacement)
-                _settingsProvider.Settings.TiApiKey = TiApiKey;
+                Settings.TiApiKey = TiApiKey;
             if (TgBotApiKey != PasswordBehavior.PassReplacement)
-                _settingsProvider.Settings.TgBotApiKey = TgBotApiKey;
+                Settings.TgBotApiKey = TgBotApiKey;
 
-            _settingsProvider.Settings.TgChatId = TgChatId;
-            _settingsProvider.Settings.TgChatIdRu = TgChatIdRu;
+            Settings.TgChatId = TgChatId;
+            Settings.TgChatIdRu = TgChatIdRu;
+            Settings.ChartUrlTemplate = ChartUrlTemplate;
             _settingsProvider.SaveSettings(_settingsProvider.Settings);
+
             ResetKeys();
 
-            StocksManager.Init();
-            await StocksManager.UpdateStocks();
+            var last = _settingsProvider.LastSettings;
+            if (last.TiApiKey != Settings.TiApiKey 
+                || last.TgBotApiKey != Settings.TgBotApiKey 
+                || last.TgChatId != Settings.TgChatId 
+                || last.TgChatIdRu != Settings.TgChatId)
+            {
+                StocksManager.Init();
+                await StocksManager.UpdateStocks();
+            }   
         }
 
         public void AcceptOptions()
         {
-            var currSettings = Settings as RcktMon.Helpers.SettingsModel;
-            var prevSettings = currSettings.Clone() as INgineSettings;
-
             Settings.MinDayPriceChange = MinDayPriceChangePercent / 100m;
             Settings.MinXMinutesPriceChange = MinXMinutesPriceChangePercent / 100m;
             Settings.MinVolumeDeviationFromDailyAverage = MinVolumeDeviationFromDailyAveragePercent / 100m;
@@ -114,6 +122,7 @@ namespace RcktMon.ViewModels
             Settings.TgArbitrageLongUSAChatId = TgArbitrageLongUSAChatId;
             Settings.HideRussianStocks = HideRussianStocks;
             Settings.SubscribeInstrumentStatus = SubscribeInstrumentStatus;
+            Settings.ChartUrlTemplate = ChartUrlTemplate;
             if (USAQuotesPassword != PasswordBehavior.PassReplacement)
             {
                 Settings.USAQuotesPassword = USAQuotesPassword;

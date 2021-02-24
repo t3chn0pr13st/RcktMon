@@ -24,10 +24,12 @@ namespace CoreData.Interfaces
         string USAQuotesPassword { get; set; }
         string TgArbitrageLongUSAChatId { get; set; }
         string TgArbitrageShortUSAChatId { get; set; }
+        string ChartUrlTemplate { get; set; }
     }
 
     public interface ISettingsProvider
     {
+        INgineSettings LastSettings { get; }
         INgineSettings Settings { get; }
         INgineSettings ReadSettings();
         void SaveSettings(INgineSettings settings);

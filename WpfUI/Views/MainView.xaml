@@ -210,6 +210,9 @@
                                         <TextBlock Margin="2" TextWrapping="Wrap"
                                                    Text="Это id чата в телеграмм для сообщений по русским акциям. Если не хотите их получать, оставьте поле пустым. Можно указать такой же канал как для US акций (выше)" />
                                         <TextBox Text="{Binding TgChatIdRu}" Margin="2" />
+                                        <TextBlock Margin="2" TextWrapping="Wrap"
+                                                   Text="Шаблон адреса сервиса, возвращающего изображение графика для вставки в сообщение от бота. &#10;В строке последовательность {0} означает место подстановки тикера. &#10;Если поле не заполнено, изображение не будет добавлено в сообщение." />
+                                        <TextBox Text="{Binding ChartUrlTemplate}" Margin="2" />
                                         <Button Margin="2 10 2 6" cal:Message.Attach="AcceptKeys">Применить</Button>
                                     </StackPanel>
                                 </Expander>
