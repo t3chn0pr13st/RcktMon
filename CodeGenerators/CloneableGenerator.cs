@@ -10,9 +10,9 @@ using System.Text;
 namespace CodeGenerators
 {
     [Generator]
-    public class ReadFromOtherAndNotifyChangesGenerator : ISourceGenerator
+    public class CloneableGenerator : ISourceGenerator
     {
-        internal const string AttributeName = "ReadFromOtherAndNotify";
+        internal const string AttributeName = "Cloneable";
         internal const string AttributeNamespace = "CoreCodeGenerators";
 
         private string _attributeText = $@"
@@ -32,9 +32,9 @@ namespace {AttributeNamespace}
 
         public void Execute( GeneratorExecutionContext context )
         {
-            context.AddSource("readFromOtherAndNotifyAttribute", SourceText.From(_attributeText, Encoding.UTF8));
+            context.AddSource("cloneableAttribute", SourceText.From(_attributeText, Encoding.UTF8));
 
-            if (!(context.SyntaxReceiver is SyntaxReceiver receiver))
+            if (!(context.SyntaxReceiver is CloneableSyntaxReceiver receiver))
                 return;
 
             CSharpParseOptions options = (CSharpParseOptions)((CSharpCompilation)context.Compilation).SyntaxTrees[0].Options;
@@ -47,7 +47,7 @@ namespace {AttributeNamespace}
                if (classTypeSymbol == null)
                     throw new InvalidOperationException("ClassTypeSymbol not found");
                var code = Generate(classDeclaration, classTypeSymbol.ContainingNamespace.ToDisplayString());
-               context.AddSource($"{classDeclaration.Identifier}_rf.g.cs", SourceText.From(code, Encoding.UTF8));
+               context.AddSource($"{classDeclaration.Identifier}_cl.g.cs", SourceText.From(code, Encoding.UTF8));
             }
 
         }
@@ -60,14 +60,9 @@ namespace {AttributeNamespace}
             {
                 if (p.AccessorList?.Accessors.Any(a => a.Keyword.ValueText == "set") != true)
                     continue;
-
                 var propName = p.Identifier.ToString();
-                sb.Append($@"
-            if (this.{propName} != other.{propName}) 
-            {{
-                this.{propName} = other.{propName};
-                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof({propName})));
-            }}");
+                sb.AppendLine($@"
+                newObj.{propName} = this.{propName};");
             }
 
             return @$"
@@ -76,12 +71,13 @@ using System.ComponentModel;
 
 namespace {ns}
 {{
-    partial class {c.Identifier} : INotifyPropertyChanged
+    partial class {c.Identifier}
     {{
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void ReadFrom({c.Identifier} other)
-        {{{sb}
+        public object Clone()
+        {{
+            var newObj = new {c.Identifier}();
+{sb}
+            return newObj;
         }}
     }}
 }}
@@ -90,11 +86,11 @@ namespace {ns}
 
         public void Initialize( GeneratorInitializationContext context )
         {
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+            context.RegisterForSyntaxNotifications(() => new CloneableSyntaxReceiver());
         }
     }
 
-    class SyntaxReceiver : ISyntaxReceiver
+    class CloneableSyntaxReceiver : ISyntaxReceiver
     {
         public List<ClassDeclarationSyntax> CandidateClasses { get; } = new List<ClassDeclarationSyntax>();
 
@@ -106,11 +102,11 @@ namespace {ns}
                 var attributeSyntax = classDeclarationSyntax.AttributeLists
                     .SelectMany(a => a.Attributes)
                     .SingleOrDefault(a => a.Name is 
-                    IdentifierNameSyntax { Identifier: { ValueText: ReadFromOtherAndNotifyChangesGenerator.AttributeName } } 
+                    IdentifierNameSyntax { Identifier: { ValueText: CloneableGenerator.AttributeName } } 
                     or
                     QualifiedNameSyntax {
-                        Left: IdentifierNameSyntax { Identifier: { ValueText: ReadFromOtherAndNotifyChangesGenerator.AttributeNamespace }},
-                        Right: IdentifierNameSyntax { Identifier: { ValueText: ReadFromOtherAndNotifyChangesGenerator.AttributeName }}
+                        Left: IdentifierNameSyntax { Identifier: { ValueText: CloneableGenerator.AttributeNamespace }},
+                        Right: IdentifierNameSyntax { Identifier: { ValueText: CloneableGenerator.AttributeName }}
                     });
 
                 if (attributeSyntax != null)

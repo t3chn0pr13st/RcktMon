@@ -70,7 +70,7 @@
                     <LayoutPanel Orientation="Vertical">
                         <LayoutDocumentPane>
                             <LayoutDocument ContentId="Stocks" Title="Мониторинг" x:Name="StocksDoc">
-
+                                
                                 <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource StocksCollectionView}}" 
                                         VirtualizingPanel.IsVirtualizing="True" 
                                         VirtualizingPanel.IsContainerVirtualizable="True"
@@ -234,11 +234,18 @@
                                         <Button Margin="2 10 2 6" cal:Message.Attach="AcceptOptions">Применить</Button>
                                     </StackPanel>
                                 </Expander>
-                                <Expander Header="Настройки уведомлений" IsExpanded="True">
+                                <Expander Header="Настройки мониторинга" IsExpanded="True">
                                     <StackPanel Orientation="Vertical">
                                         <mah:ToggleSwitch IsOn="{Binding IsTelegramEnabled}" FontSize="12.5"
                                                           Content="Слать уведомления в телеграм" />
-
+                                        <mah:ToggleSwitch IsOn="{Binding HideRussianStocks}" FontSize="12.5"
+                                                          ToolTip="Данная опция убирает из списка и из мониторинга все русские акции."
+                                                          Content="Скрыть русские акции" />
+                                        <mah:ToggleSwitch IsOn="{Binding SubscribeInstrumentStatus}"
+                                                          ToolTip="Данная опция включает подписку на статусы инструментов в реальном времени &#10;(состояние и верхний и нижний предел цены для заявок). &#10;При возникновении ошибок при [пере]подключении отключите."
+                                                          FontSize="12.5"
+                                                          Content="Подписка на лимиты цен" />
+                                        
                                         <TextBlock Text="При изменении цены за день (%)" Margin="2" />
                                         <TextBox Text="{Binding MinDayPriceChangePercent}" Margin="2" />
 

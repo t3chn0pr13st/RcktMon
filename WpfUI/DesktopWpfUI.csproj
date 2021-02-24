@@ -10,7 +10,7 @@
     <AssemblyVersion>1.5.0.0</AssemblyVersion>
     <FileVersion>1.5.0.0</FileVersion>
     <AssemblyName>RcktMon</AssemblyName>
-    <Version>1.5.8</Version>
+    <Version>1.5.9</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -122,8 +122,8 @@
     <PackageReference Include="Telegram.Bot" Version="15.7.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CoreNgine\CoreNgine.csproj" />
     <ProjectReference Include="..\invest-openapi-csharp-sdk\src\Tinkoff.Trading.OpenApi\Tinkoff.Trading.OpenApi.csproj" />
+	<ProjectReference Include="..\CoreNgine\CoreNgine.csproj" />
     <ProjectReference Include="..\L2DataProvider\USADataProvider.csproj" />
   </ItemGroup>
 

@@ -34,7 +34,7 @@ namespace CoreNgine.Shared
         }
     }
 
-    public class StocksManager
+    public class StocksManager : IHandler<SettingsChangeEventArgs>
     {
         private readonly IMainModel _mainModel;
         private DateTime? _lastEventReceived = null;
@@ -102,13 +102,15 @@ namespace CoreNgine.Shared
             Telegram.Stop();
         }
 
-        public StocksManager(IServiceProvider services, IMainModel mainModel, ILogger<StocksManager> logger, ISettingsProvider settingsProvider, IEventAggregator2 eventAggregator)
+        public StocksManager(IServiceProvider services, IMainModel mainModel, ILogger<StocksManager> logger, 
+            ISettingsProvider settingsProvider, IEventAggregator2 eventAggregator)
         {
             _settingsProvider = settingsProvider;
             _services = services;
             _mainModel = mainModel;
             _logger = logger;
             EventAggregator = eventAggregator;
+            EventAggregator.Subscribe(this);
 
             Init();
         }
@@ -135,9 +137,12 @@ namespace CoreNgine.Shared
 
             CommonConnection = ConnectionFactory.GetConnection(TiApiToken);
             CandleConnection = ConnectionFactory.GetConnection(TiApiToken);
-            InstrumentInfoConnection = ConnectionFactory.GetConnection(TiApiToken);
+            if (Settings.SubscribeInstrumentStatus)
+            {
+                InstrumentInfoConnection = ConnectionFactory.GetConnection(TiApiToken);
+                InstrumentInfoConnection.StreamingEventReceived += Broker_StreamingEventReceived;
+            }                
             CandleConnection.StreamingEventReceived += Broker_StreamingEventReceived;
-            InstrumentInfoConnection.StreamingEventReceived += Broker_StreamingEventReceived;
             CommonConnection.StreamingEventReceived += Broker_StreamingEventReceived;
 
             RunMonthUpdateTaskIfNotRunning();
@@ -365,13 +370,13 @@ namespace CoreNgine.Shared
             //Debug.WriteLine(msg);
         }
 
-        public async Task ResetConnection(string errorMsg)
+        public async Task ResetConnection(string errorMsg, bool subscribe = true)
         {
             LogError("Переподключение: " + errorMsg);
-            await ResetConnection();
+            await ResetConnection(subscribe);
         }
 
-        public async Task ResetConnection()
+        public async Task ResetConnection(bool subscribe = true)
         {
             _lastEventReceived = null;
             _lastRestartTime = null;
@@ -379,10 +384,12 @@ namespace CoreNgine.Shared
             CommonConnectionActions.Clear();
             _subscribedFigi.Clear();
             _subscribedMinuteFigi.Clear();
-            await Task.Delay(5000);
+            if (subscribe)
+                await Task.Delay(5000);
 
             PrepareConnection();
-            SubscribeToStockEvents();
+            if (subscribe)
+                SubscribeToStockEvents();
         }
 
         private async Task CandleProcessingProc(CandleResponse cr)
@@ -599,8 +606,9 @@ namespace CoreNgine.Shared
         {
             var stocks = _mainModel.Stocks.Values.Where(s => !s.IsDead).ToList();
             var completed = stocks.Count(s => !s.MonthStatsExpired);
-            await EventAggregator.PublishOnCurrentThreadAsync(new StatsUpdateMessage(completed, stocks.Count,
-                completed == stocks.Count, _apiCount));
+            if (stocks.Count > 0)
+                await EventAggregator.PublishOnCurrentThreadAsync(new StatsUpdateMessage(completed, stocks.Count,
+                    completed == stocks.Count, _apiCount));
         }
 
         private async Task MonthStatsCheckerLoop()
@@ -705,9 +713,12 @@ namespace CoreNgine.Shared
                     QueueBrokerAction(b => CandleConnection.SendStreamingRequestAsync(request2),
                         $"Подписка на стакан {stock.Ticker} ({stock.Figi}");
 
-                    var request3 = new InstrumentInfoSubscribeRequest( stock.Figi );
-                    QueueBrokerAction( b => InstrumentInfoConnection.SendStreamingRequestAsync( request3 ),
-                        $"Подписка на статус {stock.Ticker} ({stock.Figi}" );
+                    if (Settings.SubscribeInstrumentStatus)
+                    {
+                        var request3 = new InstrumentInfoSubscribeRequest( stock.Figi );
+                            QueueBrokerAction( b => InstrumentInfoConnection.SendStreamingRequestAsync( request3 ),
+                            $"Подписка на статус {stock.Ticker} ({stock.Figi}" );
+                    }                    
 
                     //toSubscribeInstr.Add(stock);
                     _subscribedFigi.Add(stock.Figi);
@@ -747,11 +758,20 @@ namespace CoreNgine.Shared
             var stocksToAdd = new HashSet<IStockModel>();
             foreach (var instr in stocks.Instruments)
             {
+                bool ignoreInstr = Settings.HideRussianStocks && instr.Currency == Currency.Rub;
+
                 var stock = _mainModel.Stocks.Values.FirstOrDefault(s => s.Figi == instr.Figi);
                 if (stock == null)
                 {
-                    stock = _mainModel.CreateStockModel(instr);
-                    stocksToAdd.Add(stock);
+                    if (!ignoreInstr) 
+                    {
+                        stock = _mainModel.CreateStockModel(instr);
+                        stocksToAdd.Add(stock);
+                    }
+                } 
+                else if (ignoreInstr)
+                {
+                    _mainModel.Stocks.Remove(stock.Ticker);
                 }
             }
 
@@ -762,6 +782,16 @@ namespace CoreNgine.Shared
             if (subscribeToPrices)
                 SubscribeToStockEvents();
             //_mainModel.IsNotifying = false;
+        }
+
+        public async Task HandleAsync( SettingsChangeEventArgs message, CancellationToken cancellationToken )
+        {
+            if (message.NewSettings.HideRussianStocks != message.PrevSettings.HideRussianStocks 
+                || message.NewSettings.SubscribeInstrumentStatus != message.PrevSettings.SubscribeInstrumentStatus )
+            {
+                await ResetConnection("Изменение настроек.", false);
+                await UpdateStocks(true);
+            }
         }
     }
 }

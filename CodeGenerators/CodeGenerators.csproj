@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="CloneableGeneratorExample.cs" />
     <Compile Remove="HelloWorldGenerator.cs" />
+    <Compile Remove="ICloneableGenerator.cs" />
   </ItemGroup>
 
   <ItemGroup>

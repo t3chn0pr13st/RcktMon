@@ -22,6 +22,9 @@ namespace RcktMon.ViewModels
         public int NumOfMinToCheckVol { get; set; }
         public bool IsTelegramEnabled { get; set; }
 
+        public bool SubscribeInstrumentStatus { get; set; }
+        public bool HideRussianStocks { get; set; }
+
         public bool USAQuotesEnabled { get; set; }
         public string USAQuotesURL { get; set; }
         public string USAQuotesLogin { get; set; }
@@ -63,6 +66,8 @@ namespace RcktMon.ViewModels
             USAQuotesPassword = Settings.USAQuotesPassword;
             TgArbitrageLongUSAChatId = Settings.TgArbitrageLongUSAChatId;
             TgArbitrageShortUSAChatId = Settings.TgArbitrageShortUSAChatId;
+            SubscribeInstrumentStatus = Settings.SubscribeInstrumentStatus;
+            HideRussianStocks = Settings.HideRussianStocks;
             ResetKeys();
         }
 
@@ -91,6 +96,9 @@ namespace RcktMon.ViewModels
 
         public void AcceptOptions()
         {
+            var currSettings = Settings as RcktMon.Helpers.SettingsModel;
+            var prevSettings = currSettings.Clone() as INgineSettings;
+
             Settings.MinDayPriceChange = MinDayPriceChangePercent / 100m;
             Settings.MinXMinutesPriceChange = MinXMinutesPriceChangePercent / 100m;
             Settings.MinVolumeDeviationFromDailyAverage = MinVolumeDeviationFromDailyAveragePercent / 100m;
@@ -104,6 +112,8 @@ namespace RcktMon.ViewModels
             Settings.USAQuotesLogin = USAQuotesLogin;
             Settings.TgArbitrageShortUSAChatId = TgArbitrageShortUSAChatId;
             Settings.TgArbitrageLongUSAChatId = TgArbitrageLongUSAChatId;
+            Settings.HideRussianStocks = HideRussianStocks;
+            Settings.SubscribeInstrumentStatus = SubscribeInstrumentStatus;
             if (USAQuotesPassword != PasswordBehavior.PassReplacement)
             {
                 Settings.USAQuotesPassword = USAQuotesPassword;

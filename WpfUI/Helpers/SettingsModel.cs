@@ -10,48 +10,25 @@ using CoreNgine.Infra;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RcktMon.Properties;
+using CoreCodeGenerators;
+using CoreData.Models;
+using CoreData;
 
 namespace RcktMon.Helpers
 {
-    public class SettingsModel : ISettingsProvider, INgineSettings
-    {
-        #region App Settings 
-        
-        public string TiApiKey { get; set; }
-        public string TgBotApiKey { get; set; }
-        public string TgChatId { get; set; }
-        public string TgChatIdRu { get; set; }
-        public decimal MinDayPriceChange { get; set; }
-        public decimal MinXMinutesPriceChange { get; set; }
-        public decimal MinVolumeDeviationFromDailyAverage { get; set; }
-        public decimal MinXMinutesVolChange { get; set; }
-        public int NumOfMinToCheck { get; set; }
-        public int NumOfMinToCheckVol { get; set; }
-        public bool IsTelegramEnabled { get; set; }
-        public bool CheckRockets { get; set; }
-
-        public bool USAQuotesEnabled { get; set; }
-        public string USAQuotesURL { get; set; }
-        public string USAQuotesLogin { get; set; }
-        public string USAQuotesPassword { get; set; }
-        public string TgArbitrageLongUSAChatId { get; set; }
-        public string TgArbitrageShortUSAChatId { get; set; }
-
-        #endregion App Settings
-
-        public INgineSettings Settings => this;
-
+    public class SettingsModel : SettingsContainer
+    {   
         private ILogger<SettingsModel> _logger;
-        private IEventAggregator2 _eventAggregator;
+        
+        protected IEventAggregator2 _eventAggregator;
 
-        public SettingsModel(ILogger<SettingsModel> logger, IEventAggregator2 eventAggregator)
+        public SettingsModel(ILogger<SettingsModel> logger, IEventAggregator2 eventAggregator) : base()
         {
-            _logger = logger;
             _eventAggregator = eventAggregator;
-            ReadSettings();
+            _logger = logger;
         }
 
-        public INgineSettings ReadSettings()
+        public override INgineSettings ReadSettings()
         {
             if (File.Exists("settings.json"))
             {
@@ -62,7 +39,7 @@ namespace RcktMon.Helpers
                     MinDayPriceChange, MinXMinutesPriceChange, 
                     MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
                     NumOfMinToCheck, NumOfMinToCheckVol,
-                    IsTelegramEnabled, CheckRockets,
+                    IsTelegramEnabled, CheckRockets, SubscribeInstrumentStatus, HideRussianStocks,
                     USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, USAQuotesPassword, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
                 };
                 var obj = JsonConvert.DeserializeAnonymousType(text, definition);
@@ -94,7 +71,7 @@ namespace RcktMon.Helpers
             if (NumOfMinToCheckVol == 0)
                 NumOfMinToCheckVol = 10;
 
-            return this;
+            return base.ReadSettings();
         }
 
         private object AnonymousSettingsObj => new 
@@ -107,11 +84,11 @@ namespace RcktMon.Helpers
             MinDayPriceChange, MinXMinutesPriceChange, 
             MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
             NumOfMinToCheck, NumOfMinToCheckVol,
-            IsTelegramEnabled, CheckRockets,
+            IsTelegramEnabled, CheckRockets, SubscribeInstrumentStatus, HideRussianStocks,
             USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
         };
 
-        public void SaveSettings(INgineSettings settings)
+        public override void SaveSettings(INgineSettings settings)
         {
             try 
             {
@@ -119,7 +96,8 @@ namespace RcktMon.Helpers
                 {
                     System.IO.File.WriteAllText("settings.json", 
                         JsonConvert.SerializeObject(sm.AnonymousSettingsObj, Formatting.Indented));
-                    _eventAggregator.PublishOnCurrentThreadAsync(settings);
+                    _eventAggregator.PublishOnCurrentThreadAsync(new SettingsChangeEventArgs(LastSettings, settings));
+                    LastSettings = settings.Clone() as INgineSettings;
                 }
             }
             catch (Exception ex)
