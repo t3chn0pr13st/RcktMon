@@ -30,6 +30,7 @@ namespace CoreData.Interfaces
          decimal AvgPrice { get; }
          string Status { get; set; }
          DateTime LastUpdate { get; set; }
+         DateTime LastResubscribeAttempt { get; set; }
          DateTime? LastAboveThresholdDate { get; set; }
          DateTime? LastAboveThresholdCandleTime { get; set; }
          DateTime? LastAboveVolThresholdCandleTime { get; set; }

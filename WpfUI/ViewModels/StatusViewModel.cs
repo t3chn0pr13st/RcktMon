@@ -21,6 +21,7 @@ namespace RcktMon.ViewModels
         public int TelegramQueryDepth { get; set; }
         public int StocksUpdatedIn1Sec { get;set; }
         public int StocksUpdatedIn5Sec { get; set; }
+        public int ResubscriptionAttemptsInTenMin { get; set; }
 
         public IEventAggregator2 EventAggregator { get; }
 
@@ -51,6 +52,8 @@ namespace RcktMon.ViewModels
                 StocksUpdatedIn5Sec = message.TotalStocksUpdatedInFiveSec.Value;
             if (message.TotalStocksUpdatedInLastSec.HasValue)
                 StocksUpdatedIn1Sec = message.TotalStocksUpdatedInLastSec.Value;
+            if (message.ResubscribeAttemptsInTenMin.HasValue)
+                ResubscriptionAttemptsInTenMin = message.ResubscribeAttemptsInTenMin.Value;
             return Task.CompletedTask;
         }
     }

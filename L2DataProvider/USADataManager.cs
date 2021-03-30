@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreData.Interfaces;
 using CoreData.Models;
+using CoreData.Settings;
 using CoreNgine;
 using CoreNgine.Infra;
 using CoreNgine.Interfaces;
@@ -15,7 +16,7 @@ using Newtonsoft.Json.Linq;
 
 namespace USADataProvider
 {
-    public class USADataManager : IHandler<INgineSettings>, IHandler<IEnumerable<IStockModel>>, IUSADataManager, IDisposable
+    public class USADataManager : IHandler<SettingsChangeEventArgs>, IHandler<IEnumerable<IStockModel>>, IUSADataManager, IDisposable
     {
         private Task _mainTask;
         public INgineSettings Settings { get; }
@@ -256,7 +257,7 @@ namespace USADataProvider
         public async Task HandleAsync(IEnumerable<IStockModel> message, CancellationToken cancellationToken)
         {
             var tickers = message
-                .Where(s => !s.IsDead && s.Exchange == "SPB")
+                .Where(s => !s.IsDead && s.Exchange.StartsWith("SPB"))
                 .Select(s => s.Ticker.ToLower()).ToList();
             lock (_subscribedTickers)
             {
@@ -264,16 +265,16 @@ namespace USADataProvider
             }
         }
 
-        public async Task HandleAsync(INgineSettings message, CancellationToken cancellationToken)
+        public async Task HandleAsync(SettingsChangeEventArgs message, CancellationToken cancellationToken)
         {
-            if (!_wasStarted && message.USAQuotesEnabled)
+            if (!_wasStarted && message.NewSettings.USAQuotesEnabled)
             {
                 Run();
             }
-            else if (_wasStarted && _login != message.USAQuotesLogin && _password != message.USAQuotesPassword)
+            else if (_wasStarted && _login != message.NewSettings.USAQuotesLogin && _password != message.NewSettings.USAQuotesPassword)
             {
                 Run();
-            } else if (_wasStarted && !message.USAQuotesEnabled)
+            } else if (_wasStarted && !message.NewSettings.USAQuotesEnabled)
             {
                 Stop();
             }

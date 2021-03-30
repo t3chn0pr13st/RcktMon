@@ -19,6 +19,7 @@ using Caliburn.Micro;
 using CoreData;
 using CoreData.Interfaces;
 using CoreData.Models;
+using CoreData.Settings;
 using CoreNgine.Infra;
 using CoreNgine.Models;
 using CoreNgine.Shared;

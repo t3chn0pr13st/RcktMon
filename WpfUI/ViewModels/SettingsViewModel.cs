@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Caliburn.Micro;
 using CoreData.Interfaces;
+using CoreData.Settings;
 using CoreNgine.Models;
 using CoreNgine.Shared;
 using RcktMon.Views;

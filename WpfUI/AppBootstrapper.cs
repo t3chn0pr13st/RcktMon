@@ -6,6 +6,7 @@ using System.Reflection.Metadata;
 using System.Windows;
 using Caliburn.Micro;
 using CoreData.Interfaces;
+using CoreData.Settings;
 using CoreNgine;
 using CoreNgine.Infra;
 using CoreNgine.Interfaces;

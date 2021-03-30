@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreData.Interfaces;
 using CoreData.Models;
+using CoreData.Settings;
 using CoreNgine.Infra;
 using CoreNgine.Models;
 using Microsoft.Extensions.DependencyInjection;

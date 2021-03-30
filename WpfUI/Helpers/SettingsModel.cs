@@ -13,6 +13,7 @@ using RcktMon.Properties;
 using CoreCodeGenerators;
 using CoreData.Models;
 using CoreData;
+using CoreData.Settings;
 
 namespace RcktMon.Helpers
 {

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CoreData;
 using CoreData.Interfaces;
 using CoreData.Models;
+using CoreData.Settings;
 using CoreNgine.Data;
 using CoreNgine.Infra;
 using CoreNgine.Models;
@@ -220,11 +221,28 @@ namespace CoreNgine.Shared
 
         private async Task UpdateCounters()
         {
-            _recentUpdatedStocksCount =
-                _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds <= 5);
-            var updatePerSecond = _mainModel.Stocks.Count(s => DateTime.Now.Subtract(s.Value.LastUpdate).TotalSeconds <= 1);
+            int upd1sec = 0, upd5sec = 0, resub10min = 0;
 
-            await EventAggregator.PublishOnCurrentThreadAsync(new CommonInfoMessage() { TotalStocksUpdatedInFiveSec = _recentUpdatedStocksCount, TotalStocksUpdatedInLastSec = updatePerSecond });
+            var list = _mainModel.Stocks.Values.ToArray();
+            for (int i = 0; i < list.Length; i++ )
+            {
+                var stock = list[i];
+                var elapsed = stock.LastUpdate.Elapsed();
+                if (elapsed.TotalSeconds <= 5)
+                    upd5sec++;
+                if (elapsed.TotalSeconds <= 1)
+                    upd1sec++;
+                if (stock.LastResubscribeAttempt.Elapsed().TotalMinutes <= 10)
+                    resub10min++;
+            }
+            _recentUpdatedStocksCount = upd5sec;
+
+            await EventAggregator.PublishOnCurrentThreadAsync(new CommonInfoMessage() 
+            {               
+                TotalStocksUpdatedInFiveSec = _recentUpdatedStocksCount, 
+                TotalStocksUpdatedInLastSec = upd1sec,
+                ResubscribeAttemptsInTenMin = resub10min
+            });
             _lastUIUpdate = DateTime.Now;
         }
 
@@ -300,8 +318,19 @@ namespace CoreNgine.Shared
                 while (CommonConnectionActions.TryDequeue(out BrokerAction act))
                 {
                     if (DateTime.Now.Subtract(_lastUIUpdate).TotalMilliseconds > 900)
-                        await UpdateCounters().ConfigureAwait(false);
+                    {
+                        try 
+                        {
+                            await UpdateCounters().ConfigureAwait(false);
+                        } 
+                        catch (Exception ex )
+                        {
+                            LogError("Ошибка при обновлении показателей: " + ex.Message);
+                        }
+                    }
+                        
 
+                    bool bSuccess = true;
                     try
                     {
                         //var msg = $"{DateTime.Now} Выполнение операции '{act.Description}'...";
@@ -311,15 +340,36 @@ namespace CoreNgine.Shared
                     }
                     catch (Exception ex)
                     {
+                        bSuccess = false;
                         //CommonConnectionActions.Push(act);
                         var errorMsg = $"Ошибка при выполнении операции '{act.Description}': {ex.Message}";
                         LogError(errorMsg);
-                        await ResetConnection(errorMsg).ConfigureAwait(false);
+                    }
+                    while (!bSuccess && !cancellationToken.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            await ResetConnection().ConfigureAwait(false);
+                        } 
+                        catch (Exception ex)
+                        {
+                            var errorMsg = $"Ошибка при переподключении: {ex.Message}";
+                            LogError(errorMsg);
+                        }
                     }
                 }
 
                 if (DateTime.Now.Subtract(_lastUIUpdate).TotalMilliseconds > 500)
-                    await UpdateCounters().ConfigureAwait(false);
+                {
+                    try
+                    {
+                        await UpdateCounters().ConfigureAwait(false);
+                    } 
+                    catch (Exception ex )
+                    {
+                        LogError("Ошибка при обновлении показателей: " + ex.Message);
+                    }
+                }
 
                 if (DateTime.Now.Subtract(LastInstrumentsUpdate).TotalSeconds > 20)
                 {
@@ -338,7 +388,14 @@ namespace CoreNgine.Shared
                             continue;
                         }
 
-                        await ResetConnection("Давно не поступало событий от биржи");
+                        try 
+                        {
+                            await ResetConnection("Давно не поступало событий от биржи");
+                        } 
+                        catch (Exception ex )
+                        {
+                            LogError("Ошибка при переподключении: " + ex.Message);
+                        }                        
                     }
 
                     //if (_recentUpdatedStocksCount < 10 && !ExchangeClosed)
@@ -350,7 +407,14 @@ namespace CoreNgine.Shared
 
                 if (_lastSubscriptionCheck.Elapsed().TotalMinutes > 1)
                 {
-                    CheckSubscription();
+                    try 
+                    {    
+                        CheckSubscription();
+                    } 
+                    catch (Exception ex)
+                    {
+                        LogError("Ошибка при проверке состояния подписок: " + ex.Message);
+                    }   
                     _lastSubscriptionCheck = DateTime.Now;
                 }
 
@@ -495,6 +559,8 @@ namespace CoreNgine.Shared
         }
 
         private int _apiCount = 0;
+
+        #region Month Stats
 
         private async Task<bool> GetMonthStats(IStockModel stock)
         {
@@ -660,12 +726,16 @@ namespace CoreNgine.Shared
                     () => MonthStatsCheckerLoop().ConfigureAwait(false), 
                     _cancellationTokenSource.Token);
         }
+
+        #endregion
+
         public void CheckSubscription()
         {
             foreach (var stock in _mainModel.Stocks.Values)
             {
                 if ( stock.LastUpdate.Elapsed().TotalMinutes > 1 && Instruments[stock.Ticker].IsActive )
                 {
+                    stock.LastResubscribeAttempt = DateTime.Now;
                     if ( _subscribedFigi.Contains( stock.Figi ) )
                     {
                         var request = new CandleUnsubscribeRequest(stock.Figi, CandleInterval.Day);

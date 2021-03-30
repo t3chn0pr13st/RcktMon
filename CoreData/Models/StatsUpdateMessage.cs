@@ -31,5 +31,6 @@ namespace CoreData.Models
         public int? TelegramMessageQuery { get; set; }
         public int? TotalStocksUpdatedInLastSec { get; set; }
         public int? TotalStocksUpdatedInFiveSec { get; set; }
+        public int? ResubscribeAttemptsInTenMin { get; set; }
     }
 }

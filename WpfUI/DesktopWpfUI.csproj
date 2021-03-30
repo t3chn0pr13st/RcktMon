@@ -124,7 +124,7 @@
   <ItemGroup>
     <ProjectReference Include="..\invest-openapi-csharp-sdk\src\Tinkoff.Trading.OpenApi\Tinkoff.Trading.OpenApi.csproj" />
 	<ProjectReference Include="..\CoreNgine\CoreNgine.csproj" />
-    <ProjectReference Include="..\L2DataProvider\USADataProvider.csproj" />
+    <ProjectReference Include="..\L2DataProvider\ExtDataManagers.csproj" />
   </ItemGroup>
 
 </Project>

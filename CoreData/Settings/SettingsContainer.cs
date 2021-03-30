@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CoreCodeGenerators;
 
-namespace CoreData.Models
+namespace CoreData.Settings
 {
     [Cloneable]
     public partial class SettingsContainer : ISettingsProvider, INgineSettings

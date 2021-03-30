@@ -32,6 +32,7 @@ namespace CoreData.Models
         public decimal AvgPrice => (TodayOpen + Price) / 2;
         public string Status { get; set; }
         public DateTime LastUpdate { get; set; }
+        public DateTime LastResubscribeAttempt { get; set; }
         public DateTime? LastAboveThresholdDate { get; set; }
         public DateTime? LastAboveThresholdCandleTime { get; set; }
         public DateTime? LastAboveVolThresholdCandleTime { get; set; }

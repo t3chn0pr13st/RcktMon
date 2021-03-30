@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CoreData
+namespace CoreData.Settings
 {
     public class SettingsChangeEventArgs : EventArgs
     {
@@ -14,7 +14,7 @@ namespace CoreData
 
         public SettingsChangeEventArgs() { }
 
-        public SettingsChangeEventArgs(INgineSettings oldSettings, INgineSettings newSettings) 
+        public SettingsChangeEventArgs( INgineSettings oldSettings, INgineSettings newSettings )
         {
             PrevSettings = oldSettings;
             NewSettings = newSettings;
