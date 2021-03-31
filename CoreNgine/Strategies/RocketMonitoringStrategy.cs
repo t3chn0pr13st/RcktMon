@@ -71,7 +71,7 @@ namespace CoreNgine.Strategies
 
         public async Task PerformQuotePercentChangeCheck(IStockModel stock)
          {
-             if (stock.Price == 0 || stock.MinuteCandles.Count == 0)
+             if (stock.Price == 0 || stock.MinuteCandles.Count == 0 || stock.Ticker == "DISCB")
                  return;
 
              var lastCandleTime = stock.MinuteCandles.Max(c => c.Value.Time);

@@ -315,11 +315,56 @@ namespace CoreNgine.Shared
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                while (CommonConnectionActions.TryDequeue(out BrokerAction act))
+                try
                 {
-                    if (DateTime.Now.Subtract(_lastUIUpdate).TotalMilliseconds > 900)
+                    while (CommonConnectionActions.TryDequeue(out BrokerAction act))
                     {
-                        try 
+                        if (DateTime.Now.Subtract(_lastUIUpdate).TotalMilliseconds > 900)
+                        {
+                            try 
+                            {
+                                await UpdateCounters().ConfigureAwait(false);
+                            } 
+                            catch (Exception ex )
+                            {
+                                LogError("Ошибка при обновлении показателей: " + ex.Message);
+                            }
+                        }
+                        
+
+                        bool bSuccess = true;
+                        try
+                        {
+                            //var msg = $"{DateTime.Now} Выполнение операции '{act.Description}'...";
+                            _logger.LogTrace("Выполнение операции {OperationDescription}", act.Description);
+                            //Debug.WriteLine(msg);
+                            await act.Action(CommonConnection);
+                        }
+                        catch (Exception ex)
+                        {
+                            bSuccess = false;
+                            //CommonConnectionActions.Push(act);
+                            var errorMsg = $"Ошибка при выполнении операции '{act.Description}': {ex.Message}";
+                            LogError(errorMsg);
+                        }
+                        while (!bSuccess && !cancellationToken.IsCancellationRequested)
+                        {
+                            try
+                            {
+                                await ResetConnection().ConfigureAwait(false);
+                                bSuccess = true;
+                            } 
+                            catch (Exception ex)
+                            {
+                                var errorMsg = $"Ошибка при переподключении: {ex.Message}";
+                                LogError(errorMsg);
+                            }
+                        }
+                    }
+
+                    if (DateTime.Now.Subtract(_lastUIUpdate).TotalMilliseconds > 500)
+                    {
+                        try
                         {
                             await UpdateCounters().ConfigureAwait(false);
                         } 
@@ -328,98 +373,56 @@ namespace CoreNgine.Shared
                             LogError("Ошибка при обновлении показателей: " + ex.Message);
                         }
                     }
-                        
 
-                    bool bSuccess = true;
-                    try
+                    if (DateTime.Now.Subtract(LastInstrumentsUpdate).TotalSeconds > 20)
                     {
-                        //var msg = $"{DateTime.Now} Выполнение операции '{act.Description}'...";
-                        _logger.LogTrace("Выполнение операции {OperationDescription}", act.Description);
-                        //Debug.WriteLine(msg);
-                        await act.Action(CommonConnection);
+                        LastInstrumentsUpdate = DateTime.Now;
+                        _ = UpdateInstrumentsInfo().ConfigureAwait(false);
                     }
-                    catch (Exception ex)
+
+                    if (_mainModel.Stocks.Count > 0 && _lastRestartTime.HasValue && DateTime.Now.Subtract(_lastRestartTime.Value).TotalSeconds > 10)
                     {
-                        bSuccess = false;
-                        //CommonConnectionActions.Push(act);
-                        var errorMsg = $"Ошибка при выполнении операции '{act.Description}': {ex.Message}";
-                        LogError(errorMsg);
-                    }
-                    while (!bSuccess && !cancellationToken.IsCancellationRequested)
-                    {
-                        try
+
+                        if (_lastEventReceived == null || DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
                         {
-                            await ResetConnection().ConfigureAwait(false);
+                            if (ExchangeClosed) // || IsHolidays)
+                            {
+                                await Task.Delay(1000);
+                                continue;
+                            }
+
+                            try 
+                            {
+                                await ResetConnection("Давно не поступало событий от биржи");
+                            } 
+                            catch (Exception ex )
+                            {
+                                LogError("Ошибка при переподключении: " + ex.Message);
+                            }                        
+                        }
+                        //if (_recentUpdatedStocksCount < 10 && !ExchangeClosed)
+                        //{
+                        //    await ResetConnection("Не приходило обновлений по большей части акций");
+                        //}
+                    }
+                    if (_lastSubscriptionCheck.Elapsed().TotalMinutes > 1)
+                    {
+                        try 
+                        {    
+                            CheckSubscription();
                         } 
                         catch (Exception ex)
                         {
-                            var errorMsg = $"Ошибка при переподключении: {ex.Message}";
-                            LogError(errorMsg);
-                        }
+                            LogError("Ошибка при проверке состояния подписок: " + ex.Message);
+                        }   
+                        _lastSubscriptionCheck = DateTime.Now;
                     }
+                    await Task.Delay(100);
                 }
-
-                if (DateTime.Now.Subtract(_lastUIUpdate).TotalMilliseconds > 500)
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        await UpdateCounters().ConfigureAwait(false);
-                    } 
-                    catch (Exception ex )
-                    {
-                        LogError("Ошибка при обновлении показателей: " + ex.Message);
-                    }
-                }
-
-                if (DateTime.Now.Subtract(LastInstrumentsUpdate).TotalSeconds > 20)
-                {
-                    LastInstrumentsUpdate = DateTime.Now;
-                    _ = UpdateInstrumentsInfo().ConfigureAwait(false);
-                }
-
-                if (_mainModel.Stocks.Count > 0 && _lastRestartTime.HasValue && DateTime.Now.Subtract(_lastRestartTime.Value).TotalSeconds > 10)
-                {
-
-                    if (_lastEventReceived == null || DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
-                    {
-                        if (ExchangeClosed) // || IsHolidays)
-                        {
-                            await Task.Delay(1000);
-                            continue;
-                        }
-
-                        try 
-                        {
-                            await ResetConnection("Давно не поступало событий от биржи");
-                        } 
-                        catch (Exception ex )
-                        {
-                            LogError("Ошибка при переподключении: " + ex.Message);
-                        }                        
-                    }
-
-                    //if (_recentUpdatedStocksCount < 10 && !ExchangeClosed)
-                    //{
-                    //    await ResetConnection("Не приходило обновлений по большей части акций");
-                    //}
-
-                }
-
-                if (_lastSubscriptionCheck.Elapsed().TotalMinutes > 1)
-                {
-                    try 
-                    {    
-                        CheckSubscription();
-                    } 
-                    catch (Exception ex)
-                    {
-                        LogError("Ошибка при проверке состояния подписок: " + ex.Message);
-                    }   
-                    _lastSubscriptionCheck = DateTime.Now;
-                }
-
-
-                await Task.Delay(100);
+                    LogError("Критическая ошибка потока: " + ex.Message);
+                }               
             }
         }
 
