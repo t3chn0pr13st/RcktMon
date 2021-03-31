@@ -101,7 +101,7 @@
                                         <DataGridTextColumn Binding="{Binding USBidRUAskDiff, StringFormat=P2}" Header="Bid Diff" x:Name="BidDiffUSAColumn"  />
                                         <DataGridTextColumn Binding="{Binding AskUSA}" Header="BA USA" x:Name="BidAskUSAColumn" />
                                         <DataGridTextColumn Binding="{Binding RUBidUSAskDiff, StringFormat=P2}" Header="Ask Diff" x:Name="AskDiffUSAColumn" />
-                                        <DataGridTextColumn Binding="{Binding LastUpdate, StringFormat=HH:mm:ss.ff}" Header="Last Upd" />
+                                        <DataGridTextColumn Binding="{Binding LastUpdatePrice, StringFormat=HH:mm:ss.ff}" Header="Last Upd" />
                                     </DataGrid.Columns>
                                 </DataGrid>
 
