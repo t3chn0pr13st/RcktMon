@@ -78,9 +78,9 @@ namespace CoreNgine.Strategies
              var candle = stock.MinuteCandles.Last(c => c.Value.Time == lastCandleTime).Value;
              if (Math.Abs(stock.DayChange) > Settings.MinDayPriceChange && Settings.MinDayPriceChange > 0
                 && (stock.LastAboveThresholdDate == null
-                || stock.LastAboveThresholdDate.Value.Date < stock.LastUpdate.Date))
+                || stock.LastAboveThresholdDate.Value.Date < stock.LastUpdatePrice.Date))
              { 
-                 stock.LastAboveThresholdDate = stock.LastUpdate;
+                 stock.LastAboveThresholdDate = stock.LastUpdatePrice;
 
                  if (!await EnsureHistoryLoaded(stock))
                      return;

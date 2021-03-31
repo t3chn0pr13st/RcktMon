@@ -227,7 +227,7 @@ namespace CoreNgine.Shared
             for (int i = 0; i < list.Length; i++ )
             {
                 var stock = list[i];
-                var elapsed = stock.LastUpdate.Elapsed();
+                var elapsed = stock.LastUpdatePrice.Elapsed();
                 if (elapsed.TotalSeconds <= 5)
                     upd5sec++;
                 if (elapsed.TotalSeconds <= 1)
@@ -469,12 +469,12 @@ namespace CoreNgine.Shared
                 if (candle.Interval == CandleInterval.Day)
                 {
                     if (Instruments.TryGetValue(stock.Ticker, out var instrument)) {
-                        if (candle.Time.Date < instrument.MarketStartDate.Date && stock.LastUpdate > DateTime.MinValue)
+                        if (candle.Time.Date < instrument.MarketStartDate.Date && stock.LastUpdatePrice > DateTime.MinValue)
                             return;
                     }                    
                     stock.TodayOpen = candle.Open;
                     stock.TodayDate = candle.Time.ToLocalTime();
-                    stock.LastUpdate = DateTime.Now;
+                    stock.LastUpdatePrice = DateTime.Now;
                     stock.Price = candle.Close;
                     if (stock.TodayOpen > 0)
                         stock.DayChange = (stock.Price - stock.TodayOpen) / stock.TodayOpen;
@@ -498,7 +498,7 @@ namespace CoreNgine.Shared
                             $"Новый день ({stock.Ticker} {stock.TodayDate} -> {candle.Time.Date})");
                         return;
                     }
-                    stock.LastUpdate = DateTime.Now;
+                    stock.LastUpdatePrice = DateTime.Now;
                     stock.LogCandle(candle);
                     await _mainModel.OnStockUpdated(stock);
                 }
@@ -528,6 +528,7 @@ namespace CoreNgine.Shared
                                 or.Payload.Figi, stock.Ticker, stock.Isin);
                             stock.BestBidSpb = bids[0][0];
                             stock.BestAskSpb = asks[0][0];
+                            stock.LastUpdateOrderbook = DateTime.Now;
                             _stockProcessingQueue.Enqueue(stock); // raise stock update (but only in sync with other updates)
                         }
 
@@ -736,7 +737,7 @@ namespace CoreNgine.Shared
         {
             foreach (var stock in _mainModel.Stocks.Values)
             {
-                if ( stock.LastUpdate.Elapsed().TotalMinutes > 1 && Instruments[stock.Ticker].IsActive )
+                if ( (stock.LastUpdatePrice.Elapsed().TotalMinutes > 1 || stock.LastUpdateOrderbook.Elapsed().TotalMinutes > 1) && Instruments[stock.Ticker].IsActive )
                 {
                     stock.LastResubscribeAttempt = DateTime.Now;
                     if ( _subscribedFigi.Contains( stock.Figi ) )

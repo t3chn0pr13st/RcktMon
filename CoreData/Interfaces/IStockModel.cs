@@ -29,7 +29,8 @@ namespace CoreData.Interfaces
          decimal DayVolumeCost { get; }
          decimal AvgPrice { get; }
          string Status { get; set; }
-         DateTime LastUpdate { get; set; }
+         DateTime LastUpdateOrderbook { get; set; }
+         DateTime LastUpdatePrice { get; set; }
          DateTime LastResubscribeAttempt { get; set; }
          DateTime? LastAboveThresholdDate { get; set; }
          DateTime? LastAboveThresholdCandleTime { get; set; }

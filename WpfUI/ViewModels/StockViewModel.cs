@@ -38,7 +38,8 @@ namespace RcktMon.ViewModels
         public decimal DayVolumeCost => DayVolume * AvgPrice;
         public decimal AvgPrice => (TodayOpen + Price) / 2;
         public string Status { get; set; }
-        public DateTime LastUpdate { get; set; }
+        public DateTime LastUpdateOrderbook { get; set; }
+        public DateTime LastUpdatePrice { get; set; }
         public DateTime LastResubscribeAttempt { get; set; }
         public DateTime? LastAboveThresholdDate { get; set; }
         public DateTime? LastAboveThresholdCandleTime { get; set; }
