@@ -21,7 +21,6 @@ namespace CoreNgine.Models
         public IDictionary<string, IStockModel> Stocks { get; } = new ConcurrentDictionary<string, IStockModel>();
         public IEnumerable<IMessageModel> Messages { get; } = new HashSet<MessageModel>();
         public StocksManager StocksManager { get; private set; }
-        private IHandler<IStockModel> _stockUpdateHandler;
         private ILogger<MainModel> _logger;
 
         private IServiceProvider _services;

@@ -17,7 +17,7 @@ namespace CoreNgine.Shared
             _stocksManager = stocksManager;
         }
 
-        public async Task GetPortfolio()
+        public void GetPortfolio()
         {
             
         }

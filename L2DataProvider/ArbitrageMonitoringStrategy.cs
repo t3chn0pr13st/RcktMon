@@ -73,7 +73,7 @@ namespace CoreNgine.Strategies
         public bool IsSendToTelegramEnabled =>
             Settings.IsTelegramEnabled && Elapsed.TotalSeconds > 10;
 
-        public async Task PerformArbitrageCheck(IStockModel stock, CancellationToken cancellationToken)
+        public void PerformArbitrageCheck(IStockModel stock, CancellationToken cancellationToken)
         {
             if (stock.LastUpdateUSA == null || Math.Abs(stock.LastUpdateOrderbook.Subtract(stock.LastUpdateUSA.Value).TotalMinutes) > 1)
                 return;
@@ -164,10 +164,12 @@ namespace CoreNgine.Strategies
             }
         }
             
-        public async Task HandleAsync(IStockModel message, CancellationToken cancellationToken)
+        public Task HandleAsync(IStockModel message, CancellationToken cancellationToken)
         {
             if (Settings.USAQuotesEnabled)
-                await PerformArbitrageCheck(message, cancellationToken);
+                PerformArbitrageCheck(message, cancellationToken);
+
+            return Task.CompletedTask;
         }
 
         public Task HandleAsync(INgineSettings message, CancellationToken cancellationToken)

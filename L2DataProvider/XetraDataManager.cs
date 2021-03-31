@@ -254,7 +254,7 @@ namespace USADataProvider
             }
         }
 
-        public async Task HandleAsync(IEnumerable<IStockModel> message, CancellationToken cancellationToken)
+        public Task HandleAsync(IEnumerable<IStockModel> message, CancellationToken cancellationToken)
         {
             var tickers = message
                 .Where(s => !s.IsDead && s.Exchange.StartsWith("SPB"))
@@ -263,9 +263,10 @@ namespace USADataProvider
             {
                 tickers.Apply(t => _subscribedTickers.Add(t));
             }
+            return Task.CompletedTask;
         }
 
-        public async Task HandleAsync(SettingsChangeEventArgs message, CancellationToken cancellationToken)
+        public Task HandleAsync(SettingsChangeEventArgs message, CancellationToken cancellationToken)
         {
             if (!_wasStarted && message.NewSettings.USAQuotesEnabled)
             {
@@ -278,6 +279,7 @@ namespace USADataProvider
             {
                 Stop();
             }
+            return Task.CompletedTask;
         }
 
         public void Dispose()

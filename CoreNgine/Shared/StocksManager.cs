@@ -111,7 +111,7 @@ namespace CoreNgine.Shared
             _mainModel = mainModel;
             _logger = logger;
             EventAggregator = eventAggregator;
-            EventAggregator.Subscribe(this);
+            EventAggregator.SubscribeOnBackgroundThread(this);
 
             Init();
         }
@@ -505,7 +505,7 @@ namespace CoreNgine.Shared
             }
         }
 
-        private async void Broker_StreamingEventReceived(object sender, StreamingEventReceivedEventArgs e)
+        private void Broker_StreamingEventReceived(object sender, StreamingEventReceivedEventArgs e)
         {
             //Debug.WriteLine(JsonConvert.SerializeObject(e.Response));
             _lastEventReceived = DateTime.Now;
