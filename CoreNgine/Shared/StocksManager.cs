@@ -750,9 +750,12 @@ namespace CoreNgine.Shared
                         QueueBrokerAction(b => CandleConnection.SendStreamingRequestAsync(request2),
                             $"Отписка от стакана {stock.Ticker} ({stock.Figi}");
 
-                        var request3 = new InstrumentInfoUnsubscribeRequest( stock.Figi );
-                        QueueBrokerAction( b => InstrumentInfoConnection.SendStreamingRequestAsync( request3 ),
-                            $"Отписка от статуса {stock.Ticker} ({stock.Figi}" );
+                        if (Settings.SubscribeInstrumentStatus)
+                        {
+                            var request3 = new InstrumentInfoUnsubscribeRequest( stock.Figi );
+                            QueueBrokerAction( b => InstrumentInfoConnection.SendStreamingRequestAsync( request3 ),
+                                $"Отписка от статуса {stock.Ticker} ({stock.Figi}" );
+                        }
 
                         _subscribedFigi.Remove(stock.Figi);
                     }
