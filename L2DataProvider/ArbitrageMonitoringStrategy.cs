@@ -75,7 +75,7 @@ namespace CoreNgine.Strategies
 
         public void PerformArbitrageCheck(IStockModel stock, CancellationToken cancellationToken)
         {
-            if (stock.LastUpdateUSA == null || Math.Abs(stock.LastUpdateOrderbook.Subtract(stock.LastUpdateUSA.Value).TotalMinutes) > 1)
+            if (stock.LastUpdateUSA == null || Math.Abs(stock.LastUpdateOrderbook.Subtract(stock.LastUpdateUSA.Value).TotalMinutes) > 5)
                 return;
 
             if (_arbitrageEvents.ContainsKey(stock.Ticker) 

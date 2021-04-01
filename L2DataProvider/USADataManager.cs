@@ -139,8 +139,15 @@ namespace USADataProvider
                             var resp = _httpClient.PostAsync(
                                 $"{Settings.USAQuotesURL}?symbols={tstr}&webmasterId=501&sid={_sessionId}",
                                 new StringContent(""), token).Result;
-                            var text = resp.Content.ReadAsStringAsync().Result;
-                            ParseQuotes(text);
+                            if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                            {
+                                var text = resp.Content.ReadAsStringAsync().Result;
+                                ParseQuotes(text);
+                            }
+                            else
+                            {
+                                throw new Exception($"{(int)resp.StatusCode} {resp.ReasonPhrase}");
+                            }
                         }
                         catch (Exception ex)
                         {

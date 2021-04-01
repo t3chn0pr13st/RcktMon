@@ -239,12 +239,18 @@ namespace RcktMon.ViewModels
         {
             if (stock.PriceUSA > 0 && stock.Price > 0)
                 stock.DiffPercentUSA = (stock.PriceUSA - stock.Price) / stock.PriceUSA;
+            else
+                stock.DiffPercentUSA = 0;
 
             if (stock.BestAskSpb > 0 && stock.BidUSA > 0)
                 stock.USBidRUAskDiff = (stock.BidUSA - stock.BestAskSpb) / stock.BestAskSpb;
+            else
+                stock.USBidRUAskDiff = 0;
 
             if (stock.BestBidSpb > 0 && stock.AskUSA > 0)
                 stock.RUBidUSAskDiff = (stock.BestBidSpb - stock.AskUSA) / stock.AskUSA;
+            else
+                stock.RUBidUSAskDiff = 0;
             
             await _eventAggregator.PublishOnCurrentThreadAsync(stock);
         }
