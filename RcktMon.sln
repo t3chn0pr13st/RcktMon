@@ -21,8 +21,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExtDataManagers", "L2DataPr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGenerators", "CodeGenerators\CodeGenerators.csproj", "{EF852158-0483-4B9A-8692-B8D5B3076B51}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tinkoff.Trading.OpenApi", "invest-openapi-csharp-sdk\src\Tinkoff.Trading.OpenApi\Tinkoff.Trading.OpenApi.csproj", "{5C8DB793-D771-4FB3-94DF-B3593BC8E74E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,10 +63,6 @@ Global
 		{EF852158-0483-4B9A-8692-B8D5B3076B51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF852158-0483-4B9A-8692-B8D5B3076B51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF852158-0483-4B9A-8692-B8D5B3076B51}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5C8DB793-D771-4FB3-94DF-B3593BC8E74E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5C8DB793-D771-4FB3-94DF-B3593BC8E74E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5C8DB793-D771-4FB3-94DF-B3593BC8E74E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5C8DB793-D771-4FB3-94DF-B3593BC8E74E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

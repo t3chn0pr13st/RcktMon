@@ -11,11 +11,11 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Telegram.Bot" Version="15.7.1" />
+	<PackageReference Include="Tinkoff.Trading.OpenApi" Version="1.7.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CoreData\CoreData.csproj" />
-    <ProjectReference Include="..\invest-openapi-csharp-sdk\src\Tinkoff.Trading.OpenApi\Tinkoff.Trading.OpenApi.csproj" />
   </ItemGroup>
 
 </Project>
