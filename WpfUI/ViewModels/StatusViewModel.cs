@@ -16,6 +16,7 @@ namespace RcktMon.ViewModels
         public string StatusProgressText { get; set; }
         public string StatusInfoText { get; set; }
         public int StatusPercent { get; set; }
+        public bool IsIndeterminate { get; set; }
         public bool ShowStatus { get; set; } = true;
 
         public int TelegramQueryDepth { get; set; }
@@ -36,6 +37,7 @@ namespace RcktMon.ViewModels
             //ShowStatus = !message.Finished;
             StatusProgressText = message.ToString();
             StatusPercent = message.Percent;
+            IsIndeterminate = false;
             StatusInfoText = "Загрузка исторических данных...";
             if (message.Finished)
             {
@@ -46,6 +48,10 @@ namespace RcktMon.ViewModels
 
         public Task HandleAsync(CommonInfoMessage message, CancellationToken cancellationToken)
         {
+            if (message.SetIndeterminate != null)
+                IsIndeterminate = message.SetIndeterminate.Value;
+            if (message.StatusText != null)
+                StatusProgressText = message.StatusText;
             if (message.TelegramMessageQuery.HasValue)
                 TelegramQueryDepth = message.TelegramMessageQuery.Value;
             if (message.TotalStocksUpdatedInFiveSec.HasValue)

@@ -35,6 +35,8 @@ namespace CoreData.Settings
         public string TgArbitrageLongUSAChatId { get; set; }
         public string TgArbitrageShortUSAChatId { get; set; }
         public string ChartUrlTemplate { get; set; }
+        public string IncludePattern { get; set; }
+        public string ExcludePattern { get; set; }
 
         #endregion App Settings
 

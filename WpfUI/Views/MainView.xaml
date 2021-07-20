@@ -249,7 +249,13 @@
                                                               ToolTip="Данная опция включает подписку на статусы инструментов в реальном времени &#10;(состояние и верхний и нижний предел цены для заявок). &#10;При возникновении ошибок при [пере]подключении отключите."
                                                               FontSize="12.5"
                                                               Content="Подписка на лимиты цен" />
-                                        
+
+                                            <TextBlock Text="Включить только следующие акции (рег. выражение)" Margin="2" />
+                                            <TextBox Text="{Binding IncludePattern}" Margin="2" />
+
+                                            <TextBlock Text="Исключить следующие акции (рег. выражение)" Margin="2" />
+                                            <TextBox Text="{Binding ExcludePattern}" Margin="2" />
+
                                             <TextBlock Text="При изменении цены за день (%)" Margin="2" />
                                             <TextBox Text="{Binding MinDayPriceChangePercent}" Margin="2" />
 
@@ -344,7 +350,9 @@
             </StatusBarItem>
             <Separator Grid.Column="3" />
             <StatusBarItem Grid.Column="2">
-                <ProgressBar Value="{Binding Status.StatusPercent}" Width="90" Height="16" />
+                <ProgressBar 
+                    IsIndeterminate="{Binding Status.IsIndeterminate}"
+                    Value="{Binding Status.StatusPercent}" Width="90" Height="16" />
             </StatusBarItem>
             <Separator Grid.Column="5" />
             <StatusBarItem Grid.Column="6" MinWidth="140">

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreData;
@@ -223,7 +224,7 @@ namespace CoreNgine.Shared
         {
             int upd1sec = 0, upd5sec = 0, resub10min = 0;
 
-            var list = _mainModel.Stocks.Values.ToArray();
+            var list = _mainModel.Stocks.Select(s => s.Value).ToArray();
             for (int i = 0; i < list.Length; i++ )
             {
                 var stock = list[i];
@@ -261,7 +262,7 @@ namespace CoreNgine.Shared
         private async Task UpdateInstrumentsInfo(HashSet<IStockModel> stocks = null)
         {
             if (stocks == null)
-                stocks = new HashSet<IStockModel>(_mainModel.Stocks.Values);
+                stocks = new HashSet<IStockModel>(_mainModel.Stocks.Select(s => s.Value));
 
             try
             {
@@ -462,7 +463,7 @@ namespace CoreNgine.Shared
         private async Task CandleProcessingProc(CandleResponse cr)
         {
             var candle = cr.Payload;
-            var stock = _mainModel.Stocks.Values.FirstOrDefault(s => s.Figi == candle.Figi);
+            var stock = _mainModel.Stocks.FirstOrDefault(s => s.Value.Figi == candle.Figi).Value;
             if (stock != null)
             {
                 //stock.IsNotifying = false;
@@ -519,7 +520,7 @@ namespace CoreNgine.Shared
 
                 case OrderbookResponse or:
                     {
-                        var stock = _mainModel.Stocks.Values.FirstOrDefault(s => s.Figi == or.Payload.Figi);
+                        var stock = _mainModel.Stocks.FirstOrDefault(s => s.Value.Figi == or.Payload.Figi).Value;
                         if (stock != null && or.Payload.Asks.Count > 0 && or.Payload.Bids.Count > 0)
                         {
                             var bids = or.Payload.Bids.Where(b => b[1] >= 1).ToList();
@@ -538,7 +539,7 @@ namespace CoreNgine.Shared
                 case InstrumentInfoResponse ir:
                     {
                         var info = ir.Payload;
-                        var stock = _mainModel.Stocks.Values.FirstOrDefault(s => s.Figi == info.Figi);
+                        var stock = _mainModel.Stocks.FirstOrDefault(s => s.Value.Figi == info.Figi).Value;
                         if (stock != null)
                         {
                             if ( String.IsNullOrWhiteSpace( stock.Status ) )
@@ -674,7 +675,9 @@ namespace CoreNgine.Shared
 
         private async Task ReportStatsCheckerProgress()
         {
-            var stocks = _mainModel.Stocks.Values.Where(s => !s.IsDead).ToList();
+            var stocks = _mainModel.Stocks
+                .Where(s => !s.Value.IsDead).ToList()  // this shit is maybe more thread-safe 
+                .Select(pair => pair.Value).ToList();
             var completed = stocks.Count(s => !s.MonthStatsExpired);
             if (stocks.Count > 0)
                 await EventAggregator.PublishOnCurrentThreadAsync(new StatsUpdateMessage(completed, stocks.Count,
@@ -735,8 +738,9 @@ namespace CoreNgine.Shared
 
         public void CheckSubscription()
         {
-            foreach (var stock in _mainModel.Stocks.Values)
+            foreach (var pair in _mainModel.Stocks)
             {
+                var stock = pair.Value;
                 if ( (stock.LastUpdatePrice.Elapsed().TotalMinutes > 1 || stock.LastUpdateOrderbook.Elapsed().TotalMinutes > 1) && Instruments[stock.Ticker].IsActive )
                 {
                     stock.LastResubscribeAttempt = DateTime.Now;
@@ -775,8 +779,9 @@ namespace CoreNgine.Shared
         public void SubscribeToStockEvents()
         {
             //var toSubscribeInstr = new HashSet<IStockModel>();
-            foreach (var stock in _mainModel.Stocks.Values)
+            foreach (var pair in _mainModel.Stocks)
             {
+                var stock = pair.Value;
                 if (stock.IsDead)
                     continue;
 
@@ -826,18 +831,29 @@ namespace CoreNgine.Shared
             }
         }
 
-        public async Task UpdateStocks(bool subscribeToPrices = true)
+        public async Task UpdateStocks(bool subscribeToPrices = true, Action<string> statusCallback = null)
         {
             if (CommonConnection == null)
                 return;
 
+            statusCallback?.Invoke("Загрузка инструментов...");
             var stocks = await CommonConnection.Context.MarketStocksAsync();
             var stocksToAdd = new HashSet<IStockModel>();
             foreach (var instr in stocks.Instruments)
             {
                 bool ignoreInstr = Settings.HideRussianStocks && instr.Currency == Currency.Rub;
 
-                var stock = _mainModel.Stocks.Values.FirstOrDefault(s => s.Figi == instr.Figi);
+                if (!ignoreInstr && !String.IsNullOrWhiteSpace(Settings.ExcludePattern))
+                {
+                    ignoreInstr = Regex.IsMatch(instr.Ticker, Settings.ExcludePattern);
+                }
+
+                if (!String.IsNullOrWhiteSpace(Settings.IncludePattern))
+                {
+                    ignoreInstr = !Regex.IsMatch(instr.Ticker, Settings.IncludePattern);
+                }
+
+                var stock = _mainModel.Stocks.FirstOrDefault(s => s.Value.Figi == instr.Figi).Value;
                 if (stock == null)
                 {
                     if (!ignoreInstr) 
@@ -852,9 +868,13 @@ namespace CoreNgine.Shared
                 }
             }
 
+            statusCallback?.Invoke("Загрузка сведений об инструментах...");
             await UpdateInstrumentsInfo(stocksToAdd);
 
+            statusCallback?.Invoke("Подписка на события по инструментам...");
             await _mainModel.AddStocks(stocksToAdd);
+
+            
 
             if (subscribeToPrices)
                 SubscribeToStockEvents();
@@ -864,6 +884,8 @@ namespace CoreNgine.Shared
         public async Task HandleAsync( SettingsChangeEventArgs message, CancellationToken cancellationToken )
         {
             if (message.NewSettings.HideRussianStocks != message.PrevSettings.HideRussianStocks 
+                || message.NewSettings.IncludePattern != message.PrevSettings.IncludePattern
+                || message.NewSettings.ExcludePattern != message.PrevSettings.ExcludePattern
                 || message.NewSettings.SubscribeInstrumentStatus != message.PrevSettings.SubscribeInstrumentStatus )
             {
                 await ResetConnection("Изменение настроек.", false);

@@ -315,11 +315,16 @@ namespace RcktMon.ViewModels
 
         public async Task RefreshAll()
         {
-            await StocksManager.UpdateStocks(false);
+            await StocksManager.UpdateStocks(false,
+                status => _eventAggregator.PublishOnUIThreadAsync(new CommonInfoMessage()
+                {
+                    SetIndeterminate = true,
+                    StatusText = status
+                }));
 
             await ExecuteOnUI(() =>
             {
-                foreach (var stock in Stocks.Values.ToList())
+                foreach (var stock in Stocks.Select(s => s.Value).ToList())
                 {
                     if (stock.IsDead || stock.Ticker.EndsWith("_old", StringComparison.InvariantCultureIgnoreCase))
                         Stocks.Remove(stock.Ticker);

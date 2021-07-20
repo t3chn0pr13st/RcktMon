@@ -32,5 +32,7 @@ namespace CoreData.Models
         public int? TotalStocksUpdatedInLastSec { get; set; }
         public int? TotalStocksUpdatedInFiveSec { get; set; }
         public int? ResubscribeAttemptsInTenMin { get; set; }
+        public string StatusText { get; set; }
+        public bool? SetIndeterminate { get; set; }
     }
 }

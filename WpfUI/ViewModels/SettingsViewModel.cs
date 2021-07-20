@@ -25,7 +25,7 @@ namespace RcktMon.ViewModels
 
         public bool SubscribeInstrumentStatus { get; set; }
         public bool HideRussianStocks { get; set; }
-
+        public bool UseInvesting { get; set; }
         public bool USAQuotesEnabled { get; set; }
         public string USAQuotesURL { get; set; }
         public string USAQuotesLogin { get; set; }
@@ -33,6 +33,8 @@ namespace RcktMon.ViewModels
         public string TgArbitrageShortUSAChatId { get; set; }
         public string TgArbitrageLongUSAChatId { get; set; }
         public string ChartUrlTemplate { get; set; }
+        public string IncludePattern { get; set; }
+        public string ExcludePattern { get; set; }
 
         private ISettingsProvider _settingsProvider;
         private MainViewModel _mainViewModel;
@@ -71,6 +73,8 @@ namespace RcktMon.ViewModels
             SubscribeInstrumentStatus = Settings.SubscribeInstrumentStatus;
             HideRussianStocks = Settings.HideRussianStocks;
             ChartUrlTemplate = Settings.ChartUrlTemplate;
+            ExcludePattern = Settings.ExcludePattern;
+            IncludePattern = Settings.IncludePattern;
             ResetKeys();
         }
 
@@ -124,6 +128,9 @@ namespace RcktMon.ViewModels
             Settings.HideRussianStocks = HideRussianStocks;
             Settings.SubscribeInstrumentStatus = SubscribeInstrumentStatus;
             Settings.ChartUrlTemplate = ChartUrlTemplate;
+            Settings.IncludePattern = IncludePattern;
+            Settings.ExcludePattern = ExcludePattern;
+
             if (USAQuotesPassword != PasswordBehavior.PassReplacement)
             {
                 Settings.USAQuotesPassword = USAQuotesPassword;

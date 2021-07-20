@@ -25,6 +25,8 @@ namespace CoreData.Settings
         string TgArbitrageLongUSAChatId { get; set; }
         string TgArbitrageShortUSAChatId { get; set; }
         string ChartUrlTemplate { get; set; }
+        string IncludePattern { get; set; }
+        string ExcludePattern { get; set; }
     }
 
     public interface ISettingsProvider
