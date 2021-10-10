@@ -11,6 +11,7 @@ using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
@@ -55,7 +56,7 @@ namespace RcktMon.ViewModels
         public ReleaseInfo LastRelease { get; private set; } = new ReleaseInfo();
 
         public AutoUpdate Updater { get; }
-
+        public WebSocketServer SocketServer { get; }
         public string UpdateLinkText { get; set; } = "Установить обновление";
         public bool UpdateInProgress { get; set; }
 
@@ -66,9 +67,10 @@ namespace RcktMon.ViewModels
         internal HttpClient WrapperClient => _wrapperClient ??= new HttpClient();
 
         public MainViewModel(IServiceProvider serviceProvider, ILogger<MainViewModel> logger, IEventAggregator2 eventAggregator, 
-            ISettingsProvider settingsProvider, StatusViewModel status, AutoUpdate updater)
+            ISettingsProvider settingsProvider, StatusViewModel status, AutoUpdate updater, WebSocketServer socketServer)
         {
             Updater = updater;
+            SocketServer = socketServer;
             _services = serviceProvider;
             _logger = logger;
             _uiContext = SynchronizationContext.Current;
@@ -150,10 +152,32 @@ namespace RcktMon.ViewModels
 
         public InstrumentInfo SelectedIstrument { get; set; }
 
+        public void ChangeTickerViaExt(object dataContext, int groupNum)
+        {
+            if (dataContext is MessageModel message)
+                _ = ChangeTickerViaExt(message.Ticker, groupNum);
+            else if (dataContext is IStockModel stock)
+                _ = ChangeTickerViaExt(stock.Ticker, groupNum);
+        }
+
+        public async Task ChangeTickerViaExt(string ticker, int group)
+        {
+            try
+            {
+                await SocketServer.SendAll(JsonConvert.SerializeObject(new { ticker, group }));
+            }
+            catch
+            {
+
+            }
+        }
+
         public void OpenInAurora(string ticker)
         {
             Task.Run(async () =>
             {
+                await ChangeTickerViaExt(ticker, 1);
+
                 if (!Stocks.TryGetValue(ticker, out var stock) ||
                     !stock.Currency.Equals("USD", StringComparison.InvariantCultureIgnoreCase)
                     || stock.Ticker == "TCS")

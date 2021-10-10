@@ -3,7 +3,6 @@
                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                   xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                   UseLayoutRounding="True"
-                  Title="TI RCKTMon"
-                  WindowStartupLocation="CenterScreen">
+                  Title="TI RCKTMon">
     <Grid />
 </mah:MetroWindow>

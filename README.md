@@ -9,6 +9,6 @@ Stocks rocket monitoring via Tinkoff OpenAPI
 
 Уведомления по акциям ММВБ на канале https://t.me/stoxxxxx_ru
 
-Последний собранный релиз лежит тут: https://github.com/t3chn0pr13st/RcktMon/releases
+Скачать последний релиз лежит тут: https://github.com/t3chn0pr13st/RcktMon/releases
 
-Выразить благодарность можно тут :) https://www.tinkoff.ru/sl/7VEs87kS1aY
+Поддержать проект можно по ссылке https://www.tinkoff.ru/sl/7VEs87kS1aY

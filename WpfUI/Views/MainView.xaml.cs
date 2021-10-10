@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using RcktMon.Helpers;
+using RcktMon.Models;
 using RcktMon.ViewModels;
 
 namespace RcktMon.Views
@@ -102,6 +103,17 @@ namespace RcktMon.Views
         {
             if (DataContext is MainViewModel main)
                 _ = main.InstallUpdate();
+        }
+
+        private void SetTerminalGroupOnButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is Button btn && btn.Tag != null 
+                && int.TryParse(btn.Tag.ToString(), out var groupNum) 
+                && btn.DataContext is MessageViewModel message)
+            {
+                if (DataContext is MainViewModel main)
+                    _ = main.ChangeTickerViaExt(message.Ticker, groupNum);
+            }
         }
     }
 }

@@ -53,6 +53,7 @@ namespace CoreNgine
             services.AddSingleton<IEventAggregator2, EventAggregator2>();
             services.AddSingleton<StocksManager>();
             services.AddSingleton<RocketMonitoringStrategy>();
+            services.AddSingleton<WebSocketServer>();
             _onConfigureServices?.Invoke(services);
         }
 
@@ -60,6 +61,7 @@ namespace CoreNgine
         {
             // Create singleton instances
             Services.GetRequiredService<RocketMonitoringStrategy>();
+            _ = _host.Services.GetRequiredService<WebSocketServer>().Start();
             // Run main model
             _host.Services.GetRequiredService<IMainModel>().Start();
         }

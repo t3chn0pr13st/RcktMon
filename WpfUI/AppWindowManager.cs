@@ -39,9 +39,10 @@ namespace RcktMon
                     window = new MainWindow
                     {
                         Content = view,
+                        //SaveWindowPosition = true,
                         Title = $"TI RCKTMON v{version ?? "Unknown"}"
                         //SizeToContent = SizeToContent.Manual,
-                        //WindowState = WindowState.Maximized
+                        //WindowState = WindowState.Maximized  
                     };
                 }
 
