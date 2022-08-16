@@ -27,6 +27,7 @@
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
         <InverseBoolToVisibilityConverter x:Key="InvertedBoolToVisConverter" />
+        
         <Style TargetType="Button" x:Key="CircleButton">
             <Setter Property="Width" Value="16" />
             <Setter Property="Height" Value="16" />
@@ -50,6 +51,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        
         <ControlTemplate x:Key="TickerButtons">
             <StackPanel Orientation="Horizontal">
                 <Button Style="{StaticResource CircleButton}"
@@ -79,8 +81,7 @@
                         Background="#16c60c" />
             </StackPanel>
         </ControlTemplate>
-        <SolidColorBrush x:Key="{x:Static DataGrid.FocusBorderBrushKey}" Color="#FF000000"/>
-        
+
         <DataTemplate x:Key="NameColumnDataTemplate">
             <Border Background="Transparent">
                 <Grid>
@@ -102,59 +103,8 @@
                 </Trigger>
             </DataTemplate.Triggers>
         </DataTemplate>
-        
-        <Style x:Key="NameColumnCellStyle" TargetType="{x:Type DataGridCell}">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type DataGridCell}">
-                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <ContentPresenter 
-                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                <ContentControl Name="PART_TickerButtons" Visibility="Collapsed"
-                                    Grid.Column="1"
-                                    Template="{StaticResource TickerButtons}" />
-                            </Grid>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="PART_TickerButtons" Property="Visibility" Value="Visible" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
-                </Trigger>
-                <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static DataGrid.FocusBorderBrushKey}}"/>
-                </Trigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsSelected" Value="true"/>
-                        <Condition Property="Selector.IsSelectionActive" Value="false"/>
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}}"/>
-                </MultiTrigger>
-                <Trigger Property="IsEnabled" Value="false">
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
     </UserControl.Resources>
+    
     <Grid x:Name="LayoutGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
