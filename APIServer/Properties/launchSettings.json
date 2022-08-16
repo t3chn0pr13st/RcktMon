@@ -11,18 +11,16 @@
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
-      "launchBrowser": false,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "APIServer": {
       "commandName": "Project",
+      "applicationUrl": "https://0.0.0.0:5002;http://0.0.0.0:5003",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "dotnetRunMessages": "true",
-      "applicationUrl": "https://0.0.0.0:5002;http://0.0.0.0:5003"
+      }
     }
   }
 }
