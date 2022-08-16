@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -50,7 +51,7 @@ namespace CoreNgine.Shared
         private string _checkUrl;
         private string _checkUrlBase;
         private string _checkUrlPathRegex;
-        private readonly WebClient _webClient = new WebClient();
+        private readonly HttpClient _httpClient = new HttpClient();
 
         public Version CurrentVersion { get; set; }
 
@@ -126,7 +127,20 @@ namespace CoreNgine.Shared
 
                 statusCallback?.Invoke("Загрузка архива...");
 
-                await _webClient.DownloadFileTaskAsync(relInfo.Url, localZipPath);
+                using (var stream = await _httpClient.GetStreamAsync(relInfo.Url))
+                {
+                    using (var outStream = File.OpenWrite(localZipPath))
+                    {
+                        int read = 0;
+                        byte[] buffer = new byte[8192];
+                        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await outStream.WriteAsync(buffer, 0, read);
+                        }
+                    }
+                }
+
+                //await _httpClient.DownloadFileTaskAsync(relInfo.Url, localZipPath);
 
                 statusCallback?.Invoke("Установка обновления...");
 
@@ -168,7 +182,7 @@ namespace CoreNgine.Shared
 
         public async Task<ReleaseInfo> GetLastRelease()
         {
-            var pageText = await _webClient.DownloadStringTaskAsync(_checkUrl);
+            var pageText = await _httpClient.GetStringAsync(_checkUrl);
 
             // <a href="/t3chn0pr13st/RcktMon/releases/tag/1.4.6">RcktMon v1.4.6</a>
             // <a href="\/t3chn0pr13st\/RcktMon\/releases\/tag\/(.*?)">(.*?)<\/a>

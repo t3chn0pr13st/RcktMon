@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -249,9 +250,9 @@ namespace CoreNgine.Shared
 
         internal static async Task<TinkoffStocksInfoCollection.Root> GetInstrumentsInfo()
         {
-            using (var webClient = new WebClient())
+            using (var httpClient = new HttpClient())
             {
-                var json = await webClient.DownloadStringTaskAsync(
+                var json = await httpClient.GetStringAsync(
                         "https://api.tinkoff.ru/trading/stocks/list?sortType=ByName&orderType=Asc&country=All")
                     .ConfigureAwait(false);
                 var root = JsonConvert.DeserializeObject<TinkoffStocksInfoCollection.Root>(json);
