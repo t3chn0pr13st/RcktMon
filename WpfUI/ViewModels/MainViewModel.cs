@@ -27,7 +27,7 @@ using CoreNgine.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Tinkoff.Trading.OpenApi.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
 
 namespace RcktMon.ViewModels
 {

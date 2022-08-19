@@ -74,7 +74,9 @@ namespace RcktMon.Helpers
                 NumOfMinToCheckVol = 10;
 
             if (String.IsNullOrWhiteSpace(ChartUrlTemplate))
-                ChartUrlTemplate = "https://stockcharts.com/c-sc/sc?s={0}&p=D&yr=0&mn=3&dy=0&i=t8988066255c";
+                ChartUrlTemplate = "https://stockcharts.com/c-sc/sc?s={ticker}&p=D&yr=0&mn=3&dy=0&i=t8988066255c&r={unixTime}";
+            else if (ChartUrlTemplate.Contains("stockcharts.com") && !ChartUrlTemplate.Contains("&r="))
+                ChartUrlTemplate = ChartUrlTemplate + "&r={unixTime}";
             else if (ChartUrlTemplate == "!disabled")
                 ChartUrlTemplate = "";
 

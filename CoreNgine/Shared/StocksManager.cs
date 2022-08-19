@@ -19,9 +19,9 @@ using CoreNgine.Infra;
 using CoreNgine.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Tinkoff.Trading.OpenApi.Models;
-using Tinkoff.Trading.OpenApi.Network;
-using static Tinkoff.Trading.OpenApi.Models.StreamingRequest;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Network;
+using static Tinkoff.Trading.OpenApi.Legacy.Models.StreamingRequest;
 
 namespace CoreNgine.Shared
 {

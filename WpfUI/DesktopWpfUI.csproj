@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <UseWPF>true</UseWPF>
     <RootNamespace>RcktMon</RootNamespace>
@@ -12,6 +11,15 @@
     <FileVersion>1.6.0.0</FileVersion>
     <AssemblyName>RcktMon</AssemblyName>
     <Version>1.6.1</Version>
+    <TargetFramework>net6.0-windows</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -84,12 +92,11 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="App.config" />
-    <None Include="AuroraWrapper.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="NLog.config">
+    <Content Include="AuroraWrapper.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="NLog.config">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -100,35 +107,36 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
     <Content Include="iconfinder_rocket_406798.ico" />
+    <SplashScreen Include="SplashScreen1.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="10.1.1" />
-    <PackageReference Include="Caliburn.Micro" Version="4.0.136-rc" />
-    <PackageReference Include="Dirkster.AvalonDock" Version="4.50.1" />
-    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.50.1" />
-    <PackageReference Include="MahApps.Metro" Version="2.4.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
-    <PackageReference Include="NLog" Version="4.7.6" />
-    <PackageReference Include="NLog.Extensions.Hosting" Version="1.7.0" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.7.0" />
-    <PackageReference Include="NLog.Schema" Version="4.7.6" />
-    <PackageReference Include="PropertyChanged.Fody" Version="3.3.1">
+    <PackageReference Include="AutoMapper" Version="11.0.1" />
+    <PackageReference Include="Caliburn.Micro" Version="4.0.210" />
+    <PackageReference Include="Dirkster.AvalonDock" Version="4.70.2" />
+    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.70.2" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+    <PackageReference Include="NLog" Version="5.0.2" />
+    <PackageReference Include="NLog.Extensions.Hosting" Version="5.0.2" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.0.2" />
+    <PackageReference Include="NLog.Schema" Version="5.0.2" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.4.1">
         <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
-    <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
-    <PackageReference Include="System.Composition.Hosting" Version="5.0.0" />
-    <PackageReference Include="Telegram.Bot" Version="15.7.1" />
-	<PackageReference Include="Tinkoff.Trading.OpenApi" Version="1.7.3" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
+    <PackageReference Include="System.Composition.Hosting" Version="6.0.0" />
+    <PackageReference Include="Telegram.Bot" Version="18.0.0" />
   </ItemGroup>
   <ItemGroup>
 	<ProjectReference Include="..\CoreNgine\CoreNgine.csproj" />
     <ProjectReference Include="..\L2DataProvider\ExtDataManagers.csproj" />
+	<ProjectReference Include="..\Tinkoff.Trading.OpenApi.Legacy\Tinkoff.Trading.OpenApi.Legacy.csproj" />
   </ItemGroup>
 
 </Project>

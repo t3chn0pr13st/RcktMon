@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Tinkoff.Trading.OpenApi.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
 
 namespace CoreData.Interfaces
 {

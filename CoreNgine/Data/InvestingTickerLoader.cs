@@ -130,13 +130,11 @@ namespace CoreNgine
 
         private async Task<(int totalCount, int readCount)> LoadPage( int[] countryIds, int[] exchangeIds, int pageNum, IDictionary<string, InvestingEquity> dic )
         {
-            var client = new RestClient( "https://ru.investing.com/stock-screener/Service/SearchStocks" )
-            {
-                Timeout = -1,
-                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36"
-            };
+            var client = new RestClient("https://ru.investing.com/stock-screener/Service/SearchStocks");
+            client.Options.MaxTimeout = -1;
+            client.Options.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36";
 
-            var request = new RestRequest( Method.POST );
+            var request = new RestRequest() { Method = Method.Post };
             request.AddHeader( "X-Requested-With", "XMLHttpRequest" );
             request.AddHeader( "Content-Type", "application/x-www-form-urlencoded" );
 

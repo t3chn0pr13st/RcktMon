@@ -1,15 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-<PropertyGroup>
-	<TargetFramework>net6.0</TargetFramework>
-</PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
 
-  <ItemGroup>
-	<PackageReference Include="Tinkoff.Trading.OpenApi" Version="1.7.3" />
-  </ItemGroup>
-	
-  <ItemGroup>
-    <ProjectReference Include="..\CodeGenerators\CodeGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DebugType>portable</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\CodeGenerators\CodeGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\Tinkoff.Trading.OpenApi.Legacy\Tinkoff.Trading.OpenApi.Legacy.csproj" />
+	</ItemGroup>
 
 </Project>

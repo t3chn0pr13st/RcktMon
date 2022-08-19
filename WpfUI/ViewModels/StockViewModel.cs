@@ -8,7 +8,7 @@ using CoreData;
 using CoreData.Interfaces;
 using CoreData.Models;
 using CoreNgine.Models;
-using Tinkoff.Trading.OpenApi.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
 
 namespace RcktMon.ViewModels
 {

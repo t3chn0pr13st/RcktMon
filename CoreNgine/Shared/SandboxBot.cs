@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using CoreData;
 using CoreData.Interfaces;
 using CoreNgine.Models;
-using Tinkoff.Trading.OpenApi.Models;
-using Tinkoff.Trading.OpenApi.Network;
-using static Tinkoff.Trading.OpenApi.Models.Portfolio;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Network;
+using static Tinkoff.Trading.OpenApi.Legacy.Models.Portfolio;
 
 namespace CoreNgine.Shared
 {

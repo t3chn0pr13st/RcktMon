@@ -12,7 +12,7 @@ using CoreNgine.Infra;
 using CoreNgine.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Tinkoff.Trading.OpenApi.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
 
 namespace CoreNgine.Models
 {

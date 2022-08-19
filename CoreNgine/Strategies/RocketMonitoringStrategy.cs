@@ -14,7 +14,7 @@ using CoreNgine.Infra;
 using CoreNgine.Models;
 using CoreNgine.Shared;
 using Microsoft.Extensions.Logging;
-using Tinkoff.Trading.OpenApi.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
 
 namespace CoreNgine.Strategies
 {

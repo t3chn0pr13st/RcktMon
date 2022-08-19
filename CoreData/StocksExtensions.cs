@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using CoreData.Interfaces;
 using CoreData.Models;
-using Tinkoff.Trading.OpenApi.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
 
 namespace CoreData
 {

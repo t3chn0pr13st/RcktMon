@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CoreData.Interfaces;
 using CoreData.Models;
 using CoreNgine.Shared;
-using Tinkoff.Trading.OpenApi.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
 
 namespace CoreNgine.Models
 {

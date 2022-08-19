@@ -101,7 +101,12 @@ namespace CoreNgine.Shared
             if (stock != null && !ticker.Equals("TCS", StringComparison.InvariantCultureIgnoreCase) 
                               && stock.Currency.Equals("USD", StringComparison.InvariantCultureIgnoreCase))
             {
-                return String.Format(Settings.ChartUrlTemplate, ticker);
+                var unixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                var url = Settings.ChartUrlTemplate
+                    .Replace("{0}", ticker)
+                    .Replace("{ticker}", ticker)
+                    .Replace("{unixTime}", unixTime.ToString());
+                return url;
             }
 
             return null;

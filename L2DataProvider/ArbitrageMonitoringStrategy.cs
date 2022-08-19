@@ -17,7 +17,7 @@ using CoreNgine.Models;
 using CoreNgine.Shared;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.Enums;
-using Tinkoff.Trading.OpenApi.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
 
 namespace CoreNgine.Strategies
 {

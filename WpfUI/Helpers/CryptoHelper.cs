@@ -132,7 +132,7 @@ namespace RcktMon.Helpers
                             int count = 0;
                             do
                             {
-                                count = CryptoStream.Read(PlainTextBytes, 0, PlainTextBytes.Length);
+                                count = CryptoStream.Read(PlainTextBytes, 0 + bytesRead, PlainTextBytes.Length - bytesRead);
                                 bytesRead += count;
                             }
                             while (count > 0);

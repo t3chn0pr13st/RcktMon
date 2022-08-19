@@ -1,5 +1,5 @@
 ﻿using System;
-using Tinkoff.Trading.OpenApi.Models;
+using Tinkoff.Trading.OpenApi.Legacy.Models;
 
 namespace CoreData.Interfaces
 {

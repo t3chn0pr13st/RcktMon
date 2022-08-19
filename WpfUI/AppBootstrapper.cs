@@ -107,7 +107,7 @@ namespace RcktMon
             _container.Services.GetService<IUSADataManager>();
             _container.Services.GetService<ArbitrageMonitoringStrategy>();
             _container.Services.GetService<ISettingsProvider>().ReadSettings();
-            this.DisplayRootViewFor<IMainModel>();
+            DisplayRootViewForAsync<IMainModel>();
         }
 
         protected override void OnExit(object sender, EventArgs e)
