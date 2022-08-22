@@ -97,6 +97,7 @@ namespace RcktMon.ViewModels
             Settings.TgChatId = TgChatId;
             Settings.TgChatIdRu = TgChatIdRu;
             Settings.ChartUrlTemplate = ChartUrlTemplate;
+            Settings.TgCallbackUrl = TgCallbackUrl;
 
             var last = _settingsProvider.LastSettings;
             bool needReconnect = last.TiApiKey != Settings.TiApiKey
