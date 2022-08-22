@@ -250,7 +250,7 @@
                                                         </TextBlock>
                                                     </StackPanel>
                                                     <DataTemplate.Triggers>
-                                                        <DataTrigger Binding="{Binding Tickerd}" Value="ERROR">
+                                                        <DataTrigger Binding="{Binding Ticker}" Value="ERROR">
                                                             <Setter TargetName="ActionsText" Property="Visibility" Value="Collapsed"></Setter>
                                                         </DataTrigger>
                                                     </DataTemplate.Triggers>
@@ -301,6 +301,9 @@
                                             <TextBlock Margin="2" TextWrapping="Wrap"
                                                        Text="Шаблон адреса сервиса, возвращающего изображение графика для вставки в сообщение от бота. В строке последовательность {0} означает место подстановки тикера. Если поле не заполнено, изображение не будет добавлено в сообщение." />
                                             <TextBox Text="{Binding ChartUrlTemplate}" Margin="2" />
+                                            <TextBlock Margin="2" TextWrapping="Wrap"
+                                                       Text="URL сервиса для обработки цветных кнопок в сообщениях" />
+                                            <TextBox Text="{Binding TgCallbackUrl}" Margin="2" />
                                             <Button Margin="2 10 2 6" cal:Message.Attach="AcceptKeys">Применить</Button>
                                         </StackPanel>
                                     </Expander>
@@ -428,20 +431,24 @@
                     </Grid>
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
-            <StatusBarItem Grid.Column="4">
-                <TextBlock Text="{Binding Status.StatusProgressText}"  />
-            </StatusBarItem>
             <Separator Grid.Column="1" />
             <StatusBarItem Grid.Column="0">
                 <TextBlock Text="{Binding Status.StatusInfoText}" />
             </StatusBarItem>
-            <Separator Grid.Column="3" />
             <StatusBarItem Grid.Column="2">
                 <ProgressBar 
                     IsIndeterminate="{Binding Status.IsIndeterminate}"
+                    Visibility="{Binding Status.ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}"
                     Value="{Binding Status.StatusPercent}" Width="90" Height="16" />
             </StatusBarItem>
-            <Separator Grid.Column="5" />
+            <Separator Grid.Column="3"
+                       Visibility="{Binding Status.ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <StatusBarItem Grid.Column="4" 
+                           Visibility="{Binding Status.ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="{Binding Status.StatusProgressText}"  />
+            </StatusBarItem>
+            <Separator Grid.Column="5" 
+                       Visibility="{Binding Status.ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}" />
             <StatusBarItem Grid.Column="6" MinWidth="140">
                 <TextBlock Text="{Binding Path=Status.StocksUpdatedIn5Sec, StringFormat={}Обновлено за 5 сек: {0}}" />
             </StatusBarItem>

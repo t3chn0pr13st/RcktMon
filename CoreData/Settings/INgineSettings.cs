@@ -15,6 +15,7 @@ namespace CoreData.Settings
         decimal MinVolumeDeviationFromDailyAverage { get; set; }
         decimal MinXMinutesVolChange { get; set; }
         bool IsTelegramEnabled { get; set; }
+        string TgCallbackUrl { get; set; }
         bool CheckRockets { get; set; }
         bool SubscribeInstrumentStatus { get; set; }
         bool HideRussianStocks { get; set; }

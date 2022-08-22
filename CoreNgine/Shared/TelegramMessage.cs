@@ -32,15 +32,25 @@ namespace CoreNgine.Shared
 
             if (Ticker != null)
             {
-                markup = new InlineKeyboardMarkup(
-                    new[]
+                var buttonRows = new List<InlineKeyboardButton[]>();
+                
+                if (!String.IsNullOrWhiteSpace(tgManager.Settings.TgCallbackUrl))
+                    buttonRows.Add(new[]
                     {
-                        new[]
-                        {
-                            InlineKeyboardButton.WithUrl($"Открыть {Ticker} в Инвестициях",
-                                String.Format(TelegramManager.TinkoffInvestStocksUrl, Ticker))
-                        }
+                        InlineKeyboardButton.WithCallbackData("🟡", $"stig;{Ticker};3"),
+                        InlineKeyboardButton.WithCallbackData("🔴", $"stig;{Ticker};6"),
+                        InlineKeyboardButton.WithCallbackData("🟣", $"stig;{Ticker};8"),
+                        InlineKeyboardButton.WithCallbackData("🔵", $"stig;{Ticker};10"),
+                        InlineKeyboardButton.WithCallbackData("🟢", $"stig;{Ticker};14"),
                     });
+
+                buttonRows.Add(new[]
+                {
+                    InlineKeyboardButton.WithUrl($"Открыть {Ticker} в Инвестициях",
+                        String.Format(TelegramManager.TinkoffInvestStocksUrl, Ticker))
+                });
+                
+                markup = new InlineKeyboardMarkup(buttonRows);
                 var chartUrl = tgManager.GetStockChart(Ticker);
                 if (chartUrl != null && AddTickerImage)
                 {

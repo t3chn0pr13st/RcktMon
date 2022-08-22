@@ -102,10 +102,12 @@ namespace Tinkoff.Trading.OpenApi.Legacy.Network
                     case HttpStatusCode.OK:
                         return JsonSerializer.Deserialize<OpenApiResponse<TOut>>(content.AsSpan(0, contentLength),
                             SerializationOptions.Instance);
+                    case HttpStatusCode.Forbidden:
+                        throw new OpenApiException("You have no access to that resource (token is correct, but not accepted)", HttpStatusCode.Forbidden);
                     case HttpStatusCode.Unauthorized:
-                        throw new OpenApiException("You have no access to that resource.", HttpStatusCode.Unauthorized);
+                        throw new OpenApiException("You have no access to that resource", HttpStatusCode.Unauthorized);
                     case TooManyRequestsStatusCode:
-                        throw new OpenApiException("Too many requests.", TooManyRequestsStatusCode);
+                        throw new OpenApiException("Too many requests", TooManyRequestsStatusCode);
                     default:
                         var openApiResponse =
                             JsonSerializer.Deserialize<OpenApiResponse<OpenApiExceptionPayload>>(content.AsSpan(0, contentLength),
@@ -123,7 +125,7 @@ namespace Tinkoff.Trading.OpenApi.Legacy.Network
             }
             catch (Exception e)
             {
-                throw new OpenApiInvalidResponseException("Unable to handle response.",
+                throw new OpenApiInvalidResponseException("Unable to handle response",
                     content == null ? string.Empty : Encoding.UTF8.GetString(content.AsSpan(0, contentLength).ToArray()), e);
             }
             finally

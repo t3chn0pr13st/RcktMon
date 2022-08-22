@@ -22,6 +22,7 @@ namespace RcktMon.ViewModels
         public int NumOfMinToCheck { get; set; }
         public int NumOfMinToCheckVol { get; set; }
         public bool IsTelegramEnabled { get; set; }
+        public string TgCallbackUrl { get; set; }
 
         public bool SubscribeInstrumentStatus { get; set; }
         public bool HideRussianStocks { get; set; }
@@ -64,6 +65,7 @@ namespace RcktMon.ViewModels
             NumOfMinToCheck = Settings.NumOfMinToCheck;
             NumOfMinToCheckVol = Settings.NumOfMinToCheckVol;
             IsTelegramEnabled = Settings.IsTelegramEnabled;
+            TgCallbackUrl = Settings.TgCallbackUrl;
             USAQuotesEnabled = Settings.USAQuotesEnabled;
             USAQuotesURL = Settings.USAQuotesURL;
             USAQuotesLogin = Settings.USAQuotesLogin;
@@ -75,10 +77,10 @@ namespace RcktMon.ViewModels
             ChartUrlTemplate = Settings.ChartUrlTemplate;
             ExcludePattern = Settings.ExcludePattern;
             IncludePattern = Settings.IncludePattern;
-            ResetKeys();
+            HideKeys();
         }
 
-        private void ResetKeys()
+        private void HideKeys()
         {
             TiApiKey = PasswordBehavior.PassReplacement;
             TgBotApiKey = PasswordBehavior.PassReplacement;
@@ -95,18 +97,21 @@ namespace RcktMon.ViewModels
             Settings.TgChatId = TgChatId;
             Settings.TgChatIdRu = TgChatIdRu;
             Settings.ChartUrlTemplate = ChartUrlTemplate;
-            _settingsProvider.SaveSettings(_settingsProvider.Settings);
-
-            ResetKeys();
 
             var last = _settingsProvider.LastSettings;
-            if (last.TiApiKey != Settings.TiApiKey 
-                || last.TgBotApiKey != Settings.TgBotApiKey 
-                || last.TgChatId != Settings.TgChatId 
-                || last.TgChatIdRu != Settings.TgChatId)
+            bool needReconnect = last.TiApiKey != Settings.TiApiKey
+                || last.TgBotApiKey != Settings.TgBotApiKey
+                || last.TgChatId != Settings.TgChatId
+                || last.TgChatIdRu != Settings.TgChatId;
+
+            _settingsProvider.SaveSettings(_settingsProvider.Settings);
+
+            HideKeys();
+            
+            if (needReconnect)
             {
                 StocksManager.Init();
-                await StocksManager.UpdateStocks();
+                await _mainViewModel.RefreshAll();
             }   
         }
 
@@ -117,6 +122,7 @@ namespace RcktMon.ViewModels
             Settings.MinVolumeDeviationFromDailyAverage = MinVolumeDeviationFromDailyAveragePercent / 100m;
             Settings.MinXMinutesVolChange = MinXMinutesVolPercentChangePercent / 100m;
             Settings.IsTelegramEnabled = IsTelegramEnabled;
+            Settings.TgCallbackUrl = TgCallbackUrl;
             Settings.NumOfMinToCheck = NumOfMinToCheck;
             Settings.NumOfMinToCheckVol = NumOfMinToCheckVol;
 
@@ -134,7 +140,7 @@ namespace RcktMon.ViewModels
             if (USAQuotesPassword != PasswordBehavior.PassReplacement)
             {
                 Settings.USAQuotesPassword = USAQuotesPassword;
-                ResetKeys();
+                HideKeys();
             }
 
             _settingsProvider.SaveSettings(_settingsProvider.Settings);

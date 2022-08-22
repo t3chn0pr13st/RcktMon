@@ -34,5 +34,6 @@ namespace CoreData.Models
         public int? ResubscribeAttemptsInTenMin { get; set; }
         public string StatusText { get; set; }
         public bool? SetIndeterminate { get; set; }
+        public bool? Finished { get; set; }
     }
 }

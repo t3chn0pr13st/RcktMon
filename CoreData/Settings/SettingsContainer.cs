@@ -24,6 +24,7 @@ namespace CoreData.Settings
         public int NumOfMinToCheck { get; set; }
         public int NumOfMinToCheckVol { get; set; }
         public bool IsTelegramEnabled { get; set; }
+        public string TgCallbackUrl { get; set; }
         public bool CheckRockets { get; set; }
         public bool SubscribeInstrumentStatus { get; set; }
         public bool HideRussianStocks { get; set; }

@@ -41,7 +41,7 @@ namespace RcktMon.Helpers
                     MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
                     NumOfMinToCheck, NumOfMinToCheckVol, ChartUrlTemplate,
                     IsTelegramEnabled, CheckRockets, SubscribeInstrumentStatus, HideRussianStocks,
-                    IncludePattern, ExcludePattern,
+                    IncludePattern, ExcludePattern, TgCallbackUrl,
                     USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, USAQuotesPassword, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
                 };
                 var obj = JsonConvert.DeserializeAnonymousType(text, definition);
@@ -94,7 +94,7 @@ namespace RcktMon.Helpers
             MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
             NumOfMinToCheck, NumOfMinToCheckVol, ChartUrlTemplate,
             IsTelegramEnabled, CheckRockets, SubscribeInstrumentStatus, HideRussianStocks,
-            IncludePattern, ExcludePattern,
+            IncludePattern, ExcludePattern, TgCallbackUrl,
             USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
         };
 

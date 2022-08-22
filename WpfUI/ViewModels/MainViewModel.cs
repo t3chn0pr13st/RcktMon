@@ -17,6 +17,7 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using AutoMapper;
 using Caliburn.Micro;
+using ControlzEx.Standard;
 using CoreData;
 using CoreData.Interfaces;
 using CoreData.Models;
@@ -47,6 +48,8 @@ namespace RcktMon.ViewModels
         public IDictionary<string, IStockModel> Stocks { get; } = new ConcurrentDictionary<string, IStockModel>();
         public IDictionary<string, InstrumentInfo> Instruments => StocksManager.Instruments;
         public IEnumerable<IMessageModel> Messages { get; } = new ObservableCollection<MessageViewModel>();
+
+        public InstrumentInfo SelectedInstrument { get; set; }
         
 
         public StocksManager StocksManager => _stocksManager ??= _services.GetRequiredService<StocksManager>();
@@ -326,7 +329,12 @@ namespace RcktMon.ViewModels
                     success = false;
                     if (ex.Message.StartsWith("Unauthorized"))
                     {
-                        AddMessage(MessageKind.Error, "ERROR", DateTime.Now, "Не удалось получить список инструментов: указан неверный токен Тинькофф Инвестиции (нет доступа)");
+                        AddMessage(MessageKind.Error, "ERROR", DateTime.Now, "Не удалось получить список инструментов: указан неверный токен Тинькофф Инвестиции (нет доступа).");
+                        break;
+                    }
+                    else if (ex.Message.StartsWith("Forbidden"))
+                    {
+                        AddMessage(MessageKind.Error, "ERROR", DateTime.Now, "Не удалось получить список инструментов: токены только для чтения (либо привязанные к конкретному счету) от API v2 в данный момент не поддерживаются.");
                         break;
                     }
                     else
@@ -334,6 +342,15 @@ namespace RcktMon.ViewModels
                         AddMessage(MessageKind.Error, "ERROR", DateTime.Now, "Не удалось получить список инструментов: " + ex.Message);
                     }                    
                 }
+            }
+            if (!success)
+            {
+                await _eventAggregator.PublishOnUIThreadAsync(new CommonInfoMessage()
+                {
+                    SetIndeterminate = false,
+                    Finished = true,
+                    StatusText = "Ошибка"
+                });
             }
         }
 

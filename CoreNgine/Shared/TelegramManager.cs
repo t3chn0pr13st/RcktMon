@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreData.Interfaces;
@@ -39,6 +42,7 @@ namespace CoreNgine.Shared
         private readonly ILogger<TelegramManager> _logger;
         private readonly IMainModel _mainModel;
         private readonly IEventAggregator2 _eventAggregator;
+        private readonly HttpClient _httpClient = new HttpClient();
 
         public void Stop()
         {
@@ -153,12 +157,85 @@ namespace CoreNgine.Shared
                         _logger.LogError(ex.Message);
                         _bot = new TelegramBotClient(_apiToken);
                     }
-
                     await _eventAggregator.PublishOnCurrentThreadAsync(new CommonInfoMessage() { TelegramMessageQuery = _botMessageQueue.Count });
                     await Task.Delay( 300 );
-                    
+
+                    await CheckIncomingBotMessages();
                 }
                 await Task.Delay(100);
+
+                await CheckIncomingBotMessages();
+            }
+        }
+
+        private int? _lastUpdateId = null;
+
+        private async Task CheckIncomingBotMessages()
+        {
+            try
+            {
+                var updates = await _bot.GetUpdatesAsync(_lastUpdateId + 1);
+                foreach (var update in updates)
+                {
+                    _lastUpdateId = update.Id;
+                    if (update.CallbackQuery?.Data is String callbackData)
+                    {
+                        var dataArr = callbackData.Split(";");
+                        Debug.WriteLine(update.Id, callbackData);
+                        switch (dataArr[0])
+                        {
+                            case "stig":
+                                if (dataArr.Length > 2)
+                                {
+                                    var senderId = update.CallbackQuery.From.Id;
+                                    var ticker = dataArr[1];
+                                    var groupNum = int.Parse(dataArr[2]);
+                                    var postUrl = Settings.TgCallbackUrl;
+                                    if (!String.IsNullOrWhiteSpace(postUrl))
+                                    {
+                                        var postObj = new
+                                        {
+                                            id = senderId,
+                                            ticker,
+                                            group = groupNum
+                                        };
+                                        string result = "Ошибка: ";
+                                        try
+                                        {
+                                            var resp = await _httpClient.PostAsync(postUrl, new StringContent(
+                                                JsonSerializer.Serialize(postObj), Encoding.UTF8, "application/json"
+                                            ));
+                                            Debug.WriteLine(resp.StatusCode, resp.ReasonPhrase);
+                                            if (resp.IsSuccessStatusCode)
+                                                result = null; // await resp.Content.ReadAsStringAsync();
+                                            else
+                                                result = $"{result}{resp.ReasonPhrase}";
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            result = $"{result}{ex.Message}";
+                                        }
+
+                                        try
+                                        {
+                                            await _bot.AnswerCallbackQueryAsync(update.CallbackQuery.Id, result);
+                                        }
+                                        catch
+                                        {
+
+                                        }
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+
             }
         }
     }
