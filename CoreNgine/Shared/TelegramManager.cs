@@ -36,6 +36,8 @@ namespace CoreNgine.Shared
         public bool IsEnabled => Settings.IsTelegramEnabled;
         public INgineSettings Settings { get; }
 
+        private bool _updateConflict = false;
+
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         private readonly IServiceProvider _services;
@@ -172,11 +174,17 @@ namespace CoreNgine.Shared
 
         private async Task CheckIncomingBotMessages()
         {
+            if (_updateConflict)
+                return;
+
             try
             {
                 var updates = await _bot.GetUpdatesAsync(_lastUpdateId + 1);
                 foreach (var update in updates)
                 {
+                    if (_cancellationTokenSource.IsCancellationRequested)
+                        break;
+
                     _lastUpdateId = update.Id;
                     if (update.CallbackQuery?.Data is String callbackData)
                     {
@@ -233,9 +241,13 @@ namespace CoreNgine.Shared
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-
+                if (ex.Message.StartsWith("Conflict"))
+                {
+                    _updateConflict = true;
+                    _mainModel.AddErrorMessage("Конфликт с другим ботом: проверка сообщений для бота отключена.");
+                }
             }
         }
     }

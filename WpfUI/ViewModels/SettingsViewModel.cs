@@ -87,7 +87,7 @@ namespace RcktMon.ViewModels
             USAQuotesPassword = PasswordBehavior.PassReplacement;
         }
 
-        public async Task AcceptKeys()
+        public void AcceptKeys()
         {
             if (TiApiKey != PasswordBehavior.PassReplacement)
                 Settings.TiApiKey = TiApiKey;
@@ -99,21 +99,9 @@ namespace RcktMon.ViewModels
             Settings.ChartUrlTemplate = ChartUrlTemplate;
             Settings.TgCallbackUrl = TgCallbackUrl;
 
-            var last = _settingsProvider.LastSettings;
-            bool needReconnect = last.TiApiKey != Settings.TiApiKey
-                || last.TgBotApiKey != Settings.TgBotApiKey
-                || last.TgChatId != Settings.TgChatId
-                || last.TgChatIdRu != Settings.TgChatId;
-
             _settingsProvider.SaveSettings(_settingsProvider.Settings);
 
             HideKeys();
-            
-            if (needReconnect)
-            {
-                StocksManager.Init();
-                await _mainViewModel.RefreshAll();
-            }   
         }
 
         public void AcceptOptions()

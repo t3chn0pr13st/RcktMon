@@ -21,6 +21,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Tinkoff.Trading.OpenApi.Legacy.Models;
 using Tinkoff.Trading.OpenApi.Legacy.Network;
+using static CoreData.Models.TinkoffStocksInfoCollection;
 using static Tinkoff.Trading.OpenApi.Legacy.Models.StreamingRequest;
 
 namespace CoreNgine.Shared
@@ -875,8 +876,6 @@ namespace CoreNgine.Shared
             statusCallback?.Invoke("Подписка на события по инструментам...");
             await _mainModel.AddStocks(stocksToAdd);
 
-            
-
             if (subscribeToPrices)
                 SubscribeToStockEvents();
             //_mainModel.IsNotifying = false;
@@ -884,10 +883,19 @@ namespace CoreNgine.Shared
 
         public async Task HandleAsync( SettingsChangeEventArgs message, CancellationToken cancellationToken )
         {
-            if (message.NewSettings.HideRussianStocks != message.PrevSettings.HideRussianStocks 
-                || message.NewSettings.IncludePattern != message.PrevSettings.IncludePattern
-                || message.NewSettings.ExcludePattern != message.PrevSettings.ExcludePattern
-                || message.NewSettings.SubscribeInstrumentStatus != message.PrevSettings.SubscribeInstrumentStatus )
+            var last = message.PrevSettings;
+            var current = message.NewSettings;
+
+            bool needReconnect = last.TiApiKey != current.TiApiKey
+                || last.TgBotApiKey != current.TgBotApiKey
+                || last.TgChatId != current.TgChatId
+                || last.TgChatIdRu != current.TgChatId
+                || current.HideRussianStocks != last.HideRussianStocks
+                || current.IncludePattern != last.IncludePattern
+                || current.ExcludePattern != last.ExcludePattern
+                || current.SubscribeInstrumentStatus != last.SubscribeInstrumentStatus;
+
+            if (needReconnect)
             {
                 await ResetConnection("Изменение настроек.", false);
                 await UpdateStocks(true);

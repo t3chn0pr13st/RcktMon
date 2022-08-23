@@ -187,13 +187,13 @@ namespace CoreNgine.Shared
             // <a href="/t3chn0pr13st/RcktMon/releases/tag/1.4.6">RcktMon v1.4.6</a>
             // <a href="\/t3chn0pr13st\/RcktMon\/releases\/tag\/(.*?)">(.*?)<\/a>
             string version = null, title = null, url = null, description = null, date = null;
-            var m = Regex.Match(pageText, @$"<a href=""{_checkUrlPathRegex}\/tag\/(.*?)"">(.*?)<\/a>");
+            var m = Regex.Match(pageText, @$"<a href=""{_checkUrlPathRegex}\/tag\/(.*?)"".*?>(.*?)<\/a>");
             if (m.Success)
             {
                 version = m.Groups[1].Value;
                 title = m.Groups[2].Value;
 
-                m = Regex.Match(pageText, @"<div class=""markdown-body"">(.*?)<\/div>", RegexOptions.Singleline);
+                m = Regex.Match(pageText, @"markdown-body.*?>(.*?)<\/div>", RegexOptions.Singleline);
                 if (m.Success)
                     description = m.Groups[1].Value
                         .Replace("<p>", "")
