@@ -1,8 +1,9 @@
 ﻿using Newtonsoft.Json;
 
 using RcktMon.Models;
-
+using System.Diagnostics;
 using System.IO;
+using System.Windows;
 
 namespace RcktMon
 {
@@ -73,6 +74,21 @@ namespace RcktMon
             SizeChanged += (s, e) => SaveWindowPos();
             LocationChanged += (s, e) => SaveWindowPos();
             StateChanged += (s, e) => SaveWindowPos();
+        }
+
+        private void DonateButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var url = (sender as FrameworkElement)?.Tag?.ToString();
+            if (url != null && url.StartsWith("http"))
+                try
+                {
+                    var psi = new ProcessStartInfo(url) { UseShellExecute = true };
+                    Process.Start(psi);
+                }
+                catch
+                {
+
+                }
         }
     }
 }

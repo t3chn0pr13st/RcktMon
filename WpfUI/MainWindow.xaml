@@ -4,5 +4,20 @@
                   xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                   UseLayoutRounding="True"
                   Title="TI RCKTMon">
+    <mah:MetroWindow.TitleTemplate>
+        <DataTemplate>
+            <Grid Margin="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding}" FontSize="15" Margin="2" />
+                <Button Grid.Column="1" Content="Donate" Cursor="Hand" Click="DonateButton_Click"
+                        Tag="https://www.tinkoff.ru/sl/7VEs87kS1aY"
+                        ToolTip="Поблагодарить автора \ поддержать разработку можно тут"
+                        Padding="8 0" Margin="6 0" MinHeight="20" Height="20" />
+            </Grid>
+        </DataTemplate>
+    </mah:MetroWindow.TitleTemplate>
     <Grid />
 </mah:MetroWindow>
