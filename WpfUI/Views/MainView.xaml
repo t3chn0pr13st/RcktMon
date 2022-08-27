@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:cal="http://caliburnmicro.com"
-             xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase" xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase" 
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:views="clr-namespace:RcktMon.Views"
              xmlns:viewModels="clr-namespace:RcktMon.ViewModels"
@@ -147,16 +148,19 @@
                     <LayoutPanel Orientation="Vertical">
                         <LayoutDocumentPane>
                             <LayoutDocument ContentId="Stocks" Title="Мониторинг" x:Name="StocksDoc">
-                                
-                                <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource StocksCollectionView}}" 
+
+                                <DataGrid IsReadOnly="True"
+                                        Name="StocksDataGrid"
+                                        ItemsSource="{Binding Source={StaticResource StocksCollectionView}}" 
                                         VirtualizingPanel.IsVirtualizing="True" 
                                         VirtualizingPanel.IsContainerVirtualizable="True"
                                         VirtualizingPanel.VirtualizationMode="Recycling"
                                         SelectedItem="{Binding SelectedStock}"
+                                        LayoutUpdated="DataGrid_LayoutUpdated"
                                         ScrollViewer.CanContentScroll="True" PreviewMouseDoubleClick="StocksDataGrid_OnPreviewMouseDoubleClick"
                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
                                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                        AutoGenerateColumns="False" >
+                                        AutoGenerateColumns="False">
                                     <DataGrid.Columns>
                                         <DataGridTemplateColumn
                                                             Width="220"
@@ -190,7 +194,9 @@
 
                             <LayoutDocument ContentId="InstrumentsStatus" Title="Статус инструментов" x:Name="InstrumentStatusDoc">
 
-                                <DataGrid IsReadOnly="True" ItemsSource="{Binding Source={StaticResource InstrumentsCollectionView}}" 
+                                <DataGrid IsReadOnly="True" 
+                                          Name="InstrumentsDataGrid"
+                                          ItemsSource="{Binding Source={StaticResource InstrumentsCollectionView}}" 
                                         VirtualizingPanel.IsVirtualizing="True" 
                                         VirtualizingPanel.IsContainerVirtualizable="True"
                                         VirtualizingPanel.VirtualizationMode="Recycling"
@@ -221,7 +227,7 @@
 
                             <LayoutAnchorable ContentId="Alerts" Title="Лог событий" x:Name="EventDoc">
 
-                                <DataGrid IsReadOnly="True"
+                                <DataGrid IsReadOnly="True" x:Name="LogDataGrid"
                                           ItemsSource="{Binding Source={StaticResource EventsCollectionView}}" AutoGenerateColumns="False">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Binding="{Binding Ticker}" Header="Тикер" />

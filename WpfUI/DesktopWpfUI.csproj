@@ -10,7 +10,7 @@
     <AssemblyVersion>1.6.0.0</AssemblyVersion>
     <FileVersion>1.6.0.0</FileVersion>
     <AssemblyName>RcktMon</AssemblyName>
-    <Version>1.6.4</Version>
+    <Version>1.6.5</Version>
     <TargetFramework>net6.0-windows</TargetFramework>
   </PropertyGroup>
 
@@ -50,6 +50,7 @@
     <Compile Include="AppWindowManager.cs" />
     <Compile Include="Helpers\CryptoHelper.cs" />
     <Compile Include="Helpers\SettingsModel.cs" />
+    <Compile Include="Models\DataGridColumnSettings.cs" />
     <Compile Include="Models\WindowSettings.cs" />
     <Compile Include="ViewModels\MessageViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
