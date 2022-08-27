@@ -288,22 +288,46 @@
                                                 </b:Interaction.Behaviors>
                                             </TextBox>
                                             <TextBlock FontWeight="Bold" Text="Telegram Bot Token" Margin="2 6 2 0" />
-                                            <TextBlock Text="Создайте бота через @botfather, вставьте сюда его токен" TextWrapping="Wrap" Margin="2" />
-                                            <TextBox Text="{Binding TgBotApiKey}" Margin="2" />
+                                            <TextBlock TextWrapping="Wrap" Margin="2">
+                                                <Run>Создайте бота через</Run> 
+                                                <Hyperlink Click="HyperlinkOpenInBrowser_Click" NavigateUri="https://t.me/botfather">@botfather</Hyperlink> 
+                                                <Run>и вставьте сюда его токен</Run>
+                                            </TextBlock>
+                                            <TextBox Text="{Binding TgBotApiKey}" Margin="2">
+                                                <b:Interaction.Behaviors>
+                                                    <views:PasswordBehavior />
+                                                </b:Interaction.Behaviors>
+                                            </TextBox>
                                             <TextBlock Text="Telegram Chat Id" Margin="2 6 2 0" FontWeight="Bold" />
-                                            <TextBlock Margin="2" TextWrapping="Wrap"
-                                                       Text="Это id чата в телеграмм, куда будет отправлять сообщения ваш бот (по US акциям). Можно пригласить бота в группу\канал, и вставить сюда chatId группы. Чтобы бот писал в лс, вставьте личный chatId (подойдет тот же telegram id что в pantini tools, узнать можно у @pantini_warden_bot или @username_to_id_bot)" />
+                                            <TextBlock Margin="2" TextWrapping="Wrap">
+                                                <Run>"Это id чата в телеграмм, куда будет отправлять сообщения ваш бот (по US акциям). 
+                                                    Можно пригласить бота в группу\канал, и вставить сюда chatId группы. 
+                                                    Чтобы бот писал в лс, вставьте ваш Telegram Id ( можно узнать, например, у бота</Run>
+                                                <Hyperlink Click="HyperlinkOpenInBrowser_Click" NavigateUri="https://t.me/kvtsbot">@kvtsbot</Hyperlink>
+                                                <Run>)</Run>
+                                            </TextBlock>
                                             <TextBox Text="{Binding TgChatId}" Margin="2" />
                                             <TextBlock Text="Telegram Chat Id для акций ММВБ" Margin="2 6 2 0" FontWeight="Bold" />
                                             <TextBlock Margin="2" TextWrapping="Wrap"
-                                                       Text="Это id чата в телеграмм для сообщений по русским акциям. Если не хотите их получать, оставьте поле пустым. Можно указать такой же канал как для US акций (выше)" />
+                                                       Text="Это id чата в телеграмм для сообщений по русским акциям. Если не хотите их получать, оставьте поле пустым. Можно указать такой же канал как для US акций" />
                                             <TextBox Text="{Binding TgChatIdRu}" Margin="2" />
                                             <TextBlock Margin="2" TextWrapping="Wrap"
-                                                       Text="Шаблон адреса сервиса, возвращающего изображение графика для вставки в сообщение от бота. В строке последовательность {0} означает место подстановки тикера. Если поле не заполнено, изображение не будет добавлено в сообщение." />
+                                                       Text="URL сервиса, возвращающего изображение графика для вставки в сообщение от бота" />
                                             <TextBox Text="{Binding ChartUrlTemplate}" Margin="2" />
                                             <TextBlock Margin="2" TextWrapping="Wrap"
                                                        Text="URL сервиса для обработки цветных кнопок в сообщениях" />
                                             <TextBox Text="{Binding TgCallbackUrl}" Margin="2" />
+                                            <TextBlock Margin="2" TextWrapping="Wrap">
+                                                <Run>Токен KvaloodTools ( получать у бота </Run>
+                                                <Hyperlink Click="HyperlinkOpenInBrowser_Click" NavigateUri="https://t.me/kvtsbot">@kvtsbot</Hyperlink>
+                                                <Run>) - необходим для работы цветных кнопок в сообщениях. Также должно быть установлено расширение</Run>
+                                                <Hyperlink Click="HyperlinkOpenInBrowser_Click" NavigateUri="https://github.com/kvalood/kvt">Kvalood Tools</Hyperlink>
+                                            </TextBlock>
+                                            <TextBox Text="{Binding KvtToken}" Margin="2">
+                                                <b:Interaction.Behaviors>
+                                                    <views:PasswordBehavior />
+                                                </b:Interaction.Behaviors>
+                                            </TextBox>
                                             <Button Margin="2 10 2 6" cal:Message.Attach="AcceptKeys">Применить</Button>
                                         </StackPanel>
                                     </Expander>

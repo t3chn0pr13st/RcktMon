@@ -34,17 +34,7 @@ namespace RcktMon.Helpers
             if (File.Exists("settings.json"))
             {
                 var text = File.ReadAllText("settings.json");
-                var definition = new 
-                {
-                    TiApiKey, TgBotApiKey, TgChatId, TgChatIdRu,
-                    MinDayPriceChange, MinXMinutesPriceChange, 
-                    MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
-                    NumOfMinToCheck, NumOfMinToCheckVol, ChartUrlTemplate,
-                    IsTelegramEnabled, CheckRockets, SubscribeInstrumentStatus, HideRussianStocks,
-                    IncludePattern, ExcludePattern, TgCallbackUrl,
-                    USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, USAQuotesPassword, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
-                };
-                var obj = JsonConvert.DeserializeAnonymousType(text, definition);
+                var obj = JsonConvert.DeserializeAnonymousType(text, this);
                 var config = new MapperConfiguration(cfg => 
                     cfg.CreateMap(obj.GetType(), this.GetType()));
                 var mapper = new Mapper(config);
@@ -80,6 +70,9 @@ namespace RcktMon.Helpers
             else if (ChartUrlTemplate == "!disabled")
                 ChartUrlTemplate = "";
 
+            if (String.IsNullOrWhiteSpace(TgCallbackUrl))
+                TgCallbackUrl = "https://kvalood.ru/ticker";
+
             return base.ReadSettings();
         }
 
@@ -94,7 +87,7 @@ namespace RcktMon.Helpers
             MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
             NumOfMinToCheck, NumOfMinToCheckVol, ChartUrlTemplate,
             IsTelegramEnabled, CheckRockets, SubscribeInstrumentStatus, HideRussianStocks,
-            IncludePattern, ExcludePattern, TgCallbackUrl,
+            IncludePattern, ExcludePattern, TgCallbackUrl, KvtToken,
             USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
         };
 

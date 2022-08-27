@@ -23,6 +23,7 @@ namespace RcktMon.ViewModels
         public int NumOfMinToCheckVol { get; set; }
         public bool IsTelegramEnabled { get; set; }
         public string TgCallbackUrl { get; set; }
+        public string KvtToken { get; set; }
 
         public bool SubscribeInstrumentStatus { get; set; }
         public bool HideRussianStocks { get; set; }
@@ -66,6 +67,7 @@ namespace RcktMon.ViewModels
             NumOfMinToCheckVol = Settings.NumOfMinToCheckVol;
             IsTelegramEnabled = Settings.IsTelegramEnabled;
             TgCallbackUrl = Settings.TgCallbackUrl;
+            KvtToken = Settings.KvtToken;
             USAQuotesEnabled = Settings.USAQuotesEnabled;
             USAQuotesURL = Settings.USAQuotesURL;
             USAQuotesLogin = Settings.USAQuotesLogin;
@@ -85,6 +87,7 @@ namespace RcktMon.ViewModels
             TiApiKey = PasswordBehavior.PassReplacement;
             TgBotApiKey = PasswordBehavior.PassReplacement;
             USAQuotesPassword = PasswordBehavior.PassReplacement;
+            KvtToken = PasswordBehavior.PassReplacement;
         }
 
         public void AcceptKeys()
@@ -93,6 +96,8 @@ namespace RcktMon.ViewModels
                 Settings.TiApiKey = TiApiKey;
             if (TgBotApiKey != PasswordBehavior.PassReplacement)
                 Settings.TgBotApiKey = TgBotApiKey;
+            if (KvtToken != PasswordBehavior.PassReplacement)
+                Settings.KvtToken = KvtToken;
 
             Settings.TgChatId = TgChatId;
             Settings.TgChatIdRu = TgChatIdRu;

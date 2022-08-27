@@ -34,7 +34,8 @@ namespace CoreNgine.Shared
             {
                 var buttonRows = new List<InlineKeyboardButton[]>();
                 
-                if (!String.IsNullOrWhiteSpace(tgManager.Settings.TgCallbackUrl))
+                if (!String.IsNullOrWhiteSpace(tgManager.Settings.TgCallbackUrl)
+                    && !String.IsNullOrWhiteSpace(tgManager.Settings.KvtToken))
                     buttonRows.Add(new[]
                     {
                         InlineKeyboardButton.WithCallbackData("🟡", $"stig;{Ticker};3"),

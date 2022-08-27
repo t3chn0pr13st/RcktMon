@@ -16,6 +16,7 @@ namespace CoreData.Settings
         decimal MinXMinutesVolChange { get; set; }
         bool IsTelegramEnabled { get; set; }
         string TgCallbackUrl { get; set; }
+        string KvtToken { get; set; }
         bool CheckRockets { get; set; }
         bool SubscribeInstrumentStatus { get; set; }
         bool HideRussianStocks { get; set; }

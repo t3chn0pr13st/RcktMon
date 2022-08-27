@@ -50,8 +50,8 @@ namespace CoreNgine.Shared
         private readonly ILogger<StocksManager> _logger;
 
         private TinkoffStocksInfoCollection _tinkoffStocksInfoCollection = new TinkoffStocksInfoCollection();
-        private readonly HashSet<string> _subscribedFigi = new HashSet<string>();
-        private readonly HashSet<string> _subscribedMinuteFigi = new HashSet<string>();
+        private readonly ConcurrentHashSet<string> _subscribedFigi = new ConcurrentHashSet<string>();
+        private readonly ConcurrentHashSet<string> _subscribedMinuteFigi = new ConcurrentHashSet<string>();
         private TelegramManager _telegram;
 
         private readonly ConcurrentQueue<BrokerAction> CommonConnectionActions = new ConcurrentQueue<BrokerAction>();
@@ -763,7 +763,7 @@ namespace CoreNgine.Shared
                                 $"Отписка от статуса {stock.Ticker} ({stock.Figi}" );
                         }
 
-                        _subscribedFigi.Remove(stock.Figi);
+                        _subscribedFigi.TryRemove(stock.Figi);
                     }
                     if (_subscribedMinuteFigi.Contains( stock.Figi ) )
                     {
@@ -771,7 +771,7 @@ namespace CoreNgine.Shared
                                     UnsubscribeCandle(stock.Figi, CandleInterval.Minute)),
                                 $"Отписка от минутной свечи {stock.Ticker} ({stock.Figi})");
 
-                        _subscribedMinuteFigi.Remove(stock.Figi);
+                        _subscribedMinuteFigi.TryRemove(stock.Figi);
                     }
                 }
             }

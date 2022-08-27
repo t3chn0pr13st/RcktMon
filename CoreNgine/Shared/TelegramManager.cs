@@ -189,7 +189,7 @@ namespace CoreNgine.Shared
                     if (update.CallbackQuery?.Data is String callbackData)
                     {
                         var dataArr = callbackData.Split(";");
-                        Debug.WriteLine(update.Id, callbackData);
+                        Debug.WriteLine($"{update.Id} data {callbackData} from {update.CallbackQuery.From}");
                         switch (dataArr[0])
                         {
                             case "stig":
@@ -199,21 +199,23 @@ namespace CoreNgine.Shared
                                     var ticker = dataArr[1];
                                     var groupNum = int.Parse(dataArr[2]);
                                     var postUrl = Settings.TgCallbackUrl;
-                                    if (!String.IsNullOrWhiteSpace(postUrl))
+                                    var token = Settings.KvtToken;
+                                    string result = "Ошибка: ";
+                                    if (!String.IsNullOrWhiteSpace(postUrl) && !String.IsNullOrWhiteSpace(token))
                                     {
                                         var postObj = new
                                         {
                                             id = senderId,
                                             ticker,
-                                            group = groupNum
+                                            group = groupNum,
+                                            token
                                         };
-                                        string result = "Ошибка: ";
                                         try
                                         {
                                             var resp = await _httpClient.PostAsync(postUrl, new StringContent(
                                                 JsonSerializer.Serialize(postObj), Encoding.UTF8, "application/json"
                                             ));
-                                            Debug.WriteLine(resp.StatusCode, resp.ReasonPhrase);
+                                            Debug.WriteLine($"{(int)resp.StatusCode} {resp.ReasonPhrase}: {await resp.Content.ReadAsStringAsync()}");
                                             if (resp.IsSuccessStatusCode)
                                                 result = null; // await resp.Content.ReadAsStringAsync();
                                             else
@@ -223,15 +225,20 @@ namespace CoreNgine.Shared
                                         {
                                             result = $"{result}{ex.Message}";
                                         }
+                                    }
+                                    else
+                                    {
+                                        result += "не задан токен KvaloodTools";
+                                    }
 
-                                        try
-                                        {
-                                            await _bot.AnswerCallbackQueryAsync(update.CallbackQuery.Id, result);
-                                        }
-                                        catch
-                                        {
 
-                                        }
+                                    try
+                                    {
+                                        await _bot.AnswerCallbackQueryAsync(update.CallbackQuery.Id, result);
+                                    }
+                                    catch
+                                    {
+
                                     }
                                 }
                                 break;

@@ -83,13 +83,33 @@ namespace RcktMon.Views
             }
         }
 
+        private void HyperlinkOpenInBrowser_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Hyperlink link && !string.IsNullOrWhiteSpace(link.NavigateUri?.ToString()))
+            {
+                try
+                {
+                    var psi = new ProcessStartInfo(link.NavigateUri.ToString()) {
+                        UseShellExecute = true
+                    };
+                    Process.Start(psi);
+                }
+                catch
+                {
+
+                }
+            }
+
+        }
+
         private void ShowUpdateDetailsHyperlinkClicked(object sender, RoutedEventArgs e)
         {
             if (DataContext is MainViewModel main)
             {
                 try
                 {
-                    Process.Start("explorer", main.LastRelease.DetailsUrl);
+                    var psi = new ProcessStartInfo(main.LastRelease.DetailsUrl) { UseShellExecute = true };
+                    Process.Start(psi);
                 } 
                 catch
                 {
