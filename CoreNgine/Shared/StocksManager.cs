@@ -83,6 +83,8 @@ namespace CoreNgine.Shared
         public ConcurrentDictionary<string, InstrumentInfo> Instruments { get; } =
             new ConcurrentDictionary<string, InstrumentInfo>();
 
+        public ConcurrentDictionary<string, IStockModel> ActiveStocks { get; } = new ConcurrentDictionary<string, IStockModel>();
+
         public DateTime? LastRestartTime => _lastRestartTime;
 
         public DateTime LastInstrumentsUpdate { get; private set; }
@@ -251,6 +253,7 @@ namespace CoreNgine.Shared
 
         internal static async Task<TinkoffStocksInfoCollection.Root> GetInstrumentsInfo()
         {
+            //TODO: Use cache
             using (var httpClient = new HttpClient())
             {
                 var json = await httpClient.GetStringAsync(
@@ -268,7 +271,9 @@ namespace CoreNgine.Shared
 
             try
             {
+                _lastRestartTime = DateTime.Now;
                 var info = await GetInstrumentsInfo();
+                _lastRestartTime = DateTime.Now; // обновление инструментов часто занимает долгое время
                 if (info.Status.Equals("Ok", StringComparison.InvariantCultureIgnoreCase))
                 {
                     LastInstrumentsUpdate = DateTime.Now;
@@ -377,7 +382,11 @@ namespace CoreNgine.Shared
                         }
                     }
 
+#if DEBUG
                     if (DateTime.Now.Subtract(LastInstrumentsUpdate).TotalSeconds > 20)
+#else
+                    if (DateTime.Now.Subtract(LastInstrumentsUpdate).TotalMinutes > 60)
+#endif
                     {
                         LastInstrumentsUpdate = DateTime.Now;
                         _ = UpdateInstrumentsInfo().ConfigureAwait(false);
@@ -388,7 +397,7 @@ namespace CoreNgine.Shared
 
                         if (_lastEventReceived == null || DateTime.Now.Subtract(_lastEventReceived.Value).TotalSeconds > 5)
                         {
-                            if (ExchangeClosed) // || IsHolidays)
+                            if (ExchangeClosed || ActiveStocks.Count < 300) // || IsHolidays)
                             {
                                 await Task.Delay(1000);
                                 continue;
@@ -567,7 +576,7 @@ namespace CoreNgine.Shared
 
         private int _apiCount = 0;
 
-        #region Month Stats
+#region Month Stats
 
         private async Task<bool> GetMonthStats(IStockModel stock)
         {
@@ -736,7 +745,7 @@ namespace CoreNgine.Shared
                     _cancellationTokenSource.Token);
         }
 
-        #endregion
+#endregion
 
         public void CheckSubscription()
         {
@@ -841,9 +850,15 @@ namespace CoreNgine.Shared
             statusCallback?.Invoke("Загрузка инструментов...");
             var stocks = await CommonConnection.Context.MarketStocksAsync();
             var stocksToAdd = new HashSet<IStockModel>();
-            foreach (var instr in stocks.Instruments)
+            var groupOpts = (Settings as SettingsContainer).AssetGroupSettingsByCurrency;
+
+            foreach (var iwo in from s in stocks.Instruments 
+                                  join opt in groupOpts on s.Currency.ToString().ToUpper() equals opt.Value.Currency.ToUpper()
+                                  select new { Instrument = s, FilterOptions = opt })
             {
-                bool ignoreInstr = Settings.HideRussianStocks && instr.Currency == Currency.Rub;
+                var instr = iwo.Instrument;
+
+                bool ignoreInstr = !iwo.FilterOptions.Value.IsSubscriptionEnabled;
 
                 if (!ignoreInstr && !String.IsNullOrWhiteSpace(Settings.ExcludePattern))
                 {
@@ -862,11 +877,13 @@ namespace CoreNgine.Shared
                     {
                         stock = _mainModel.CreateStockModel(instr);
                         stocksToAdd.Add(stock);
+                        ActiveStocks.TryAdd(stock.Ticker, stock);
                     }
                 } 
                 else if (ignoreInstr)
                 {
                     _mainModel.Stocks.Remove(stock.Ticker);
+                    ActiveStocks.TryRemove(stock.Ticker, out _);
                 }
             }
 
@@ -883,8 +900,8 @@ namespace CoreNgine.Shared
 
         public async Task HandleAsync( SettingsChangeEventArgs message, CancellationToken cancellationToken )
         {
-            var last = message.PrevSettings;
-            var current = message.NewSettings;
+            var last = message.PrevSettings as SettingsContainer;
+            var current = message.NewSettings as SettingsContainer;
 
             bool needReconnect = last.TiApiKey != current.TiApiKey
                 || last.TgBotApiKey != current.TgBotApiKey
@@ -894,6 +911,12 @@ namespace CoreNgine.Shared
                 || current.IncludePattern != last.IncludePattern
                 || current.ExcludePattern != last.ExcludePattern
                 || current.SubscribeInstrumentStatus != last.SubscribeInstrumentStatus;
+
+            needReconnect = needReconnect || (from lgs in last.AssetGroupSettingsByCurrency
+                               join cgs in current.AssetGroupSettingsByCurrency
+                               on lgs.Key equals cgs.Key
+                               where lgs.Value.IsSubscriptionEnabled != cgs.Value.IsSubscriptionEnabled
+                               select true).Any();
 
             if (needReconnect)
             {

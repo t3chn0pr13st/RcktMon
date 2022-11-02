@@ -37,6 +37,7 @@ namespace CoreNgine.Shared
         public INgineSettings Settings { get; }
 
         private bool _updateConflict = false;
+        private DateTime _lastConflictTime = DateTime.MinValue;
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
@@ -174,8 +175,16 @@ namespace CoreNgine.Shared
 
         private async Task CheckIncomingBotMessages()
         {
+#if DEBUG
+            return; // на время отладки пока не нужно
+#endif
+
             if (_updateConflict)
+            {
+                if (DateTime.Now.Subtract(_lastConflictTime).TotalSeconds > 10)
+                    _updateConflict = false;
                 return;
+            }
 
             try
             {
@@ -253,7 +262,9 @@ namespace CoreNgine.Shared
                 if (ex.Message.StartsWith("Conflict"))
                 {
                     _updateConflict = true;
-                    _mainModel.AddErrorMessage("Конфликт с другим ботом: проверка сообщений для бота отключена.");
+                    if (DateTime.Now.Subtract(_lastConflictTime).TotalMinutes > 10)
+                        _mainModel.AddErrorMessage("Токен телеграм бота уже используется: проверка входящий сообщений для бота отключена на 10 секунд.");
+                    _lastConflictTime = DateTime.Now;
                 }
             }
         }

@@ -48,6 +48,9 @@
     </ApplicationDefinition>
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="AppWindowManager.cs" />
+    <Compile Include="Controls\SettingsControl.xaml.cs" />
+    <Compile Include="Converters\CurrencyNameToHeaderConverter.cs" />
+    <Compile Include="Converters\DecimalToPercentConverter.cs" />
     <Compile Include="Helpers\CryptoHelper.cs" />
     <Compile Include="Helpers\SettingsModel.cs" />
     <Compile Include="Models\DataGridColumnSettings.cs" />
@@ -61,6 +64,9 @@
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PasswordBehavior.cs" />
+    <Page Include="Controls\SettingsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

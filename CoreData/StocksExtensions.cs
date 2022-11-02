@@ -98,7 +98,7 @@ namespace CoreData
                 .AddSeconds(-startTime.Second).AddMinutes(-maxMins);
 
             var lastXminCandles = s.MinuteCandles
-                .Where(p => p.Key >= startTime)
+                .Where(p => p.Key >= startTime && p.Value.Volume > 10)
                 .OrderBy(p => p.Key)
                 .Select(p => p.Value)
                 .ToList();
@@ -108,7 +108,7 @@ namespace CoreData
 
             decimal close = lastXminCandles[lastXminCandles.Count-1].Close;
             decimal volsum = 0;
-            int numMin = 0;
+            int numMin = 1;
             decimal change = 0, volChange = 0;
             bool checkVol = s.AvgDayVolumePerMonth > 0;
 
@@ -119,6 +119,9 @@ namespace CoreData
 
             for (int i = lastXminCandles.Count - 1; i >= 0; i--)
             {
+                if (candles.Count > 0 && candles.Last().Time.Subtract(lastXminCandles[i].Time).TotalSeconds > 60)
+                    break; // игнорируем интервал если между свечами были паузы
+
                 candles.Add(lastXminCandles[i]);
                 decimal open = lastXminCandles[i].Open;
                 change = (close - open) / open;

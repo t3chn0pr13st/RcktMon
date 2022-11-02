@@ -21,6 +21,7 @@ namespace CoreNgine.Strategies
     public class RocketMonitoringStrategy : IHandler<IStockModel>
     {
         public INgineSettings Settings { get; }
+        public ISettingsProvider SettingsProvider { get; }
         public IMainModel MainModel { get; }
         public StocksManager StocksManager { get; }
         public ILogger<RocketMonitoringStrategy> Logger { get; }
@@ -33,6 +34,7 @@ namespace CoreNgine.Strategies
         {
             StocksManager = stocksManager;
             Settings = settingsProvider.Settings;
+            SettingsProvider = settingsProvider;
             MainModel = mainModel;
             Logger = logger;
             eventAggregator.SubscribeOnPublishedThread(this);
@@ -71,12 +73,16 @@ namespace CoreNgine.Strategies
 
         public async Task PerformQuotePercentChangeCheck(IStockModel stock)
          {
-             if (stock.Price == 0 || stock.MinuteCandles.Count == 0 || stock.Ticker == "DISCB")
+             if (stock.Price == 0 || stock.MinuteCandles.Count == 0)
                  return;
+
+            var settings = SettingsProvider.GetSettingsForStock(stock);
+            if (settings == null)
+                return;
 
              var lastCandleTime = stock.MinuteCandles.Max(c => c.Value.Time);
              var candle = stock.MinuteCandles.Last(c => c.Value.Time == lastCandleTime).Value;
-             if (Math.Abs(stock.DayChange) > Settings.MinDayPriceChange && Settings.MinDayPriceChange > 0
+             if (Math.Abs(stock.DayChange) > settings.MinDayPriceChange && settings.MinDayPriceChange > 0
                 && (stock.LastAboveThresholdDate == null
                 || stock.LastAboveThresholdDate.Value.Date < stock.LastUpdatePrice.Date))
              { 
@@ -86,7 +92,7 @@ namespace CoreNgine.Strategies
                      return;
 
                 var volPerc = stock.DayVolume / stock.AvgDayVolumePerMonth;
-                if (volPerc > Settings.MinVolumeDeviationFromDailyAverage && Settings.MinVolumeDeviationFromDailyAverage > 0)
+                if (volPerc > settings.MinVolumeDeviationFromDailyAverage && settings.MinVolumeDeviationFromDailyAverage > 0)
                 {
                     string chatId = Settings.TgChatId; 
                     if (stock.Currency.Equals("RUB", StringComparison.InvariantCultureIgnoreCase) ||
@@ -108,12 +114,12 @@ namespace CoreNgine.Strategies
              }
 
             var change = stock.GetLastXMinChange(
-                Settings.NumOfMinToCheck,
-                Settings.NumOfMinToCheckVol,
-                Settings.MinXMinutesPriceChange,
-                Settings.MinXMinutesVolChange);
+                settings.NumOfMinToCheck,
+                settings.NumOfMinToCheckVol,
+                settings.MinXMinutesPriceChange,
+                settings.MinXMinutesVolChange);
 
-            if (!change.volumeTrigger && Settings.MinXMinutesPriceChange > 0 && Math.Abs(change.change) > Settings.MinXMinutesPriceChange 
+            if (!change.volumeTrigger && settings.MinXMinutesPriceChange > 0 && Math.Abs(change.change) > settings.MinXMinutesPriceChange 
                 && (stock.LastAboveThresholdCandleTime == null || stock.LastAboveThresholdCandleTime < candle.Time.AddMinutes(-change.minutes)))
             {
                 stock.LastAboveThresholdCandleTime = candle.Time;
@@ -145,8 +151,8 @@ namespace CoreNgine.Strategies
                 );
             }
 
-            if (change.volumeTrigger && Settings.MinXMinutesVolChange > 0 && 
-                change.volChange > Settings.MinXMinutesVolChange && (stock.LastAboveVolThresholdCandleTime == null
+            if (change.volumeTrigger && settings.MinXMinutesVolChange > 0 && 
+                change.volChange > settings.MinXMinutesVolChange && (stock.LastAboveVolThresholdCandleTime == null
                 || stock.LastAboveVolThresholdCandleTime < candle.Time.AddMinutes(-change.minutes)))
             {
                 stock.LastAboveVolThresholdCandleTime = candle.Time;
@@ -163,7 +169,7 @@ namespace CoreNgine.Strategies
 
                 if (IsSendToTelegramEnabled && long.TryParse(chatId, out var lChatId) && lChatId != 0)
                 {
-                    if (changeInfo.volPercent >= Settings.MinVolumeDeviationFromDailyAverage)
+                    if (changeInfo.volPercent >= settings.MinVolumeDeviationFromDailyAverage)
                         StocksManager.Telegram.PostMessage(changeInfo.message, stock.Ticker, lChatId);
                 }
 

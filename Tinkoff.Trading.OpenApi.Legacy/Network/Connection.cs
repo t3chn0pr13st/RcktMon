@@ -70,13 +70,16 @@ namespace Tinkoff.Trading.OpenApi.Legacy.Network
         public async Task SendStreamingRequestAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default(CancellationToken))
             where TRequest : StreamingRequest
         {
+            var socket = _webSocket;
             await EnsureWebSocketConnectionAsync(cancellationToken).ConfigureAwait(false);
 
             var requestJson = JsonSerializer.Serialize(request, request.GetType(), SerializationOptions.Instance);
             var data = Encoding.UTF8.GetBytes(requestJson);
             var buffer = new ArraySegment<byte>(data);
-            await _webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellationToken)
-                .ConfigureAwait(false);
+
+            if (socket != null && socket.State == WebSocketState.Open)
+                await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellationToken)
+                    .ConfigureAwait(false);
         }
 
         private static async Task<OpenApiResponse<TOut>> HandleResponseAsync<TOut>(HttpResponseMessage response)

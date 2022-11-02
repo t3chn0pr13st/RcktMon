@@ -1,24 +1,46 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
 using Caliburn.Micro;
 using CoreData.Interfaces;
 using CoreData.Settings;
 using CoreNgine.Models;
 using CoreNgine.Shared;
+using RcktMon.Helpers;
 using RcktMon.Views;
 
 namespace RcktMon.ViewModels
 {
-    public class SettingsViewModel : PropertyChangedBase
+    public class AssetGroupSettingsViewModel : PropertyChangedBase, IAssetGroupSettings
+    {
+        public bool IsSubscriptionEnabled { get; set; }
+        public bool IsTelegramEnabled { get; set; }
+        public string Currency { get; set; }
+        public string CurrencyDisplay { get; set; }
+        public decimal MinDayPriceChange { get; set; }
+        public decimal MinXMinutesPriceChange { get; set; }
+        public int NumOfMinToCheck { get; set; }
+        public int NumOfMinToCheckVol { get; set; }
+        public decimal MinVolumeDeviationFromDailyAverage { get; set; }
+        public decimal MinXMinutesVolChange { get; set; }
+        public string IncludePattern { get; set; }
+        public string ExcludePattern { get; set; }
+        public string ChartUrlTemplate { get; set; }
+    }
+
+    public class SettingsViewModel : PropertyChangedBase, INgineSettings
     {
         public string TiApiKey { get; set; }
         public string TgBotApiKey { get; set; }
         public string TgChatId { get; set; }
         public string TgChatIdRu { get; set; }
 
-        public decimal MinDayPriceChangePercent { get; set; }
-        public decimal MinXMinutesPriceChangePercent { get; set; }
-        public decimal MinVolumeDeviationFromDailyAveragePercent { get; set; }
-        public decimal MinXMinutesVolPercentChangePercent { get; set; }
+        public decimal MinDayPriceChange { get; set; }
+        public decimal MinXMinutesPriceChange { get; set; }
+        public decimal MinVolumeDeviationFromDailyAverage { get; set; }
+        public decimal MinXMinutesVolChange { get; set; }
         public int NumOfMinToCheck { get; set; }
         public int NumOfMinToCheckVol { get; set; }
         public bool IsTelegramEnabled { get; set; }
@@ -38,12 +60,18 @@ namespace RcktMon.ViewModels
         public string IncludePattern { get; set; }
         public string ExcludePattern { get; set; }
 
+        public bool CheckRockets { get; set; }
+
         private ISettingsProvider _settingsProvider;
         private MainViewModel _mainViewModel;
+        private Mapper _settingsMapper;
 
         public StocksManager StocksManager => _mainViewModel.StocksManager;
 
         public INgineSettings Settings => _settingsProvider.Settings;
+
+        public ObservableCollection<AssetGroupSettingsViewModel> AssetGroupSettingsCollection { get; } = new ObservableCollection<AssetGroupSettingsViewModel>();
+
 
         public SettingsViewModel()
         {
@@ -55,31 +83,32 @@ namespace RcktMon.ViewModels
             _mainViewModel = mainModel as MainViewModel;
             _settingsProvider = settingsProvider;
 
-            TiApiKey = Settings.TiApiKey;
-            TgBotApiKey = Settings.TgBotApiKey;
-            TgChatId = Settings.TgChatId;
-            TgChatIdRu = Settings.TgChatIdRu;
-            MinDayPriceChangePercent = Settings.MinDayPriceChange * 100m;
-            MinXMinutesPriceChangePercent = Settings.MinXMinutesPriceChange * 100m;
-            MinVolumeDeviationFromDailyAveragePercent = Settings.MinVolumeDeviationFromDailyAverage * 100m;
-            MinXMinutesVolPercentChangePercent = Settings.MinXMinutesVolChange * 100m;
-            NumOfMinToCheck = Settings.NumOfMinToCheck;
-            NumOfMinToCheckVol = Settings.NumOfMinToCheckVol;
-            IsTelegramEnabled = Settings.IsTelegramEnabled;
-            TgCallbackUrl = Settings.TgCallbackUrl;
-            KvtToken = Settings.KvtToken;
-            USAQuotesEnabled = Settings.USAQuotesEnabled;
-            USAQuotesURL = Settings.USAQuotesURL;
-            USAQuotesLogin = Settings.USAQuotesLogin;
-            USAQuotesPassword = Settings.USAQuotesPassword;
-            TgArbitrageLongUSAChatId = Settings.TgArbitrageLongUSAChatId;
-            TgArbitrageShortUSAChatId = Settings.TgArbitrageShortUSAChatId;
-            SubscribeInstrumentStatus = Settings.SubscribeInstrumentStatus;
-            HideRussianStocks = Settings.HideRussianStocks;
-            ChartUrlTemplate = Settings.ChartUrlTemplate;
-            ExcludePattern = Settings.ExcludePattern;
-            IncludePattern = Settings.IncludePattern;
+            _settingsMapper = new Mapper(new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap(GetType(), Settings.GetType());
+                cfg.CreateMap(Settings.GetType(), GetType());
+                cfg.CreateMap<SettingsViewModel, SettingsModel>();
+                cfg.CreateMap<SettingsViewModel, SettingsContainer>();
+                cfg.CreateMap<SettingsModel, SettingsViewModel>();
+                cfg.CreateMap<SettingsContainer, SettingsViewModel>();
+                cfg.CreateMap<AssetGroupSettingsViewModel, IAssetGroupSettings>();
+                cfg.CreateMap<IAssetGroupSettings, AssetGroupSettingsViewModel>();
+            }));
+
+            _settingsMapper.Map(Settings, this, Settings.GetType(), this.GetType());
             HideKeys();
+
+            LoadGroupSettings();
+        }
+
+        private void LoadGroupSettings()
+        {
+            foreach (var settingGroup in _settingsProvider.AssetGroupSettingsByCurrency)
+            {
+                var groupSettingsViewModel = new AssetGroupSettingsViewModel();
+                _settingsMapper.Map(settingGroup.Value, groupSettingsViewModel);
+                AssetGroupSettingsCollection.Add(groupSettingsViewModel);
+            }
         }
 
         private void HideKeys()
@@ -90,19 +119,30 @@ namespace RcktMon.ViewModels
             KvtToken = PasswordBehavior.PassReplacement;
         }
 
+        private void ShowKeys()
+        {
+            if (TiApiKey == PasswordBehavior.PassReplacement)
+                TiApiKey = Settings.TiApiKey;
+            if (TgBotApiKey == PasswordBehavior.PassReplacement)
+                TgBotApiKey = Settings.TgBotApiKey;
+            if (USAQuotesPassword == PasswordBehavior.PassReplacement)
+                USAQuotesPassword = Settings.USAQuotesPassword;
+            if (KvtToken == PasswordBehavior.PassReplacement)
+                KvtToken = Settings.KvtToken;
+        }
+
         public void AcceptKeys()
         {
-            if (TiApiKey != PasswordBehavior.PassReplacement)
-                Settings.TiApiKey = TiApiKey;
-            if (TgBotApiKey != PasswordBehavior.PassReplacement)
-                Settings.TgBotApiKey = TgBotApiKey;
-            if (KvtToken != PasswordBehavior.PassReplacement)
-                Settings.KvtToken = KvtToken;
+            ShowKeys();
 
-            Settings.TgChatId = TgChatId;
-            Settings.TgChatIdRu = TgChatIdRu;
-            Settings.ChartUrlTemplate = ChartUrlTemplate;
-            Settings.TgCallbackUrl = TgCallbackUrl;
+            _settingsMapper.Map(this, Settings, this.GetType(), Settings.GetType());
+
+            foreach (var settingGroupViewModel in AssetGroupSettingsCollection)
+            {
+                if (_settingsProvider.AssetGroupSettingsByCurrency.TryGetValue(settingGroupViewModel.Currency, 
+                    out var settingsGroupModel))
+                    _settingsMapper.Map(settingGroupViewModel, settingsGroupModel);
+            }
 
             _settingsProvider.SaveSettings(_settingsProvider.Settings);
 
@@ -111,34 +151,12 @@ namespace RcktMon.ViewModels
 
         public void AcceptOptions()
         {
-            Settings.MinDayPriceChange = MinDayPriceChangePercent / 100m;
-            Settings.MinXMinutesPriceChange = MinXMinutesPriceChangePercent / 100m;
-            Settings.MinVolumeDeviationFromDailyAverage = MinVolumeDeviationFromDailyAveragePercent / 100m;
-            Settings.MinXMinutesVolChange = MinXMinutesVolPercentChangePercent / 100m;
-            Settings.IsTelegramEnabled = IsTelegramEnabled;
-            Settings.TgCallbackUrl = TgCallbackUrl;
-            Settings.NumOfMinToCheck = NumOfMinToCheck;
-            Settings.NumOfMinToCheckVol = NumOfMinToCheckVol;
-
-            Settings.USAQuotesEnabled = USAQuotesEnabled;
-            Settings.USAQuotesURL = USAQuotesURL;
-            Settings.USAQuotesLogin = USAQuotesLogin;
-            Settings.TgArbitrageShortUSAChatId = TgArbitrageShortUSAChatId;
-            Settings.TgArbitrageLongUSAChatId = TgArbitrageLongUSAChatId;
-            Settings.HideRussianStocks = HideRussianStocks;
-            Settings.SubscribeInstrumentStatus = SubscribeInstrumentStatus;
-            Settings.ChartUrlTemplate = ChartUrlTemplate;
-            Settings.IncludePattern = IncludePattern;
-            Settings.ExcludePattern = ExcludePattern;
-
-            if (USAQuotesPassword != PasswordBehavior.PassReplacement)
-            {
-                Settings.USAQuotesPassword = USAQuotesPassword;
-                HideKeys();
-            }
-
-            _settingsProvider.SaveSettings(_settingsProvider.Settings);
+            AcceptKeys();
         }
 
+        public object Clone()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

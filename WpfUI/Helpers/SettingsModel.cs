@@ -14,13 +14,14 @@ using CoreCodeGenerators;
 using CoreData.Models;
 using CoreData;
 using CoreData.Settings;
+using Caliburn.Micro;
 
 namespace RcktMon.Helpers
 {
     public class SettingsModel : SettingsContainer
-    {   
+    {
         private ILogger<SettingsModel> _logger;
-        
+
         protected IEventAggregator2 _eventAggregator;
 
         public SettingsModel(ILogger<SettingsModel> logger, IEventAggregator2 eventAggregator) : base()
@@ -34,16 +35,13 @@ namespace RcktMon.Helpers
             if (File.Exists("settings.json"))
             {
                 var text = File.ReadAllText("settings.json");
-                var obj = JsonConvert.DeserializeAnonymousType(text, this);
-                var config = new MapperConfiguration(cfg => 
+                var obj = JsonConvert.DeserializeObject<SettingsModel>(text);
+                obj.DecryptProperties();
+
+                var config = new MapperConfiguration(cfg =>
                     cfg.CreateMap(obj.GetType(), this.GetType()));
                 var mapper = new Mapper(config);
-                mapper.Map(obj, this, obj.GetType(), this.GetType());
-                try { this.TiApiKey = CryptoHelper.Decrypt(this.TiApiKey); } catch { TiApiKey = null; }
-                try { this.TgBotApiKey = CryptoHelper.Decrypt(this.TgBotApiKey); } catch { TgBotApiKey = null; }
-                try { this.TgChatId = CryptoHelper.Decrypt(this.TgChatId); } catch { TgChatId = null; }
-                try { this.TgChatIdRu = CryptoHelper.Decrypt(this.TgChatIdRu); } catch { TgChatIdRu = null; }
-                try { this.USAQuotesPassword = CryptoHelper.Decrypt(this.USAQuotesPassword); } catch { USAQuotesPassword = null; }
+                mapper.Map(obj, this, obj.GetType(), GetType());
             }
 
             if (MinDayPriceChange == 0)
@@ -73,34 +71,83 @@ namespace RcktMon.Helpers
             if (String.IsNullOrWhiteSpace(TgCallbackUrl))
                 TgCallbackUrl = "https://kvalood.ru/ticker";
 
+            InitCurrencyGroupSettings();
+
             return base.ReadSettings();
         }
 
-        private object AnonymousSettingsObj => new 
+        private void InitCurrencyGroupSettings()
         {
-            TiApiKey = CryptoHelper.Encrypt(TiApiKey),
-            TgBotApiKey = CryptoHelper.Encrypt(TgBotApiKey),
-            TgChatId = CryptoHelper.Encrypt(TgChatId),
-            TgChatIdRu = CryptoHelper.Encrypt(TgChatIdRu),
-            USAQuotesPassword = CryptoHelper.Encrypt(USAQuotesPassword),
-            MinDayPriceChange, MinXMinutesPriceChange, 
-            MinVolumeDeviationFromDailyAverage, MinXMinutesVolChange,
-            NumOfMinToCheck, NumOfMinToCheckVol, ChartUrlTemplate,
-            IsTelegramEnabled, CheckRockets, SubscribeInstrumentStatus, HideRussianStocks,
-            IncludePattern, ExcludePattern, TgCallbackUrl, KvtToken,
-            USAQuotesEnabled, USAQuotesURL, USAQuotesLogin, TgArbitrageLongUSAChatId, TgArbitrageShortUSAChatId
-        };
+            (string Name, string Sign, Action<IAssetGroupSettings> InitValuesAction)[] currencies = new[] {
+                ("RUB", "₽", new Action<IAssetGroupSettings>(obj => {
+                    obj.IsTelegramEnabled = obj.IsSubscriptionEnabled = !HideRussianStocks;
+                })), 
+                ("USD", "$", new Action<IAssetGroupSettings>(obj => {
+                    obj.ChartUrlTemplate = ChartUrlTemplate;
+                })), 
+                ("EUR", "€", null), 
+                ("HKD", "HK$", null)
+            };
+
+            if (AssetGroupSettingsByCurrency == null)
+                AssetGroupSettingsByCurrency = new Dictionary<string, AssetGroupSettingsModel>();
+            foreach (var currency in currencies)
+            {
+                if (!AssetGroupSettingsByCurrency.ContainsKey(currency.Name))
+                {
+                    var groupSettings = new AssetGroupSettingsModel()
+                    {
+                        Currency = currency.Name,
+                        CurrencyDisplay = currency.Sign,
+                        MinDayPriceChange = MinDayPriceChange,
+                        MinXMinutesPriceChange = MinXMinutesPriceChange,
+                        NumOfMinToCheck = NumOfMinToCheck,
+                        NumOfMinToCheckVol = NumOfMinToCheckVol,
+                        MinVolumeDeviationFromDailyAverage = MinVolumeDeviationFromDailyAverage,
+                        MinXMinutesVolChange = MinXMinutesVolChange,
+                        IncludePattern = IncludePattern,
+                        ExcludePattern = ExcludePattern,
+                        IsSubscriptionEnabled = true,
+                        IsTelegramEnabled = true
+                    };
+                    currency.InitValuesAction?.Invoke(groupSettings);
+                    AssetGroupSettingsByCurrency.Add(currency.Name, groupSettings);
+                }
+            }
+        }
+
+        private void DecryptProperties()
+        {
+            try { TiApiKey = CryptoHelper.Decrypt(TiApiKey); } catch { TiApiKey = null; }
+            try { TgBotApiKey = CryptoHelper.Decrypt(TgBotApiKey); } catch { TgBotApiKey = null; }
+            try { TgChatId = CryptoHelper.Decrypt(TgChatId); } catch { TgChatId = null; }
+            try { TgChatIdRu = CryptoHelper.Decrypt(TgChatIdRu); } catch { TgChatIdRu = null; }
+            try { USAQuotesPassword = CryptoHelper.Decrypt(USAQuotesPassword); } catch { USAQuotesPassword = null; }
+        }
+
+        private void EncryptProperties()
+        {
+            TiApiKey = CryptoHelper.Encrypt(TiApiKey);
+            TgBotApiKey = CryptoHelper.Encrypt(TgBotApiKey);
+            TgChatId = CryptoHelper.Encrypt(TgChatId);
+            TgChatIdRu = CryptoHelper.Encrypt(TgChatIdRu);
+            USAQuotesPassword = CryptoHelper.Encrypt(USAQuotesPassword);
+        }
 
         public override void SaveSettings(INgineSettings settings)
         {
-            try 
+            try
             {
                 if (settings is SettingsModel sm)
                 {
                     if (String.IsNullOrWhiteSpace(sm.ChartUrlTemplate))
                         sm.ChartUrlTemplate = "!disabled";
-                    System.IO.File.WriteAllText("settings.json", 
-                        JsonConvert.SerializeObject(sm.AnonymousSettingsObj, Formatting.Indented));
+
+                    var objToSave = (SettingsModel)sm.MemberwiseClone();
+                    objToSave.EncryptProperties();
+
+                    System.IO.File.WriteAllText("settings.json",
+                        JsonConvert.SerializeObject(objToSave, Formatting.Indented));
                     _eventAggregator.PublishOnCurrentThreadAsync(new SettingsChangeEventArgs(LastSettings, settings));
                     LastSettings = settings.Clone() as INgineSettings;
                 }
@@ -109,6 +156,16 @@ namespace RcktMon.Helpers
             {
                 _logger.LogCritical(ex, ex.Message);
             }
+        }
+
+        public override object Clone()
+        {
+            var copy = (SettingsContainer)base.Clone();
+            var newDict = new Dictionary<string, AssetGroupSettingsModel>();
+            foreach (var pair in copy.AssetGroupSettingsByCurrency)
+                newDict.Add(pair.Key, (AssetGroupSettingsModel)pair.Value.Clone());
+            copy.AssetGroupSettingsByCurrency = newDict;
+            return copy;
         }
     }
 }

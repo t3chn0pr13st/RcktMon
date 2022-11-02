@@ -1,0 +1,174 @@
+﻿<UserControl x:Class="RcktMon.Controls.SettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RcktMon.Controls" 
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls" 
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors" 
+             xmlns:views="clr-namespace:RcktMon.Views"
+             xmlns:cal="http://caliburnmicro.com" xmlns:converters="clr-namespace:RcktMon.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="400">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:CurrencyNameToHeaderConverter x:Key="CurrencyNameToHeaderConverter" />
+            <converters:DecimalToPercentConverter x:Key="DecimalToPercentConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Orientation="Vertical">
+                <Expander Header="Ключи доступа" Name="KeySettings">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="TinkoffInvest OpenAPI Token" FontWeight="Bold" Margin="2" />
+                        <TextBlock Text="Зайдите на страницу настроек Тинькофф Инвестиции, там внизу в блоке Токен для OpenAPI получите Токен для торговли, и вставьте сюда" TextWrapping="Wrap" Margin="2" />
+                        <TextBox Text="{Binding TiApiKey}" Margin="2">
+                            <b:Interaction.Behaviors>
+                                <views:PasswordBehavior />
+                            </b:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock FontWeight="Bold" Text="Telegram Bot Token" Margin="2 6 2 0" />
+                        <TextBlock TextWrapping="Wrap" Margin="2">
+                                                <Run>Создайте бота через</Run> 
+                                                <Hyperlink Click="HyperlinkOpenInBrowser_Click" NavigateUri="https://t.me/botfather">@botfather</Hyperlink> 
+                                                <Run>и вставьте сюда его токен</Run>
+                        </TextBlock>
+                        <TextBox Text="{Binding TgBotApiKey}" Margin="2">
+                            <b:Interaction.Behaviors>
+                                <views:PasswordBehavior />
+                            </b:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Text="Telegram Chat Id" Margin="2 6 2 0" FontWeight="Bold" />
+                        <TextBlock Margin="2" TextWrapping="Wrap">
+                                                <Run>"Это id чата в телеграмм, куда будет отправлять сообщения ваш бот (по US акциям). 
+                                                    Можно пригласить бота в группу\канал, и вставить сюда chatId группы. 
+                                                    Чтобы бот писал в лс, вставьте ваш Telegram Id ( можно узнать, например, у бота</Run>
+                                                <Hyperlink Click="HyperlinkOpenInBrowser_Click" NavigateUri="https://t.me/kvtsbot">@kvtsbot</Hyperlink>
+                                                <Run>)</Run>
+                        </TextBlock>
+                        <TextBox Text="{Binding TgChatId}" Margin="2" />
+                        <TextBlock Text="Telegram Chat Id для акций ММВБ" Margin="2 6 2 0" FontWeight="Bold" />
+                        <TextBlock Margin="2" TextWrapping="Wrap"
+                                                       Text="Это id чата в телеграмм для сообщений по русским акциям. Если не хотите их получать, оставьте поле пустым. Можно указать такой же канал как для US акций" />
+                        <TextBox Text="{Binding TgChatIdRu}" Margin="2" />
+                        <TextBlock Margin="2" TextWrapping="Wrap"
+                                                       Text="URL сервиса отрисовки графика для вставки в сообщение от бота" />
+                        <TextBox Text="{Binding ChartUrlTemplate}" Margin="2" />
+                        <mah:ToggleSwitch IsOn="{Binding IsEnabledCallbackProcessing}" FontSize="12">
+                            <TextBlock TextWrapping="Wrap">Обрабатывать сообщения боту (нажатия на кнопки) в этом экземпляре</TextBlock>
+                        </mah:ToggleSwitch>
+                        <TextBlock Margin="2" TextWrapping="Wrap"
+                                                       Text="URL сервиса обработки цветных кнопок в сообщениях" />
+                        <TextBox Text="{Binding TgCallbackUrl}" Margin="2" />
+                        <TextBlock Margin="2" TextWrapping="Wrap">
+                                                <Run>Токен KvaloodTools ( получать у бота </Run>
+                                                <Hyperlink Click="HyperlinkOpenInBrowser_Click" NavigateUri="https://t.me/kvtsbot">@kvtsbot</Hyperlink>
+                                                <Run>) - необходим для работы цветных кнопок в сообщениях. Также должно быть установлено расширение</Run>
+                                                <Hyperlink Click="HyperlinkOpenInBrowser_Click" NavigateUri="https://github.com/kvalood/kvt">Kvalood Tools</Hyperlink>
+                        </TextBlock>
+                        <TextBox Text="{Binding KvtToken}" Margin="2">
+                            <b:Interaction.Behaviors>
+                                <views:PasswordBehavior />
+                            </b:Interaction.Behaviors>
+                        </TextBox>
+                    </StackPanel>
+                </Expander>
+                <Expander Header="USA Data" Visibility="Visible" x:Name="USADataSettingsExpander">
+                    <StackPanel Orientation="Vertical">
+                        <mah:ToggleSwitch IsOn="{Binding USAQuotesEnabled}" FontSize="12.5"
+                                                              Content="Включить источник данных США" />
+                        <TextBlock Text="Адрес сервера котировок" Margin="2" />
+                        <TextBox Text="{Binding USAQuotesURL}" Margin="2" />
+                        <TextBlock Text="Логин от сервиса котировок" Margin="2" />
+                        <TextBox Text="{Binding USAQuotesLogin}" Margin="2" />
+                        <TextBlock Text="Пароль от сервиса котировок" Margin="2" />
+                        <TextBox Text="{Binding USAQuotesPassword}" Margin="2">
+                            <b:Interaction.Behaviors>
+                                <views:PasswordBehavior />
+                            </b:Interaction.Behaviors>
+                        </TextBox>
+                        <TextBlock Text="Канал для уведомлений LONG" Margin="2" />
+                        <TextBox Text="{Binding TgArbitrageLongUSAChatId}" Margin="2" />
+                        <TextBlock Text="Канал для уведомлений SHORT" Margin="2" />
+                        <TextBox Text="{Binding TgArbitrageShortUSAChatId}" Margin="2" />
+                    </StackPanel>
+                </Expander>
+                <Expander Header="Настройки мониторинга" IsExpanded="True">
+                    <StackPanel Orientation="Vertical">
+                        <mah:ToggleSwitch IsOn="{Binding SubscribeInstrumentStatus}"
+                                                              ToolTip="Данная опция включает подписку на статусы инструментов в реальном времени &#10;(состояние, верхний и нижний предел цены для заявок). &#10;При возникновении ошибок при [пере]подключении отключите."
+                                                              FontSize="12"
+                                                              Content="Подписка на лимиты цен" />
+                        <ItemsControl ItemsSource="{Binding AssetGroupSettingsCollection}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Expander Header="{Binding Currency, Converter={StaticResource CurrencyNameToHeaderConverter}}"
+                                          IsExpanded="False">
+                                        <StackPanel Orientation="Vertical">
+                                            <mah:ToggleSwitch IsOn="{Binding IsSubscriptionEnabled}" FontSize="12"
+                                            Content="Включить мониторинг" />
+                                            <mah:ToggleSwitch IsOn="{Binding IsTelegramEnabled}" FontSize="12"
+                                            Content="Слать уведомления в телеграм" />
+                                            <TextBlock Text="Включить только следующие акции (рег. выражение)" Margin="2" />
+                                            <TextBox Text="{Binding IncludePattern}" Margin="2" />
+
+                                            <TextBlock Text="Исключить следующие акции (рег. выражение)" Margin="2" />
+                                            <TextBox Text="{Binding ExcludePattern}" Margin="2" />
+
+                                            <TextBlock Text="При изменении цены за день (%)" Margin="2" />
+                                            <TextBox Text="{Binding MinDayPriceChange, Converter={StaticResource DecimalToPercentConverter}}" Margin="2" />
+
+                                            <TextBlock Text="{Binding NumOfMinToCheck, StringFormat={}При изменении цены за {0} минут (%)}" 
+                                                       Margin="2" />
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                                </Grid.ColumnDefinitions>
+                                                <mah:NumericUpDown
+                                                    Margin="2" Minimum="1" Maximum="120"
+                                                    Value="{Binding NumOfMinToCheck}"></mah:NumericUpDown>
+                                                <TextBlock Grid.Column="1" Margin="2" VerticalAlignment="Center">мин.</TextBlock>
+                                                <TextBox Grid.Column="2" 
+                                                         Text="{Binding MinXMinutesPriceChange, Converter={StaticResource DecimalToPercentConverter}}" Margin="2" />
+                                                <TextBlock Grid.Column="3" Margin="2" VerticalAlignment="Center">%</TextBlock>
+                                            </Grid>
+
+                                            <TextBlock Text="Мин. объем при изменении цены &#10; (% от среднего объема за день)" TextWrapping="Wrap" Margin="2" />
+                                            <TextBox Text="{Binding MinVolumeDeviationFromDailyAverage, Converter={StaticResource DecimalToPercentConverter}}" Margin="2" />
+
+                                            <TextBlock Text="{Binding NumOfMinToCheckVol, StringFormat={}При изменении объёма за {0} минут &#10; (% от среднего объёма за день)}" Margin="2" />
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                                </Grid.ColumnDefinitions>
+                                                <mah:NumericUpDown
+                                                    Margin="2" Minimum="1" Maximum="120"
+                                                    Value="{Binding NumOfMinToCheckVol}"></mah:NumericUpDown>
+                                                <TextBlock Grid.Column="1" Margin="2" VerticalAlignment="Center">мин.</TextBlock>
+                                                <TextBox Grid.Column="2" 
+                                                         Text="{Binding MinXMinutesVolChange, Converter={StaticResource DecimalToPercentConverter}}" Margin="2" />
+                                                <TextBlock Grid.Column="3" Margin="2" VerticalAlignment="Center">%</TextBlock>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Expander>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+        <Button Grid.Row="1" Margin="2 10 2 6" cal:Message.Attach="AcceptOptions">Применить</Button>
+    </Grid>
+</UserControl>

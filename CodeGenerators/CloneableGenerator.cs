@@ -73,7 +73,7 @@ namespace {ns}
 {{
     partial class {c.Identifier}
     {{
-        public object Clone()
+        public virtual object Clone()
         {{
             var newObj = new {c.Identifier}();
 {sb}

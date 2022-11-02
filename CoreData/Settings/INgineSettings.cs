@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CoreData.Interfaces;
+using System;
+using System.Collections.Generic;
 
 namespace CoreData.Settings
 {
@@ -31,11 +33,30 @@ namespace CoreData.Settings
         string ExcludePattern { get; set; }
     }
 
+    public interface IAssetGroupSettings
+    {
+        bool IsSubscriptionEnabled { get; set; }
+        bool IsTelegramEnabled { get; set; }
+        string Currency { get; set; }
+        string CurrencyDisplay { get;set; }
+        decimal MinDayPriceChange { get; set; }
+        decimal MinXMinutesPriceChange { get; set; }
+        int NumOfMinToCheck { get; set; }
+        int NumOfMinToCheckVol { get; set; }
+        decimal MinVolumeDeviationFromDailyAverage { get; set; }
+        decimal MinXMinutesVolChange { get; set; }
+        string IncludePattern { get; set; }
+        string ExcludePattern { get; set; }
+        string ChartUrlTemplate { get; set; }
+    }
+
     public interface ISettingsProvider
     {
+        Dictionary<string, AssetGroupSettingsModel> AssetGroupSettingsByCurrency { get; set; }
         INgineSettings LastSettings { get; }
         INgineSettings Settings { get; }
         INgineSettings ReadSettings();
+        IAssetGroupSettings GetSettingsForStock(IStockModel stock);
         void SaveSettings(INgineSettings settings);
     }
 }

@@ -19,12 +19,13 @@ using RcktMon.ViewModels;
 namespace RcktMon.Views
 {
     /// <summary>
-    /// Interaction logic for TradeView.xaml
+    /// Interaction logic for MainView.xaml
     /// </summary>
     public partial class MainView : UserControl
     {
         private readonly DispatcherTimer _saveDataGridSettingsTimer = new DispatcherTimer() { IsEnabled = false, Interval = TimeSpan.FromSeconds(1) };
         private List<DataGridColumnSettings> _lastColWidthsList = new List<DataGridColumnSettings>();
+        private Window _mainWindow = null;
 
         public MainView()
         {
@@ -130,12 +131,12 @@ namespace RcktMon.Views
             if (e.NewValue is MainViewModel mainViewModel)
             {
                 if (String.IsNullOrEmpty(mainViewModel.Settings.TiApiKey))
-                    KeySettings.IsExpanded = true;
+                    Settings.KeySettings.IsExpanded = true;
             }
 
             if (!Environment.GetCommandLineArgs().Contains("/arbitrage") && !Environment.MachineName.Equals("E5-2678-V3"))
             {
-                USADataSettingsExpander.Visibility = Visibility.Collapsed;
+                Settings.USADataSettingsExpander.Visibility = Visibility.Collapsed;
                 AskDiffUSAColumn.Visibility = Visibility.Collapsed;
                 BidAskUSAColumn.Visibility = Visibility.Collapsed;
                 BidDiffUSAColumn.Visibility = Visibility.Collapsed;

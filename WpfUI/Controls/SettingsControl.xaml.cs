@@ -1,0 +1,49 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RcktMon.Controls
+{
+    /// <summary>
+    /// Логика взаимодействия для SettingsControl.xaml
+    /// </summary>
+    public partial class SettingsControl : UserControl
+    {
+        public SettingsControl()
+        {
+            InitializeComponent();
+        }
+
+        private void HyperlinkOpenInBrowser_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Hyperlink link && !string.IsNullOrWhiteSpace(link.NavigateUri?.ToString()))
+            {
+                try
+                {
+                    var psi = new ProcessStartInfo(link.NavigateUri.ToString())
+                    {
+                        UseShellExecute = true
+                    };
+                    Process.Start(psi);
+                }
+                catch
+                {
+
+                }
+            }
+
+        }
+    }
+}
