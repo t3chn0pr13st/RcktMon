@@ -9,7 +9,7 @@
              xmlns:views="clr-namespace:RcktMon.Views"
              xmlns:cal="http://caliburnmicro.com" xmlns:converters="clr-namespace:RcktMon.Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="400">
+             d:DesignHeight="800" d:DesignWidth="300">
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:CurrencyNameToHeaderConverter x:Key="CurrencyNameToHeaderConverter" />
@@ -23,7 +23,7 @@
         </Grid.RowDefinitions>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Orientation="Vertical">
-                <Expander Header="Ключи доступа" Name="KeySettings">
+                <Expander Header="Ключи доступа" Name="KeySettings" IsExpanded="True">
                     <StackPanel Orientation="Vertical">
                         <TextBlock Text="TinkoffInvest OpenAPI Token" FontWeight="Bold" Margin="2" />
                         <TextBlock Text="Зайдите на страницу настроек Тинькофф Инвестиции, там внизу в блоке Токен для OpenAPI получите Токен для торговли, и вставьте сюда" TextWrapping="Wrap" Margin="2" />
@@ -45,7 +45,7 @@
                         </TextBox>
                         <TextBlock Text="Telegram Chat Id" Margin="2 6 2 0" FontWeight="Bold" />
                         <TextBlock Margin="2" TextWrapping="Wrap">
-                                                <Run>"Это id чата в телеграмм, куда будет отправлять сообщения ваш бот (по US акциям). 
+                                                <Run>"Это id чата в телеграмм, куда будет отправлять сообщения ваш бот (по иностранным акциям). 
                                                     Можно пригласить бота в группу\канал, и вставить сюда chatId группы. 
                                                     Чтобы бот писал в лс, вставьте ваш Telegram Id ( можно узнать, например, у бота</Run>
                                                 <Hyperlink Click="HyperlinkOpenInBrowser_Click" NavigateUri="https://t.me/kvtsbot">@kvtsbot</Hyperlink>
@@ -59,8 +59,9 @@
                         <TextBlock Margin="2" TextWrapping="Wrap"
                                                        Text="URL сервиса отрисовки графика для вставки в сообщение от бота" />
                         <TextBox Text="{Binding ChartUrlTemplate}" Margin="2" />
+                        <TextBlock Text="Кнопки в сообщениях от бота" Margin="2 6 2 2" FontWeight="Bold" />
                         <mah:ToggleSwitch IsOn="{Binding IsEnabledCallbackProcessing}" FontSize="12">
-                            <TextBlock TextWrapping="Wrap">Обрабатывать сообщения боту (нажатия на кнопки) в этом экземпляре</TextBlock>
+                            <TextBlock MaxWidth="200" TextWrapping="Wrap">Обрабатывать нажатия на кнопки в сообщениях от бота</TextBlock>
                         </mah:ToggleSwitch>
                         <TextBlock Margin="2" TextWrapping="Wrap"
                                                        Text="URL сервиса обработки цветных кнопок в сообщениях" />

@@ -175,10 +175,6 @@ namespace CoreNgine.Shared
 
         private async Task CheckIncomingBotMessages()
         {
-#if DEBUG
-            return; // на время отладки пока не нужно
-#endif
-
             if (_updateConflict)
             {
                 if (DateTime.Now.Subtract(_lastConflictTime).TotalSeconds > 10)
