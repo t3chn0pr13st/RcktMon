@@ -217,14 +217,19 @@ namespace CoreNgine.Shared
                                         };
                                         try
                                         {
+                                            var body = JsonSerializer.Serialize(postObj);
                                             var resp = await _httpClient.PostAsync(postUrl, new StringContent(
-                                                JsonSerializer.Serialize(postObj), Encoding.UTF8, "application/json"
+                                                body, Encoding.UTF8, "application/json"
                                             ));
-                                            Debug.WriteLine($"{(int)resp.StatusCode} {resp.ReasonPhrase}: {await resp.Content.ReadAsStringAsync()}");
+                                            var reason = resp.ReasonPhrase;
+                                            if (string.IsNullOrWhiteSpace(reason))
+                                                reason = $"{(int)resp.StatusCode} {resp.StatusCode}";
+                                            var content = await resp.Content.ReadAsStringAsync();
+                                            Debug.WriteLine($"{(int)resp.StatusCode} {resp.ReasonPhrase}: {content}");
                                             if (resp.IsSuccessStatusCode)
                                                 result = null; // await resp.Content.ReadAsStringAsync();
                                             else
-                                                result = $"{result}{resp.ReasonPhrase}";
+                                                result = $"{result}{reason}: {content}";
                                         }
                                         catch (Exception ex)
                                         {
