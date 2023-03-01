@@ -225,11 +225,13 @@ namespace CoreNgine.Shared
                                             if (string.IsNullOrWhiteSpace(reason))
                                                 reason = $"{(int)resp.StatusCode} {resp.StatusCode}";
                                             var content = await resp.Content.ReadAsStringAsync();
+                                            if (content.Contains("Client is not connected"))
+                                                content = "ОШИБКА: У вас не запущен терминал с расширением KvaloodTools";
                                             Debug.WriteLine($"{(int)resp.StatusCode} {resp.ReasonPhrase}: {content}");
                                             if (resp.IsSuccessStatusCode)
                                                 result = null; // await resp.Content.ReadAsStringAsync();
                                             else
-                                                result = $"{result}{reason}: {content}";
+                                                result = $"{content}";
                                         }
                                         catch (Exception ex)
                                         {
