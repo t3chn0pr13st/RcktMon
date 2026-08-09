@@ -3,7 +3,15 @@ namespace RcktMon.FakeServer;
 /// <summary>How the fake server should behave for this run.</summary>
 public sealed class FakeServerOptions
 {
-    /// <summary>Size of the synthetic universe. 2000 approximates the real MOEX + SPB share count.</summary>
+    /// <summary>
+    /// Size of the synthetic universe.
+    /// </summary>
+    /// <remarks>
+    /// The default is a deliberate overshoot. MOEX lists a few hundred equities, so 2000
+    /// is roughly 4x the real universe — the point is to keep the grid honest under more
+    /// load than it will ever see, not to model the exchange. Pass <c>--instruments 500</c>
+    /// for a realistic session.
+    /// </remarks>
     public int InstrumentCount { get; init; } = 2000;
 
     /// <summary>Market steps per second. The client's perf target is 2.</summary>
