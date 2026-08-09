@@ -1,0 +1,56 @@
+<Project>
+
+  <!--
+    Shared build settings for the whole repository.
+
+    The `legacy/` subtree deliberately opts out of everything here via its own
+    Directory.Build.props / Directory.Packages.props — those projects are kept as
+    read-only reference material for the port and are not expected to build.
+  -->
+
+  <PropertyGroup Label="Identity">
+    <Product>RcktMon</Product>
+    <Company>RcktMon</Company>
+    <Authors>t3chn0pr13st and RcktMon contributors</Authors>
+    <Copyright>Copyright (c) 2020-2026 t3chn0pr13st and RcktMon contributors</Copyright>
+    <PackageProjectUrl>https://github.com/t3chn0pr13st/RcktMon</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/t3chn0pr13st/RcktMon</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Compilation">
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- The UI is localised (ru-RU / en-US) and formats money and dates per culture,
+         so globalization data must ship. Do not set InvariantGlobalization. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Reproducibility">
+    <Deterministic>true</Deterministic>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <!-- Warnings fail the build in CI, but stay warnings while you are working. -->
+    <TreatWarningsAsErrors Condition="'$(GITHUB_ACTIONS)' == 'true'">true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Versioning">
+    <!-- MinVer derives the version from git tags. Release tags look like `v1.7.0`;
+         protocol package tags look like `protocol-v1.2.0` and are filtered out here. -->
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
+  </PropertyGroup>
+
+</Project>

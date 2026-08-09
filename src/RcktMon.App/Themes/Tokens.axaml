@@ -1,0 +1,130 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Semantic design tokens. Views reference these by role, never by colour value.
+
+        The pre-rewrite app hardcoded ten orange overrides in App.xaml plus #c05102,
+        #fff100, #e81224, #886ce4, #0078d7 and #16c60c inline in MainView.xaml, which is
+        why it had exactly one theme and no way to test contrast.
+
+        The nine `Chg` buckets are discrete rather than a continuous converter for two
+        reasons: each shade is theme-controlled, and each one can be contrast-checked
+        individually. Every bucket below clears 4.5:1 against its own surface.
+
+        Colour is never the only channel — the grid pairs these with an arrow glyph and a
+        signed number. A colour-blind-safe palette swaps this whole dictionary at runtime.
+    -->
+
+    <ResourceDictionary.ThemeDictionaries>
+
+        <!-- ================= DARK (default) ================= -->
+        <ResourceDictionary x:Key="Dark">
+
+            <SolidColorBrush x:Key="Brush.Surface.1" Color="#14161A" />
+            <SolidColorBrush x:Key="Brush.Surface.2" Color="#1B1F25" />
+            <SolidColorBrush x:Key="Brush.Surface.3" Color="#232830" />
+            <SolidColorBrush x:Key="Brush.Surface.Hover" Color="#2A303A" />
+            <SolidColorBrush x:Key="Brush.Border" Color="#2E343D" />
+            <SolidColorBrush x:Key="Brush.Border.Strong" Color="#3C444F" />
+
+            <SolidColorBrush x:Key="Brush.Text.Primary" Color="#E8EAED" />
+            <SolidColorBrush x:Key="Brush.Text.Secondary" Color="#A0A7B4" />
+            <SolidColorBrush x:Key="Brush.Text.Tertiary" Color="#6C7480" />
+
+            <!-- Brand orange, carried over from the WPF build for continuity. -->
+            <SolidColorBrush x:Key="Brush.Accent" Color="#FF7A18" />
+            <SolidColorBrush x:Key="Brush.Accent.Muted" Color="#26FF7A18" />
+
+            <SolidColorBrush x:Key="Brush.Positive" Color="#22E06E" />
+            <SolidColorBrush x:Key="Brush.Negative" Color="#FF3B3B" />
+            <SolidColorBrush x:Key="Brush.Warning" Color="#F5A524" />
+
+            <!-- Diverging change ramp: saturation carries magnitude on a dark surface. -->
+            <SolidColorBrush x:Key="Brush.Chg.Up.4" Color="#22E06E" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.3" Color="#4CDE86" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.2" Color="#6FDB9A" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.1" Color="#8FD9AE" />
+            <SolidColorBrush x:Key="Brush.Chg.Neutral" Color="#A0A7B4" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.1" Color="#F0A8A8" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.2" Color="#F58585" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.3" Color="#FA6060" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.4" Color="#FF3B3B" />
+
+            <SolidColorBrush x:Key="Brush.Chg.Neutral.Fill" Color="Transparent" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.4" Color="#3322E06E" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.3" Color="#2622E06E" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.2" Color="#1A22E06E" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.1" Color="#0F22E06E" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.1" Color="#0FFF3B3B" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.2" Color="#1AFF3B3B" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.3" Color="#26FF3B3B" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.4" Color="#33FF3B3B" />
+
+            <SolidColorBrush x:Key="Brush.VolumeBar" Color="#33FF7A18" />
+            <SolidColorBrush x:Key="Brush.Flash.Up" Color="#4022E06E" />
+            <SolidColorBrush x:Key="Brush.Flash.Down" Color="#40FF3B3B" />
+
+        </ResourceDictionary>
+
+        <!-- ================= LIGHT ================= -->
+        <ResourceDictionary x:Key="Light">
+
+            <SolidColorBrush x:Key="Brush.Surface.1" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="Brush.Surface.2" Color="#F5F6F8" />
+            <SolidColorBrush x:Key="Brush.Surface.3" Color="#EBEDF1" />
+            <SolidColorBrush x:Key="Brush.Surface.Hover" Color="#E2E5EA" />
+            <SolidColorBrush x:Key="Brush.Border" Color="#D8DCE3" />
+            <SolidColorBrush x:Key="Brush.Border.Strong" Color="#B9C0CA" />
+
+            <SolidColorBrush x:Key="Brush.Text.Primary" Color="#16181D" />
+            <SolidColorBrush x:Key="Brush.Text.Secondary" Color="#545B66" />
+            <SolidColorBrush x:Key="Brush.Text.Tertiary" Color="#79808B" />
+
+            <SolidColorBrush x:Key="Brush.Accent" Color="#C2540A" />
+            <SolidColorBrush x:Key="Brush.Accent.Muted" Color="#22C2540A" />
+
+            <SolidColorBrush x:Key="Brush.Positive" Color="#14532D" />
+            <SolidColorBrush x:Key="Brush.Negative" Color="#7F1D1D" />
+            <SolidColorBrush x:Key="Brush.Warning" Color="#92400E" />
+
+            <!-- On a light surface, magnitude reads as depth rather than brightness. -->
+            <SolidColorBrush x:Key="Brush.Chg.Up.4" Color="#14532D" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.3" Color="#1F6B41" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.2" Color="#2C7A4E" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.1" Color="#35855A" />
+            <SolidColorBrush x:Key="Brush.Chg.Neutral" Color="#545B66" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.1" Color="#D24040" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.2" Color="#C13030" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.3" Color="#A81F1F" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.4" Color="#7F1D1D" />
+
+            <SolidColorBrush x:Key="Brush.Chg.Neutral.Fill" Color="Transparent" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.4" Color="#2614532D" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.3" Color="#1C14532D" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.2" Color="#1214532D" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.1" Color="#0A14532D" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.1" Color="#0A7F1D1D" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.2" Color="#127F1D1D" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.3" Color="#1C7F1D1D" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.4" Color="#267F1D1D" />
+
+            <SolidColorBrush x:Key="Brush.VolumeBar" Color="#33C2540A" />
+            <SolidColorBrush x:Key="Brush.Flash.Up" Color="#3014532D" />
+            <SolidColorBrush x:Key="Brush.Flash.Down" Color="#307F1D1D" />
+
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- Non-colour tokens: shared across variants. -->
+    <x:Double x:Key="Size.Row.Compact">26</x:Double>
+    <x:Double x:Key="Size.Row.Comfortable">34</x:Double>
+    <x:Double x:Key="Size.Rail.Expanded">208</x:Double>
+    <x:Double x:Key="Size.Rail.Collapsed">56</x:Double>
+    <CornerRadius x:Key="Radius.Small">4</CornerRadius>
+    <CornerRadius x:Key="Radius.Medium">8</CornerRadius>
+    <CornerRadius x:Key="Radius.Pill">999</CornerRadius>
+    <Thickness x:Key="Space.Panel">16</Thickness>
+
+</ResourceDictionary>

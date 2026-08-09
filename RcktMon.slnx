@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RcktMon.App/RcktMon.App.csproj" />
+    <Project Path="src/RcktMon.Client.Core/RcktMon.Client.Core.csproj" />
+    <Project Path="src/RcktMon.Desktop/RcktMon.Desktop.csproj" />
+    <Project Path="src/RcktMon.Protocol/RcktMon.Protocol.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RcktMon.Client.Core.Tests/RcktMon.Client.Core.Tests.csproj" />
+    <Project Path="tests/RcktMon.Protocol.Tests/RcktMon.Protocol.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/RcktMon.FakeServer/RcktMon.FakeServer.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package rcktmon.v1;
+
+option csharp_namespace = "RcktMon.Protocol.V1";
+
+import "rcktmon/v1/common.proto";
+
+// Alert rule profiles.
+//
+// These are the six thresholds the pre-rewrite `IAssetGroupSettings` exposed per
+// currency, now stored per account on the server and edited from the desktop client.
+// Evaluation happens server-side, so the strategy itself never leaves the private repo.
+
+service ProfileService {
+  rpc ListProfiles(ListProfilesRequest) returns (ListProfilesResponse);
+  rpc UpsertProfile(UpsertProfileRequest) returns (AlertProfile);
+  rpc DeleteProfile(DeleteProfileRequest) returns (DeleteProfileResponse);
+  rpc SetActiveProfile(SetActiveProfileRequest) returns (SetActiveProfileResponse);
+  // Replays a recent session against the given rules and reports how often they would
+  // have fired. Turns threshold tuning from guesswork into feedback.
+  rpc PreviewProfile(PreviewProfileRequest) returns (PreviewProfileResponse);
+}
+
+message ListProfilesRequest {}
+
+message ListProfilesResponse {
+  repeated AlertProfile profiles = 1;
+  string active_profile_id = 2;
+  // Server-curated starting points offered during onboarding.
+  repeated AlertProfile presets = 3;
+}
+
+message UpsertProfileRequest {
+  AlertProfile profile = 1;
+}
+
+message DeleteProfileRequest {
+  string id = 1;
+}
+
+message DeleteProfileResponse {}
+
+message SetActiveProfileRequest {
+  string id = 1;
+}
+
+message SetActiveProfileResponse {}
+
+message AlertProfile {
+  string id = 1;
+  string name = 2;
+  bool is_active = 3;
+  repeated AlertRuleGroup groups = 4;
+  // Set on presets returned by ListProfilesResponse.presets; user profiles leave it
+  // empty. Presets are copied on selection, never referenced.
+  string preset_key = 5;
+}
+
+// One group of thresholds. Keyed by currency today ("RUB", "USD", "HKD"), which is how
+// the WPF settings pane was organised; the key is a free string so the grouping can
+// later become per-exchange or per-sector without a protocol break.
+message AlertRuleGroup {
+  string group_key = 1;
+  bool enabled = 2;
+  bool telegram_enabled = 3;
+
+  // Whole-day trigger: |day change| over this AND volume over the average multiple.
+  Decimal min_day_price_change = 4;
+  Decimal min_volume_deviation_from_daily_average = 5;
+
+  // Rolling-window triggers.
+  Decimal min_x_minutes_price_change = 6;
+  Decimal min_x_minutes_volume_change = 7;
+  int32 num_of_min_to_check = 8;
+  int32 num_of_min_to_check_vol = 9;
+
+  // Ticker filters, applied before evaluation.
+  string include_pattern = 10;
+  string exclude_pattern = 11;
+}
+
+message PreviewProfileRequest {
+  AlertProfile profile = 1;
+  // How far back to replay. Clamped server-side by the account's plan.
+  int32 lookback_days = 2;
+}
+
+message PreviewProfileResponse {
+  int32 estimated_signals_per_day = 1;
+  repeated PreviewBucket by_kind = 2;
+  // A handful of concrete examples, so the number is believable rather than magic.
+  repeated string sample_headlines = 3;
+}
+
+message PreviewBucket {
+  SignalKind kind = 1;
+  int32 count = 2;
+}

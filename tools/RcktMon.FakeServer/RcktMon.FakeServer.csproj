@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>RcktMon.FakeServer</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!-- Not a deployable: this exists so the client can be developed and perf-tested
+         without a real server or a broker token. -->
+    <UserSecretsId>rcktmon-fakeserver</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Grpc.AspNetCore.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/RcktMon.Protocol/RcktMon.Protocol.csproj" />
+  </ItemGroup>
+
+</Project>

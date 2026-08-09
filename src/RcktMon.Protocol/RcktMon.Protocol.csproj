@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>RcktMon.Protocol</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>RcktMon.Protocol</PackageId>
+    <Title>RcktMon wire protocol</Title>
+    <Description>
+      gRPC contract shared by the RcktMon desktop client, the browser extension and the
+      RcktMon server. Generated from proto/rcktmon/v1. This package is the only thing the
+      public client and the private server have in common.
+    </Description>
+    <PackageTags>rcktmon;grpc;protobuf</PackageTags>
+    <!-- README.md lives at the repository root, three levels up. -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- Generated protobuf code is not ours to lint. -->
+    <NoWarn>$(NoWarn);CS8981;CS0612;CS0618;IDE0005</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)../../README.md" Pack="true" PackagePath="/" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" />
+    <!-- Brings Grpc.Core.Api, which the generated client stubs and service base
+         classes both need. Consumers add their own transport on top. -->
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Tools" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- ProtoRoot must be the directory that `import "rcktmon/v1/..."` paths resolve
+         against, otherwise cross-file imports fail. GrpcServices="Both" because this
+         package is consumed by the client (stubs) and the server (base classes). -->
+    <Protobuf Include="../../proto/rcktmon/v1/*.proto"
+              ProtoRoot="../../proto"
+              GrpcServices="Both"
+              Access="Public" />
+  </ItemGroup>
+
+</Project>

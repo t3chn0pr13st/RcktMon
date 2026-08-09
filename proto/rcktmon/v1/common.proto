@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package rcktmon.v1;
+
+option csharp_namespace = "RcktMon.Protocol.V1";
+
+// Shared primitives and enumerations.
+//
+// Protobuf enum values live in the enclosing package scope, not inside the enum, so
+// every value is prefixed with its enum name to avoid collisions across this package.
+
+// A fixed-point decimal, identical in shape to the T-Invest `Quotation`/`MoneyValue`
+// pair: value == units + nano / 1e9.
+//
+// Money and price changes are decimal end to end. Never a double: the pre-rewrite code
+// was correct to use System.Decimal throughout, and JSON/float round-tripping is how
+// that kind of correctness gets quietly lost at a service boundary.
+message Decimal {
+  // Whole units. Negative values have both `units` and `nano` negative (or zero).
+  int64 units = 1;
+  // Fractional part in billionths, range (-1e9, 1e9), same sign as `units`.
+  int32 nano = 2;
+}
+
+enum InstrumentClass {
+  INSTRUMENT_CLASS_UNSPECIFIED = 0;
+  INSTRUMENT_CLASS_SHARE = 1;
+  INSTRUMENT_CLASS_ETF = 2;
+  INSTRUMENT_CLASS_BOND = 3;
+  INSTRUMENT_CLASS_FUTURE = 4;
+  INSTRUMENT_CLASS_CURRENCY = 5;
+  INSTRUMENT_CLASS_OPTION = 6;
+}
+
+// Mirrors the meaningful subset of T-Invest `SecurityTradingStatus`.
+enum TradingStatus {
+  TRADING_STATUS_UNSPECIFIED = 0;
+  TRADING_STATUS_NOT_AVAILABLE = 1;
+  TRADING_STATUS_OPENING_AUCTION = 2;
+  TRADING_STATUS_NORMAL = 3;
+  TRADING_STATUS_CLOSING_AUCTION = 4;
+  TRADING_STATUS_BREAK = 5;
+  TRADING_STATUS_CLOSED = 6;
+  TRADING_STATUS_HALTED = 7;
+}
+
+// Which rule produced a signal. Values match the pre-rewrite `MessageKind` triggers so
+// the characterization diff between the old and new engines stays readable.
+enum SignalKind {
+  SIGNAL_KIND_UNSPECIFIED = 0;
+  // |DayChange| over threshold AND day volume over the monthly-average multiple.
+  SIGNAL_KIND_DAY_CHANGE = 1;
+  // Price moved more than the threshold within the last N minutes.
+  SIGNAL_KIND_MINUTES_PRICE_CHANGE = 2;
+  // Volume in the last N minutes exceeded the monthly-average multiple.
+  SIGNAL_KIND_MINUTES_VOLUME_CHANGE = 3;
+}

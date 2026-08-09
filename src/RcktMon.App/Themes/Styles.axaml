@@ -1,0 +1,125 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Control styling built entirely on the semantic tokens.
+
+        Avalonia has no triggers; everything conditional here is expressed with
+        pseudo-class selectors (:pointerover, :checked, :focus-visible), which is the
+        direct replacement for the WPF build's ControlTemplate.Triggers and
+        DataTemplate.Triggers.
+    -->
+
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.1}" />
+        <Setter Property="FontFamily" Value="Inter, $Default" />
+    </Style>
+
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Primary}" />
+    </Style>
+
+    <Style Selector="TextBlock.secondary">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
+    </Style>
+
+    <Style Selector="TextBlock.tertiary">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Tertiary}" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <Style Selector="TextBlock.numeric">
+        <!-- Tabular figures keep digits from shifting sideways as prices tick, which is
+             what makes a fast-updating column readable instead of jittery. -->
+        <Setter Property="FontFamily" Value="Inter, $Default" />
+        <Setter Property="FontFeatures" Value="tnum=1" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+
+    <!-- ===== header / chrome ===== -->
+
+    <Style Selector="Border.appbar">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.2}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="14,10" />
+    </Style>
+
+    <Style Selector="Border.statusbar">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.2}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="Padding" Value="14,6" />
+    </Style>
+
+    <Style Selector="Border.pill">
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Pill}" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.3}" />
+    </Style>
+
+    <!-- ===== filter chips ===== -->
+
+    <Style Selector="ToggleButton.chip">
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Pill}" />
+        <Setter Property="Padding" Value="12,5" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.3}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <Style Selector="ToggleButton.chip:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.Hover}" />
+    </Style>
+
+    <Style Selector="ToggleButton.chip:checked /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Accent.Muted}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}" />
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource Brush.Accent}" />
+    </Style>
+
+    <!-- ===== search ===== -->
+
+    <Style Selector="TextBox.search">
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Medium}" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.3}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+        <Setter Property="MinWidth" Value="260" />
+    </Style>
+
+    <!-- ===== grid ===== -->
+
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.1}" />
+        <Setter Property="GridLinesVisibility" Value="Horizontal" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Brush.Border}" />
+        <Setter Property="RowBackground" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="DataGridColumnHeader">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.2}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="10,7" />
+    </Style>
+
+    <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Fill" Value="{DynamicResource Brush.Surface.Hover}" />
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <Style Selector="DataGridCell">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Primary}" />
+        <Setter Property="Padding" Value="10,0" />
+    </Style>
+
+    <!-- Instruments that are not currently tradable recede rather than disappear. -->
+    <Style Selector="DataGridRow.inactive">
+        <Setter Property="Opacity" Value="0.55" />
+    </Style>
+
+</Styles>

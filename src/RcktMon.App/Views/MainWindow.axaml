@@ -1,0 +1,183 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RcktMon.App.ViewModels"
+        xmlns:fmt="using:RcktMon.App.Formatting"
+        xmlns:market="using:RcktMon.Client.Core.Market"
+        x:Class="RcktMon.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="RcktMon"
+        Width="1280" Height="800"
+        MinWidth="900" MinHeight="520"
+        Background="{DynamicResource Brush.Surface.1}">
+
+    <Window.Resources>
+        <fmt:SignedPercentConverter x:Key="Percent" />
+        <fmt:CompactNumberConverter x:Key="Compact" />
+        <fmt:VolumeBarWidthConverter x:Key="BarWidth" />
+        <fmt:ConnectionTextConverter x:Key="ConnText" />
+        <fmt:ConnectionBrushConverter x:Key="ConnBrush" />
+    </Window.Resources>
+
+    <DockPanel>
+
+        <!-- ============ app bar ============ -->
+        <Border Classes="appbar" DockPanel.Dock="Top">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <TextBlock Text="RcktMon" FontSize="17" FontWeight="Bold"
+                               Foreground="{DynamicResource Brush.Accent}" VerticalAlignment="Center" />
+                    <TextBlock Classes="tertiary" VerticalAlignment="Center"
+                               Text="{Binding ServerAddress}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
+                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBox x:Name="SearchBox" Classes="search"
+                             PlaceholderText="Поиск по тикеру или названию   (Ctrl+K)"
+                             Text="{Binding Monitor.SearchText}" />
+
+                    <ToggleButton Classes="chip" Content="Растущие"
+                                  IsChecked="{Binding Monitor.GainersOnly}"
+                                  AutomationProperties.Name="Показывать только растущие" />
+                    <ToggleButton Classes="chip" Content="Падающие"
+                                  IsChecked="{Binding Monitor.LosersOnly}"
+                                  AutomationProperties.Name="Показывать только падающие" />
+                    <Button Classes="chip" Content="Сбросить"
+                            Command="{Binding Monitor.ClearFiltersCommand}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <!-- Connection pill. Visible on every screen by design: silently stale
+                         prices are the dangerous failure mode for this product. -->
+                    <Border Classes="pill" ToolTip.Tip="{Binding Status.Detail}">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                     Fill="{Binding Status, Converter={StaticResource ConnBrush}}" />
+                            <TextBlock FontSize="12" VerticalAlignment="Center"
+                                       Text="{Binding Status, Converter={StaticResource ConnText}}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Button Classes="chip" Content="Тема"
+                            Command="{Binding ToggleThemeCommand}"
+                            AutomationProperties.Name="Переключить светлую и тёмную тему" />
+                </StackPanel>
+
+            </Grid>
+        </Border>
+
+        <!-- ============ status bar ============ -->
+        <Border Classes="statusbar" DockPanel.Dock="Bottom">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <TextBlock Grid.Column="0" Classes="tertiary">
+                    <Run Text="Инструментов:" />
+                    <Run Text="{Binding Monitor.TotalCount}" />
+                </TextBlock>
+                <TextBlock Grid.Column="1" Classes="tertiary" Margin="16,0,0,0">
+                    <Run Text="Показано:" />
+                    <Run Text="{Binding Monitor.VisibleCount}" />
+                </TextBlock>
+                <TextBlock Grid.Column="3" Classes="tertiary" Text="{Binding AccountName}" />
+            </Grid>
+        </Border>
+
+        <!-- ============ monitor grid ============ -->
+        <DataGrid ItemsSource="{Binding Monitor.Rows}"
+                  IsReadOnly="True"
+                  CanUserSortColumns="False"
+                  CanUserReorderColumns="True"
+                  CanUserResizeColumns="True"
+                  SelectionMode="Single"
+                  HeadersVisibility="Column"
+                  AutoGenerateColumns="False">
+
+            <!-- Sorting is owned by the DynamicData pipeline, not the grid: the grid has
+                 no way to re-sort on property change, which is the whole point here. -->
+
+            <DataGrid.Columns>
+
+                <DataGridTemplateColumn Header="Инструмент" Width="240" CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <StackPanel VerticalAlignment="Center" Margin="0,3">
+                                <TextBlock Text="{Binding Ticker}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Name}" Classes="tertiary"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Цена" Width="110" CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock Classes="numeric" VerticalAlignment="Center"
+                                       Text="{Binding Price, StringFormat={}{0:N2}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- The diverging colour bucket. Colour is paired with an arrow and a sign
+                     so meaning never depends on hue alone. -->
+                <DataGridTemplateColumn Header="Изм." Width="120" CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <Border CornerRadius="4" Padding="6,2" Margin="0,2"
+                                    HorizontalAlignment="Stretch"
+                                    Background="{Binding DayChange, Converter={x:Static fmt:ChangeBucketConverter.Fill}}">
+                                <TextBlock Classes="numeric" FontWeight="SemiBold"
+                                           Text="{Binding DayChange, Converter={StaticResource Percent}}"
+                                           Foreground="{Binding DayChange, Converter={x:Static fmt:ChangeBucketConverter.Foreground}}" />
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Объём" Width="110" CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock Classes="numeric" VerticalAlignment="Center"
+                                       Text="{Binding DayVolume, Converter={StaticResource Compact}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- "Unusual volume" as a bar, not a percentage to be parsed. -->
+                <DataGridTemplateColumn Header="× среднего" Width="140" CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <Grid VerticalAlignment="Center" Margin="0,4">
+                                <Border HorizontalAlignment="Left" CornerRadius="3" Height="18"
+                                        Background="{DynamicResource Brush.VolumeBar}"
+                                        Width="{Binding DayVolOfAvg, Converter={StaticResource BarWidth}, ConverterParameter=110}" />
+                                <TextBlock Classes="numeric" Margin="0,0,6,0"
+                                           Text="{Binding DayVolOfAvg, StringFormat={}{0:N2}×}" />
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Валюта" Width="90" CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock Classes="secondary" VerticalAlignment="Center"
+                                       Text="{Binding Currency}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Биржа" Width="*" CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock Classes="secondary" VerticalAlignment="Center"
+                                       Text="{Binding Exchange}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+</Window>

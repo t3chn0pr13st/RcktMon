@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package rcktmon.v1;
+
+option csharp_namespace = "RcktMon.Protocol.V1";
+
+import "google/protobuf/timestamp.proto";
+
+// Bridge between RcktMon and the T-Invest web terminal browser extension.
+//
+// Replaces two pieces of the pre-rewrite design at once: the bundled, source-less
+// AuroraWrapper.exe launched via Process.Start, and the loopback WebSocket server on
+// 127.0.0.1:51337. Both were Windows-only and the loopback listener tripped the macOS
+// firewall prompt.
+//
+// Commands are routed account-to-account through the server, so the desktop app and the
+// browser extension never need to find each other on the local machine. The extension
+// speaks gRPC-Web against this same service.
+
+service TerminalBridgeService {
+  // Published by the desktop client (and by Telegram callback buttons) when the user
+  // picks a ticker.
+  rpc PublishCommand(PublishCommandRequest) returns (PublishCommandResponse);
+
+  // Subscribed by the browser extension. Delivers commands for this account only.
+  rpc StreamCommands(StreamCommandsRequest) returns (stream TerminalCommand);
+
+  // DOM selectors for driving the terminal page, served from the server so a change on
+  // the T-Invest side is a config push rather than a browser-store release.
+  rpc GetBridgeConfig(GetBridgeConfigRequest) returns (BridgeConfig);
+}
+
+message PublishCommandRequest {
+  TerminalCommand command = 1;
+}
+
+message PublishCommandResponse {
+  // How many extension instances were connected and received it. 0 lets the client say
+  // "no browser connected" instead of silently doing nothing.
+  int32 delivered_to_devices = 1;
+}
+
+message StreamCommandsRequest {}
+
+message TerminalCommand {
+  string id = 1;
+  google.protobuf.Timestamp issued_at = 2;
+  oneof command {
+    SetTickerCommand set_ticker = 3;
+  }
+}
+
+message SetTickerCommand {
+  string ticker = 1;
+  string instrument_uid = 2;
+  // The colour group from the five inline buttons carried over from the Telegram
+  // messages (3, 6, 8, 10, 14 in the original encoding).
+  int32 group = 3;
+}
+
+message GetBridgeConfigRequest {
+  string extension_version = 1;
+}
+
+message BridgeConfig {
+  // Version of the selector set, so the extension can cache it.
+  string revision = 1;
+  repeated SelectorRule selectors = 2;
+  repeated string match_urls = 3;
+}
+
+message SelectorRule {
+  // Logical action, e.g. "search_input", "search_submit", "instrument_row".
+  string key = 1;
+  string css_selector = 2;
+  // Tried in order; the first that resolves wins. Lets one config support an A/B rollout
+  // on the terminal side.
+  repeated string fallback_selectors = 3;
+}

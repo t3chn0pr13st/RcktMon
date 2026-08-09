@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package rcktmon.v1;
+
+option csharp_namespace = "RcktMon.Protocol.V1";
+
+import "google/protobuf/timestamp.proto";
+import "rcktmon/v1/common.proto";
+
+// Subscription state, read-only from the desktop client.
+//
+// Checkout itself happens in the web account, not in the app: payment pages must not
+// be embedded in a desktop client, and this keeps card data entirely out of the client.
+// The client shows plan state, entitlements and a deep link to the web account.
+
+service BillingService {
+  rpc GetSubscription(GetSubscriptionRequest) returns (Subscription);
+  rpc ListPlans(ListPlansRequest) returns (ListPlansResponse);
+  // Returns a short-lived, single-use URL into the web account's checkout or management
+  // page, already authenticated for this account.
+  rpc CreatePortalLink(CreatePortalLinkRequest) returns (CreatePortalLinkResponse);
+}
+
+message GetSubscriptionRequest {}
+
+message ListPlansRequest {}
+
+message ListPlansResponse {
+  repeated Plan plans = 1;
+}
+
+message Plan {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  Decimal price = 4;
+  string currency = 5;
+  BillingPeriod period = 6;
+  repeated string feature_keys = 7;
+  Entitlements entitlements = 8;
+}
+
+enum BillingPeriod {
+  BILLING_PERIOD_UNSPECIFIED = 0;
+  BILLING_PERIOD_MONTHLY = 1;
+  BILLING_PERIOD_YEARLY = 2;
+  BILLING_PERIOD_LIFETIME = 3;
+}
+
+enum SubscriptionStatus {
+  SUBSCRIPTION_STATUS_UNSPECIFIED = 0;
+  SUBSCRIPTION_STATUS_TRIALING = 1;
+  SUBSCRIPTION_STATUS_ACTIVE = 2;
+  // Payment failed but access continues for a grace window. The client nags; it does
+  // not lock the user out mid-session.
+  SUBSCRIPTION_STATUS_PAST_DUE = 3;
+  SUBSCRIPTION_STATUS_CANCELED = 4;
+  SUBSCRIPTION_STATUS_EXPIRED = 5;
+}
+
+message Subscription {
+  string plan_id = 1;
+  string plan_name = 2;
+  SubscriptionStatus status = 3;
+  google.protobuf.Timestamp current_period_end = 4;
+  bool cancel_at_period_end = 5;
+  Entitlements entitlements = 6;
+}
+
+// Enforced server-side in the auth interceptor. Mirrored to the client only so the UI
+// can explain a limit before the user hits it.
+message Entitlements {
+  int32 max_devices = 1;
+  int32 max_profiles = 2;
+  int32 signal_history_days = 3;
+  bool orderbook_access = 4;
+  bool trades_tape_access = 5;
+  bool telegram_alerts = 6;
+  bool terminal_bridge = 7;
+  int32 min_tick_interval_ms = 8;
+}
+
+message CreatePortalLinkRequest {
+  // "checkout" | "manage" | "invoices"
+  string intent = 1;
+  string plan_id = 2;
+}
+
+message CreatePortalLinkResponse {
+  string url = 1;
+  google.protobuf.Timestamp expires_at = 2;
+}

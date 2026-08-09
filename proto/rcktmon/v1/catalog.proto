@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package rcktmon.v1;
+
+option csharp_namespace = "RcktMon.Protocol.V1";
+
+import "rcktmon/v1/common.proto";
+
+// The instrument universe.
+//
+// Served from the server's database, never from a live broker call: the T-Invest
+// `Shares`/`Bonds`/`Etfs`/`GetAssets` methods are capped at 15 requests per minute, so
+// the server refreshes once a day and hands clients an etag-cached snapshot.
+
+service CatalogService {
+  rpc GetCatalog(GetCatalogRequest) returns (stream CatalogChunk);
+  rpc StreamCatalogChanges(StreamCatalogChangesRequest) returns (stream CatalogChange);
+}
+
+message GetCatalogRequest {
+  // Etag of the client's cached catalog. If it still matches, the server replies with a
+  // single chunk carrying `not_modified = true` and no instruments.
+  string etag = 1;
+}
+
+message CatalogChunk {
+  string etag = 1;
+  bool not_modified = 2;
+  repeated Instrument instruments = 3;
+  bool is_last = 4;
+}
+
+message Instrument {
+  // T-Invest instrument uid. This is the join key everywhere in the protocol.
+  //
+  // Not FIGI and never the ticker: tickers collide across class codes, and the
+  // pre-rewrite code keyed its stock dictionary by ticker and then scanned it linearly
+  // by FIGI on every incoming candle.
+  string uid = 1;
+  string figi = 2;
+  string ticker = 3;
+  string class_code = 4;
+  string isin = 5;
+  string name = 6;
+  string currency = 7;
+  InstrumentClass instrument_class = 8;
+  int32 lot = 9;
+  Decimal min_price_increment = 10;
+  string exchange = 11;
+  string sector = 12;
+  string logo_url = 13;
+  bool short_enabled = 14;
+  bool api_trade_available = 15;
+  // Earliest minute candle available upstream; the client uses it to explain empty
+  // sparklines instead of rendering a blank cell.
+  string first_candle_date = 16;
+}
+
+message StreamCatalogChangesRequest {
+  string etag = 1;
+}
+
+message CatalogChange {
+  oneof change {
+    Instrument upserted = 1;
+    string removed_uid = 2;
+  }
+  string etag = 3;
+}

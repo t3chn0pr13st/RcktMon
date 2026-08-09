@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package rcktmon.v1;
+
+option csharp_namespace = "RcktMon.Protocol.V1";
+
+import "google/protobuf/timestamp.proto";
+import "rcktmon/v1/common.proto";
+
+// Handshake and server health.
+
+service SessionService {
+  // First call on every connection. Establishes protocol compatibility and tells the
+  // client who it is. A client that cannot satisfy `min_supported_client_major` must
+  // stop and prompt for an update rather than degrade silently.
+  rpc Hello(HelloRequest) returns (HelloResponse);
+}
+
+message HelloRequest {
+  int32 protocol_major = 1;
+  string client_version = 2;
+  // Stable per-installation GUID, persisted in the client's settings file. Not a
+  // secret — it exists so the account owner can see and revoke individual installs.
+  string device_id = 3;
+  // "windows" | "macos" | "linux" | "browser-extension"
+  string platform = 4;
+  // BCP-47, e.g. "ru-RU". Used to localise server-rendered signal headlines.
+  string locale = 5;
+}
+
+message HelloResponse {
+  int32 protocol_major = 1;
+  int32 protocol_minor = 2;
+  string account_id = 3;
+  string account_display_name = 4;
+  string server_version = 5;
+  google.protobuf.Timestamp server_time = 6;
+  // Feature flags, resolved server-side per account and plan. Replaces the
+  // `Environment.MachineName == "E5-2678-V3"` gate the WPF build shipped with.
+  repeated string capabilities = 7;
+  int32 min_supported_client_major = 8;
+}
+
+service StatusService {
+  rpc StreamStatus(StreamStatusRequest) returns (stream ServerStatus);
+}
+
+message StreamStatusRequest {}
+
+message ServerStatus {
+  google.protobuf.Timestamp server_time = 1;
+  repeated ExchangeSession sessions = 2;
+  MarketDataHealth market_data = 3;
+  int32 connected_clients = 4;
+}
+
+message ExchangeSession {
+  string exchange = 1;
+  bool is_trading_day = 2;
+  // Absolute UTC instants from InstrumentsService.TradingSchedules — never a local
+  // wall-clock time. The pre-rewrite code hardcoded a UTC+3 offset for MSK, which was
+  // wrong for every user outside Moscow and gated all subscriptions.
+  google.protobuf.Timestamp opens_at = 3;
+  google.protobuf.Timestamp closes_at = 4;
+  TradingStatus status = 5;
+  google.protobuf.Timestamp evening_opens_at = 6;
+  google.protobuf.Timestamp evening_closes_at = 7;
+}
+
+message MarketDataHealth {
+  int32 shards_total = 1;
+  int32 shards_healthy = 2;
+  int32 instruments_subscribed = 3;
+  google.protobuf.Timestamp last_market_event = 4;
+  // First-class, because silently stale prices are the dangerous failure mode for this
+  // product. The client surfaces this as a visible "degraded" state on every screen.
+  bool degraded = 5;
+  string degraded_reason = 6;
+}

@@ -1,0 +1,13 @@
+<Project>
+
+  <!--
+    Stops the Directory.Packages.props walk-up at `legacy/`, so the reference projects
+    keep their inline PackageReference versions instead of erroring with NU1008 under
+    the repository's central package management. See legacy/Directory.Build.props.
+  -->
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+</Project>

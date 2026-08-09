@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package rcktmon.v1;
+
+option csharp_namespace = "RcktMon.Protocol.V1";
+
+import "google/protobuf/timestamp.proto";
+import "rcktmon/v1/common.proto";
+
+// Fired alerts, live and historical.
+//
+// History is new. The pre-rewrite app kept messages in an unbounded, non-thread-safe
+// in-memory HashSet that died with the process, so scrolling back past the current
+// session was impossible.
+
+service SignalService {
+  rpc StreamSignals(StreamSignalsRequest) returns (stream Signal);
+  rpc ListSignals(ListSignalsRequest) returns (ListSignalsResponse);
+}
+
+message StreamSignalsRequest {
+  // Resume point. 0 means "only what fires from now on".
+  int64 since_id = 1;
+  repeated SignalKind kinds = 2;
+}
+
+message ListSignalsRequest {
+  google.protobuf.Timestamp from = 1;
+  google.protobuf.Timestamp to = 2;
+  repeated SignalKind kinds = 3;
+  repeated string instrument_uids = 4;
+  repeated string currencies = 5;
+  int32 page_size = 6;
+  string page_token = 7;
+}
+
+message ListSignalsResponse {
+  repeated Signal signals = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message Signal {
+  int64 id = 1;
+  string instrument_uid = 2;
+  string ticker = 3;
+  SignalKind kind = 4;
+  google.protobuf.Timestamp fired_at = 5;
+  // Width of the window that triggered, in minutes. 0 for whole-day signals.
+  int32 window_minutes = 6;
+
+  // Fractions, not percents.
+  Decimal price_change = 7;
+  Decimal volume_change = 8;
+
+  Decimal price_from = 9;
+  Decimal price_to = 10;
+  int64 volume = 11;
+  Decimal day_change = 12;
+  int64 day_volume = 13;
+  Decimal day_vol_of_avg = 14;
+
+  // Which alert profile matched. Empty for signals produced by the server's own
+  // channel profile rather than a user's.
+  string profile_id = 15;
+  // Rendered and localised server-side, so the desktop client, the Telegram post and
+  // the web account all read identically.
+  string headline = 16;
+  string currency = 17;
+}

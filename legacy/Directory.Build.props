@@ -1,0 +1,24 @@
+<Project>
+
+  <!--
+    Reference material, not a build target.
+
+    Everything under `legacy/` is the .NET 6 / WPF implementation that the Avalonia +
+    T-Invest rewrite replaces. It is kept in the working tree only so the port can be
+    read and diffed against the original; it targets a dead broker API and is not part
+    of RcktMon.sln.
+
+    This file intentionally does NOT import the repository-root Directory.Build.props,
+    so these projects keep their original TFMs, nullability and analyzer settings and
+    cannot fail the new build. Delete this directory once the strategy math has been
+    ported and covered by characterization tests.
+
+    Browsable history: tag `v1.6.6-wpf-final`, branch `legacy/wpf`.
+  -->
+
+  <PropertyGroup>
+    <IsLegacyReference>true</IsLegacyReference>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>

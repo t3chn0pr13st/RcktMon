@@ -1,0 +1,98 @@
+# EditorConfig — https://editorconfig.org
+# The pre-rewrite tree had no style configuration at all, so formatting drifted per
+# project (tabs in CoreNgine/CoreData, spaces elsewhere, spaced parens in the dead web
+# projects, mixed BOM). CI enforces this with `dotnet format --verify-no-changes`.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,proto,js,ts,tsx,css,html,xml,props,targets,csproj}]
+indent_size = 2
+
+[*.{md,markdown}]
+trim_trailing_whitespace = false
+
+[*.{cmd,bat}]
+end_of_line = crlf
+
+[*.sh]
+end_of_line = lf
+
+[*.cs]
+indent_size = 4
+
+# --- using directives ---
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+csharp_using_directive_placement = outside_namespace:warning
+
+# --- language features we rely on ---
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_prefer_braces = true:suggestion
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_prefer_pattern_matching = true:suggestion
+csharp_style_throw_expression = true:suggestion
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_prefer_range_operator = true:suggestion
+csharp_style_prefer_index_operator = true:suggestion
+
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_collection_expression = when_types_exactly_match:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_readonly_field = true:suggestion
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+
+# --- naming ---
+dotnet_naming_rule.interfaces_start_with_i.severity = warning
+dotnet_naming_rule.interfaces_start_with_i.symbols = interface_symbols
+dotnet_naming_rule.interfaces_start_with_i.style = prefix_i_pascal
+dotnet_naming_symbols.interface_symbols.applicable_kinds = interface
+dotnet_naming_style.prefix_i_pascal.required_prefix = I
+dotnet_naming_style.prefix_i_pascal.capitalization = pascal_case
+
+dotnet_naming_rule.types_are_pascal_case.severity = warning
+dotnet_naming_rule.types_are_pascal_case.symbols = type_symbols
+dotnet_naming_rule.types_are_pascal_case.style = pascal
+dotnet_naming_symbols.type_symbols.applicable_kinds = class,struct,enum,delegate
+dotnet_naming_style.pascal.capitalization = pascal_case
+
+dotnet_naming_rule.private_fields_are_camel_with_underscore.severity = warning
+dotnet_naming_rule.private_fields_are_camel_with_underscore.symbols = private_field_symbols
+dotnet_naming_rule.private_fields_are_camel_with_underscore.style = underscore_camel
+dotnet_naming_symbols.private_field_symbols.applicable_kinds = field
+dotnet_naming_symbols.private_field_symbols.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel.required_prefix = _
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+
+# --- correctness rules promoted to errors ---
+# Money is decimal end to end and times are UTC; these three catch the classes of bug
+# that the pre-rewrite code shipped (culture-dependent formatting, DateTime.Now, and
+# unobserved async work in fire-and-forget handlers).
+dotnet_diagnostic.CA1305.severity = warning   # specify IFormatProvider
+dotnet_diagnostic.CA2007.severity = none      # ConfigureAwait: not useful in an app
+dotnet_diagnostic.CA1848.severity = none      # LoggerMessage delegates: too noisy here
+dotnet_diagnostic.CS4014.severity = error     # unawaited task
+dotnet_diagnostic.CS8602.severity = warning   # possible null dereference
+dotnet_diagnostic.CS8618.severity = warning   # non-nullable field uninitialised
+
+# Generated protobuf/gRPC sources
+[**/obj/**.cs]
+generated_code = true
+
+# Reference-only tree — do not lint, do not reformat.
+[legacy/**]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none

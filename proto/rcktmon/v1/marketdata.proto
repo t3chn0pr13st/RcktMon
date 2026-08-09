@@ -1,0 +1,190 @@
+syntax = "proto3";
+
+package rcktmon.v1;
+
+option csharp_namespace = "RcktMon.Protocol.V1";
+
+import "google/protobuf/timestamp.proto";
+import "rcktmon/v1/common.proto";
+
+// Live quotes: one snapshot, then coalesced deltas.
+
+service MarketDataService {
+  rpc StreamQuotes(StreamQuotesRequest) returns (stream QuotesMessage);
+  // Backfill for sparklines and the inspector chart.
+  rpc GetHistory(GetHistoryRequest) returns (GetHistoryResponse);
+  // Server-rendered candlestick PNG, shared with the Telegram bot so the chart in a
+  // channel post and the chart in the app are byte-identical.
+  rpc GetChart(GetChartRequest) returns (GetChartResponse);
+}
+
+message StreamQuotesRequest {
+  InstrumentSelector selector = 1;
+  // Coalescing interval. Clamped server-side to [250, 5000]; 0 means the server
+  // default of 500 ms, which matches the cadence of the pre-rewrite UI.
+  int32 tick_interval_ms = 2;
+  // 0 asks for a full snapshot. Otherwise the server replays everything that changed
+  // after this sequence number, or falls back to a snapshot with SEQ_TOO_OLD.
+  uint64 resume_from_seq = 3;
+  QuoteFields fields = 4;
+}
+
+// All-empty means the entire universe. Coarse by design: search, chips and sorting are
+// pure client concerns, and per-session predicates would defeat the shared coalescer.
+message InstrumentSelector {
+  repeated string currencies = 1;
+  repeated InstrumentClass classes = 2;
+  repeated string instrument_uids = 3;
+}
+
+// Opt-in extras. Each one costs bandwidth per instrument per tick, so the client asks
+// for them only when the corresponding UI is actually visible.
+message QuoteFields {
+  bool orderbook = 1;
+  bool month_stats = 2;
+  bool sparkline = 3;
+}
+
+message QuotesMessage {
+  oneof payload {
+    QuoteSnapshotChunk snapshot = 1;
+    QuoteBatch batch = 2;
+    StreamControl control = 3;
+  }
+}
+
+enum SnapshotReason {
+  SNAPSHOT_REASON_UNSPECIFIED = 0;
+  SNAPSHOT_REASON_INITIAL = 1;
+  SNAPSHOT_REASON_SEQ_TOO_OLD = 2;
+  SNAPSHOT_REASON_SELECTOR_CHANGED = 3;
+  SNAPSHOT_REASON_SERVER_RESTART = 4;
+}
+
+message QuoteSnapshotChunk {
+  uint64 seq = 1;
+  google.protobuf.Timestamp server_time = 2;
+  // Chunked at roughly 500 instruments to stay well under the 4 MB default frame size.
+  repeated Quote quotes = 3;
+  bool is_last = 4;
+  SnapshotReason reason = 5;
+}
+
+message QuoteBatch {
+  uint64 seq = 1;
+  google.protobuf.Timestamp server_time = 2;
+  repeated QuoteDelta deltas = 3;
+}
+
+// Emitted at least every 5 seconds even when nothing changed, so the client can tell a
+// quiet market from a dead socket.
+message StreamControl {
+  uint64 seq = 1;
+  // Ticks skipped because the previous write had not completed. The server never queues
+  // unboundedly; a climbing value is what puts the client into its "degraded" state.
+  uint32 dropped_ticks = 2;
+  google.protobuf.Timestamp server_time = 3;
+}
+
+message Quote {
+  string instrument_uid = 1;
+  Decimal last_price = 2;
+  Decimal day_open = 3;
+  Decimal prev_close = 4;
+  // Fraction, not percent: 0.0742 means +7.42%.
+  Decimal day_change = 5;
+  int64 day_volume = 6;
+  Decimal day_volume_cost = 7;
+  Decimal best_bid = 8;
+  Decimal best_ask = 9;
+  TradingStatus status = 10;
+  google.protobuf.Timestamp last_trade_time = 11;
+  // DayVolume / AvgDayVolumePerMonth — the "unusual volume" measure the monitor grid
+  // renders as an in-cell bar.
+  Decimal day_vol_of_avg = 12;
+  MonthStats month = 13;
+  // Last 60 one-minute closes as basis points relative to day_open. Zigzag-packed
+  // sint32, roughly 90 bytes, versus several hundred for repeated Decimal.
+  repeated sint32 sparkline = 14;
+}
+
+// Explicit presence: an absent field means UNCHANGED, never "zero".
+//
+// This is why the fields are `optional` rather than relying on proto3 default-value
+// suppression — a price or a volume can legitimately be 0, and a sentinel-based
+// encoding cannot express the difference.
+message QuoteDelta {
+  string instrument_uid = 1;
+  optional Decimal last_price = 2;
+  optional Decimal day_change = 3;
+  optional int64 day_volume = 4;
+  optional Decimal best_bid = 5;
+  optional Decimal best_ask = 6;
+  optional TradingStatus status = 7;
+  optional google.protobuf.Timestamp last_trade_time = 8;
+  optional Decimal day_vol_of_avg = 9;
+  optional Decimal day_volume_cost = 10;
+}
+
+message MonthStats {
+  Decimal month_open = 1;
+  Decimal month_high = 2;
+  Decimal month_low = 3;
+  int64 month_volume = 4;
+  Decimal month_volume_cost = 5;
+  int64 avg_day_volume = 6;
+  Decimal avg_day_price = 7;
+  int64 yesterday_volume = 8;
+  Decimal yesterday_avg_price = 9;
+}
+
+enum CandleInterval {
+  CANDLE_INTERVAL_UNSPECIFIED = 0;
+  CANDLE_INTERVAL_ONE_MINUTE = 1;
+  CANDLE_INTERVAL_FIVE_MINUTES = 2;
+  CANDLE_INTERVAL_FIFTEEN_MINUTES = 3;
+  CANDLE_INTERVAL_ONE_HOUR = 4;
+  CANDLE_INTERVAL_ONE_DAY = 5;
+}
+
+message GetHistoryRequest {
+  string instrument_uid = 1;
+  CandleInterval interval = 2;
+  google.protobuf.Timestamp from = 3;
+  google.protobuf.Timestamp to = 4;
+}
+
+message GetHistoryResponse {
+  repeated Candle candles = 1;
+}
+
+message Candle {
+  google.protobuf.Timestamp time = 1;
+  Decimal open = 2;
+  Decimal high = 3;
+  Decimal low = 4;
+  Decimal close = 5;
+  int64 volume = 6;
+}
+
+enum ChartTheme {
+  CHART_THEME_UNSPECIFIED = 0;
+  CHART_THEME_LIGHT = 1;
+  CHART_THEME_DARK = 2;
+}
+
+message GetChartRequest {
+  string instrument_uid = 1;
+  CandleInterval interval = 2;
+  int32 width = 3;
+  int32 height = 4;
+  ChartTheme theme = 5;
+  // Optional signal to annotate on the chart, so a channel post and the inspector can
+  // show the same marked-up move.
+  int64 highlight_signal_id = 6;
+}
+
+message GetChartResponse {
+  bytes png = 1;
+  string etag = 2;
+}
