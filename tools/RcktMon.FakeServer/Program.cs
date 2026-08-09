@@ -33,6 +33,9 @@ WebApplication app = builder.Build();
 app.MapGrpcService<FakeSessionService>();
 app.MapGrpcService<FakeCatalogService>();
 app.MapGrpcService<FakeMarketDataService>();
+app.MapGrpcService<FakeSignalService>();
+app.MapGrpcService<FakeStatusService>();
+app.MapGrpcService<FakeProfileService>();
 
 app.MapGet("/", () =>
     $"RcktMon fake server — {options.InstrumentCount} instruments at {options.TicksPerSecond}/s. " +

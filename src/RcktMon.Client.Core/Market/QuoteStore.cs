@@ -24,8 +24,39 @@ namespace RcktMon.Client.Core.Market;
 /// </remarks>
 public sealed class QuoteStore : IDisposable
 {
+    /// <summary>How long the price cell stays lit after a move.</summary>
+    private static readonly TimeSpan FlashDuration = TimeSpan.FromMilliseconds(400);
+
+    /// <summary>
+    /// Minimum gap between two flashes of the same row.
+    /// </summary>
+    /// <remarks>
+    /// Without this a liquid instrument printing several times a second reads as a strobe
+    /// rather than as information, and the eye stops registering any of them.
+    /// </remarks>
+    private static readonly TimeSpan FlashThrottle = TimeSpan.FromMilliseconds(300);
+
+    /// <summary>How long a row keeps its "signalled recently" accent.</summary>
+    private static readonly TimeSpan SignalAccentWindow = TimeSpan.FromMinutes(15);
+
+    /// <summary>
+    /// How often a sparkline point is appended locally.
+    /// </summary>
+    /// <remarks>
+    /// The wire format is one point per minute, which on a synthetic or fast-forward feed
+    /// would take an hour to fill. Sampling every few seconds fills the line quickly while
+    /// still costing one small array per row per period rather than one per tick.
+    /// </remarks>
+    private static readonly TimeSpan SparklinePeriod = TimeSpan.FromSeconds(5);
+
     private readonly SourceCache<InstrumentRow, string> _rows = new(static row => row.Uid);
     private readonly ConcurrentQueue<QuotesMessage> _inbox = new();
+
+    // Rows with transient state that has to be cleared on a timer. Kept as small lists
+    // rather than scanning every row on every drain: at 2000 instruments the scan would
+    // dominate the drain even though only a handful of rows are ever lit at once.
+    private readonly List<InstrumentRow> _flashing = [];
+    private readonly List<InstrumentRow> _accented = [];
 
     private readonly Lock _sortGate = new();
     private MonitorColumn _sortColumn = MonitorColumn.DayChange;
@@ -43,11 +74,17 @@ public sealed class QuoteStore : IDisposable
     /// <summary>Server timestamp of the most recently applied message.</summary>
     public DateTimeOffset? LastServerTime { get; private set; }
 
+    /// <summary>When a quote last changed anything, used to detect a silently stale grid.</summary>
+    public DateTimeOffset? LastQuoteAt { get; private set; }
+
     /// <summary>Observable change set for the DynamicData pipeline that feeds the grid.</summary>
     public IObservable<IChangeSet<InstrumentRow, string>> Connect() => _rows.Connect();
 
     /// <summary>Current row count.</summary>
     public int Count => _rows.Count;
+
+    /// <summary>Every row currently known. Snapshot; safe to enumerate on the UI thread.</summary>
+    public IReadOnlyList<InstrumentRow> Rows => _rows.Items.ToList();
 
     /// <summary>Looks up a row by uid, or null when the instrument is not in the current selector.</summary>
     public InstrumentRow? Lookup(string uid) => _rows.Lookup(uid).ValueOrDefault();
@@ -68,11 +105,17 @@ public sealed class QuoteStore : IDisposable
     public void Enqueue(QuotesMessage message) => _inbox.Enqueue(message);
 
     /// <summary>
-    /// Applies every queued message. Call from the UI thread.
+    /// Applies every queued message and expires transient row state. Call from the UI thread.
     /// </summary>
     /// <returns>The number of messages applied, for diagnostics.</returns>
     public int Drain()
     {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+
+        // Decay first and unconditionally: a flash lit by the previous drain has to go out
+        // even in a tick where nothing new arrived.
+        DecayTransient(now);
+
         if (_inbox.IsEmpty)
         {
             return 0;
@@ -96,10 +139,10 @@ public sealed class QuoteStore : IDisposable
                 switch (message.PayloadCase)
                 {
                     case QuotesMessage.PayloadOneofCase.Snapshot:
-                        ApplySnapshot(updater, message.Snapshot, sortColumn);
+                        ApplySnapshot(updater, message.Snapshot, sortColumn, now);
                         break;
                     case QuotesMessage.PayloadOneofCase.Batch:
-                        ApplyBatch(updater, message.Batch, sortColumn);
+                        ApplyBatch(updater, message.Batch, sortColumn, now);
                         break;
                     case QuotesMessage.PayloadOneofCase.Control:
                         ApplyControl(message.Control);
@@ -132,6 +175,9 @@ public sealed class QuoteStore : IDisposable
                 row.Exchange = instrument.Exchange;
                 row.ClassCode = instrument.ClassCode;
                 row.Sector = instrument.Sector;
+                row.Isin = instrument.Isin;
+                row.Figi = instrument.Figi;
+                row.FirstCandleDate = instrument.FirstCandleDate;
                 row.LogoUrl = string.IsNullOrEmpty(instrument.LogoUrl) ? null : instrument.LogoUrl;
                 row.Lot = instrument.Lot == 0 ? 1 : instrument.Lot;
                 row.InstrumentClass = instrument.InstrumentClass;
@@ -140,13 +186,80 @@ public sealed class QuoteStore : IDisposable
         });
     }
 
+    /// <summary>
+    /// Marks an instrument as having just signalled, for the monitor's row accent.
+    /// </summary>
+    /// <remarks>
+    /// Called from the signal stream rather than the quote stream, which is why it lives
+    /// here rather than inside <see cref="Drain"/>: the accent is a property of the
+    /// instrument, and the grid is the only place it can be shown.
+    /// </remarks>
+    public void MarkSignal(string uid, DateTimeOffset firedAt)
+    {
+        if (Lookup(uid) is not { } row)
+        {
+            return;
+        }
+
+        row.LastSignalAt = firedAt;
+
+        if (!row.HasRecentSignal)
+        {
+            row.HasRecentSignal = true;
+            _accented.Add(row);
+        }
+    }
+
+    /// <summary>Marks every row stale, or clears the mark. Driven by server health.</summary>
+    public void SetStale(bool stale)
+    {
+        foreach (InstrumentRow row in _rows.Items)
+        {
+            row.IsStale = stale;
+        }
+    }
+
     /// <summary>Drops every row. Used when the selector changes or the account switches.</summary>
-    public void Clear() => _rows.Clear();
+    public void Clear()
+    {
+        _flashing.Clear();
+        _accented.Clear();
+        _rows.Clear();
+    }
+
+    /// <summary>Expires flashes and signal accents that have outlived their window.</summary>
+    private void DecayTransient(DateTimeOffset now)
+    {
+        for (int i = _flashing.Count - 1; i >= 0; i--)
+        {
+            InstrumentRow row = _flashing[i];
+            if (now - row.FlashStartedAt < FlashDuration)
+            {
+                continue;
+            }
+
+            row.Flash = 0;
+            _flashing.RemoveAt(i);
+        }
+
+        for (int i = _accented.Count - 1; i >= 0; i--)
+        {
+            InstrumentRow row = _accented[i];
+            if (row.LastSignalAt is { } at && now - at < SignalAccentWindow)
+            {
+                continue;
+            }
+
+            row.HasRecentSignal = false;
+            _accented.RemoveAt(i);
+        }
+    }
 
     private void ApplySnapshot(
         ISourceUpdater<InstrumentRow, string> updater,
         QuoteSnapshotChunk chunk,
-        MonitorColumn sortColumn)
+        MonitorColumn sortColumn,
+        DateTimeOffset now)
     {
         _snapshotUids ??= [];
 
@@ -157,7 +270,7 @@ public sealed class QuoteStore : IDisposable
             InstrumentRow row = GetOrCreate(updater, quote.InstrumentUid, quote.InstrumentUid, quote.InstrumentUid);
             decimal? before = row.GetNumericSortValue(sortColumn);
 
-            ApplyQuote(row, quote);
+            ApplyQuote(row, quote, now);
 
             SignalIfSortValueChanged(row, before, sortColumn);
         }
@@ -176,12 +289,14 @@ public sealed class QuoteStore : IDisposable
 
         LastSeq = chunk.Seq;
         LastServerTime = chunk.ServerTime?.ToDateTimeOffset();
+        LastQuoteAt = now;
     }
 
     private void ApplyBatch(
         ISourceUpdater<InstrumentRow, string> updater,
         QuoteBatch batch,
-        MonitorColumn sortColumn)
+        MonitorColumn sortColumn,
+        DateTimeOffset now)
     {
         foreach (QuoteDelta delta in batch.Deltas)
         {
@@ -196,13 +311,19 @@ public sealed class QuoteStore : IDisposable
 
             decimal? before = row.GetNumericSortValue(sortColumn);
 
-            ApplyDelta(row, delta);
+            ApplyDelta(row, delta, now);
+            AppendSparkline(row, now);
 
             SignalIfSortValueChanged(row, before, sortColumn);
         }
 
         LastSeq = batch.Seq;
         LastServerTime = batch.ServerTime?.ToDateTimeOffset();
+
+        if (batch.Deltas.Count > 0)
+        {
+            LastQuoteAt = now;
+        }
     }
 
     private void ApplyControl(StreamControl control)
@@ -229,10 +350,10 @@ public sealed class QuoteStore : IDisposable
         return created;
     }
 
-    private static void ApplyQuote(InstrumentRow row, Quote quote)
+    private void ApplyQuote(InstrumentRow row, Quote quote, DateTimeOffset now)
     {
         decimal newPrice = quote.LastPrice.ToDecimal();
-        SetPriceWithTickDirection(row, newPrice);
+        SetPriceWithTickDirection(row, newPrice, now);
 
         row.DayOpen = quote.DayOpen.ToDecimal();
         row.PrevClose = quote.PrevClose.ToDecimal();
@@ -245,20 +366,26 @@ public sealed class QuoteStore : IDisposable
         row.Status = quote.Status;
         row.LastTradeTime = quote.LastTradeTime?.ToDateTimeOffset();
 
+        if (quote.Month is not null)
+        {
+            row.Month = quote.Month;
+        }
+
         if (quote.Sparkline.Count > 0)
         {
-            row.Sparkline = [.. quote.Sparkline];
+            row.SeedSparkline(quote.Sparkline);
+            row.SparklineAppendedAt = now;
         }
     }
 
-    private static void ApplyDelta(InstrumentRow row, QuoteDelta delta)
+    private void ApplyDelta(InstrumentRow row, QuoteDelta delta, DateTimeOffset now)
     {
         // Explicit presence throughout: an absent field means unchanged. Checking
         // `HasLastPrice` rather than `!= null` matters for the scalar fields, where
         // proto3 optional generates a Has* property and zero is a legal value.
         if (delta.LastPrice is not null)
         {
-            SetPriceWithTickDirection(row, delta.LastPrice.ToDecimal());
+            SetPriceWithTickDirection(row, delta.LastPrice.ToDecimal(), now);
         }
 
         if (delta.DayChange is not null)
@@ -302,7 +429,7 @@ public sealed class QuoteStore : IDisposable
         }
     }
 
-    private static void SetPriceWithTickDirection(InstrumentRow row, decimal newPrice)
+    private void SetPriceWithTickDirection(InstrumentRow row, decimal newPrice, DateTimeOffset now)
     {
         decimal previous = row.Price;
 
@@ -310,10 +437,34 @@ public sealed class QuoteStore : IDisposable
         // every poll on an illiquid instrument — must not flash the cell.
         if (previous != 0m && newPrice != previous)
         {
-            row.LastTickDirection = newPrice > previous ? 1 : -1;
+            int direction = newPrice > previous ? 1 : -1;
+            row.LastTickDirection = direction;
+
+            if (now - row.FlashStartedAt >= FlashThrottle)
+            {
+                row.FlashStartedAt = now;
+
+                if (row.Flash == 0)
+                {
+                    _flashing.Add(row);
+                }
+
+                row.Flash = direction;
+            }
         }
 
         row.Price = newPrice;
+    }
+
+    private static void AppendSparkline(InstrumentRow row, DateTimeOffset now)
+    {
+        if (now - row.SparklineAppendedAt < SparklinePeriod)
+        {
+            return;
+        }
+
+        row.SparklineAppendedAt = now;
+        row.PushCurrentPrice();
     }
 
     private static void SignalIfSortValueChanged(InstrumentRow row, decimal? before, MonitorColumn sortColumn)

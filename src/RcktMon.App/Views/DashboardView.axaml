@@ -1,0 +1,172 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RcktMon.App.ViewModels"
+             xmlns:fmt="using:RcktMon.App.Formatting"
+             xmlns:controls="using:RcktMon.App.Controls"
+             xmlns:market="using:RcktMon.Client.Core.Market"
+             x:Class="RcktMon.App.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <UserControl.Resources>
+        <fmt:SignedPercentConverter x:Key="Percent" />
+        <fmt:CompactNumberConverter x:Key="Compact" />
+        <fmt:RelativeTimeConverter x:Key="Ago" />
+        <fmt:SignalKindConverter x:Key="KindName" />
+    </UserControl.Resources>
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="16">
+
+            <!-- ============ empty states ============ -->
+            <Border Classes="card" IsVisible="{Binding !HasData}" Padding="28">
+                <StackPanel Spacing="10" HorizontalAlignment="Center">
+                    <TextBlock Classes="h1" HorizontalAlignment="Center" Text="Подключаемся к серверу" />
+                    <TextBlock Classes="secondary" TextAlignment="Center" MaxWidth="460" TextWrapping="Wrap"
+                               Text="Как только придёт каталог инструментов и первый снимок котировок, здесь появятся сегодняшние движения." />
+                </StackPanel>
+            </Border>
+
+            <!-- ============ KPI tiles ============ -->
+            <UniformGrid Columns="5" IsVisible="{Binding HasData}">
+
+                <Border Classes="card" Margin="0,0,12,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="label" Text="Сигналов сегодня" />
+                        <TextBlock Classes="mono" FontSize="28" FontWeight="SemiBold"
+                                   Text="{Binding SignalsToday}" />
+                        <Button Classes="link" Content="Открыть ленту" Command="{Binding OpenSignalsCommand}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card" Margin="0,0,12,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="label" Text="Лидер роста" />
+                        <TextBlock FontSize="17" FontWeight="SemiBold" Text="{Binding TopGainer.Ticker}" />
+                        <TextBlock Classes="mono"
+                                   Text="{Binding TopGainer.DayChange, Converter={StaticResource Percent}}"
+                                   Foreground="{Binding TopGainer.DayChange, Converter={x:Static fmt:ChangeBucketConverter.Foreground}}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card" Margin="0,0,12,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="label" Text="Лидер падения" />
+                        <TextBlock FontSize="17" FontWeight="SemiBold" Text="{Binding TopLoser.Ticker}" />
+                        <TextBlock Classes="mono"
+                                   Text="{Binding TopLoser.DayChange, Converter={StaticResource Percent}}"
+                                   Foreground="{Binding TopLoser.DayChange, Converter={x:Static fmt:ChangeBucketConverter.Foreground}}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card" Margin="0,0,12,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="label" Text="Больше всех оборот" />
+                        <TextBlock FontSize="17" FontWeight="SemiBold" Text="{Binding MostActive.Ticker}" />
+                        <TextBlock Classes="mono"
+                                   Text="{Binding MostActive.DayVolumeCost, Converter={StaticResource Compact}}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Real information the pre-rewrite app never surfaced: where the trading
+                     day actually is, from the exchange's own schedule. -->
+                <Border Classes="card">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="label" Text="Сессия MOEX" />
+                        <TextBlock FontSize="17" FontWeight="SemiBold" Text="{Binding SessionPhase}" />
+                        <TextBlock Classes="tertiary" TextWrapping="Wrap" Text="{Binding SessionDetail}" />
+                    </StackPanel>
+                </Border>
+
+            </UniformGrid>
+
+            <!-- ============ market closed ============ -->
+            <Border Classes="card" IsVisible="{Binding IsMarketClosed}">
+                <StackPanel Spacing="4">
+                    <TextBlock Classes="h2" Text="Биржа закрыта" />
+                    <TextBlock Classes="secondary" Text="{Binding SessionDetail}" />
+                </StackPanel>
+            </Border>
+
+            <!-- ============ rockets ============ -->
+            <StackPanel Spacing="8" IsVisible="{Binding HasData}">
+                <TextBlock Classes="h2" Text="Сейчас летит" />
+
+                <ItemsControl ItemsSource="{Binding Rockets}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <Border Classes="card" Margin="0,0,12,12" Padding="14">
+                                <StackPanel Spacing="8">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock FontWeight="SemiBold" Text="{Binding Ticker}" />
+                                            <TextBlock Classes="tertiary" TextTrimming="CharacterEllipsis"
+                                                       Text="{Binding Name}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Classes="mono" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"
+                                                   Text="{Binding DayChange, Converter={StaticResource Percent}}"
+                                                   Foreground="{Binding DayChange, Converter={x:Static fmt:ChangeBucketConverter.Foreground}}" />
+                                    </Grid>
+
+                                    <controls:Sparkline Source="{Binding Sparkline}" Height="34" />
+
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Border Grid.Column="0" HorizontalAlignment="Left" CornerRadius="3"
+                                                Height="6" VerticalAlignment="Center"
+                                                Background="{DynamicResource Brush.VolumeBar}"
+                                                Width="{Binding DayVolOfAvg, Converter={x:Static fmt:VolumeBarWidthConverter.Instance}, ConverterParameter=120}" />
+                                        <TextBlock Grid.Column="1" Classes="tertiary"
+                                                   Text="{Binding DayVolOfAvg, StringFormat={}{0:N1}× объёма}" />
+                                    </Grid>
+
+                                    <Button Classes="chip" HorizontalAlignment="Stretch"
+                                            Content="Открыть в мониторе"
+                                            Command="{Binding $parent[ItemsControl].((vm:DashboardViewModel)DataContext).OpenCommand}"
+                                            CommandParameter="{Binding}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <!-- ============ recent signals strip ============ -->
+            <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Classes="h2" Text="Последние сигналы" />
+                    <Button Grid.Column="1" Classes="link" Content="Вся лента"
+                            Command="{Binding OpenSignalsCommand}" />
+                </Grid>
+
+                <TextBlock Classes="tertiary" IsVisible="{Binding !RecentSignals.Count}"
+                           Text="Сегодня сигналов ещё не было. Пороги настраиваются в разделе «Настройки»." />
+
+                <ItemsControl ItemsSource="{Binding RecentSignals}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="market:SignalEntry">
+                            <Border Classes="signalcard">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Border Grid.Column="0" Classes="accent" />
+                                    <StackPanel Grid.Column="1" Spacing="2">
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding Headline}" />
+                                        <TextBlock Classes="tertiary"
+                                                   Text="{Binding Kind, Converter={StaticResource KindName}}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2" Classes="tertiary" VerticalAlignment="Center"
+                                               Text="{Binding FiredAt, Converter={StaticResource Ago}}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

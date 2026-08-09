@@ -241,7 +241,18 @@ public sealed class FakeMarketDataService(MarketHub hub, ILogger<FakeMarketDataS
     }
 
     public override Task<GetHistoryResponse> GetHistory(GetHistoryRequest request, ServerCallContext context)
-        => Task.FromResult(new GetHistoryResponse());
+    {
+        // Range is advisory here: the inspector asks for "the last N of these", and the
+        // synthetic history is generated backwards from the live price so the chart joins
+        // up with the quote next to it.
+        int count = request.From is not null && request.To is not null
+            ? (int)(request.To.ToDateTimeOffset() - request.From.ToDateTimeOffset()).TotalMinutes
+            : 120;
+
+        var response = new GetHistoryResponse();
+        response.Candles.AddRange(hub.Market.History(request.InstrumentUid, request.Interval, count));
+        return Task.FromResult(response);
+    }
 
     public override Task<GetChartResponse> GetChart(GetChartRequest request, ServerCallContext context)
         => Task.FromResult(new GetChartResponse());

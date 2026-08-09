@@ -1,7 +1,8 @@
 using Avalonia;
 using RcktMon.App;
-using RcktMon.Client.Core.Connection;
 using RcktMon.Client.Core.Platform;
+using RcktMon.Client.Core.Security;
+using RcktMon.Client.Core.Settings;
 
 namespace RcktMon.Desktop;
 
@@ -13,7 +14,9 @@ internal static class Program
         var paths = new AppPaths();
         paths.EnsureCreated();
 
-        RcktMonApp.Settings = BuildSettings(args, paths);
+        ApplyCommandLineOverrides(args, paths);
+
+        RcktMonApp.Paths = paths;
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
@@ -25,65 +28,49 @@ internal static class Program
             .WithInterFont()
             .LogToTrace();
 
-    private static ConnectionSettings BuildSettings(string[] args, IAppPaths paths)
-    {
-        string server = Argument(args, "--server")
-            ?? Environment.GetEnvironmentVariable("RCKTMON_SERVER")
-            ?? "http://localhost:5299";
-
-        // The access key is normally read from the OS keychain. Until onboarding exists,
-        // accept it from the command line or the environment so the client can be pointed
-        // at the fake server. There is deliberately no broker token anywhere here.
-        string key = Argument(args, "--key")
-            ?? Environment.GetEnvironmentVariable("RCKTMON_KEY")
-            ?? "rm_local_development";
-
-        var uri = new Uri(server, UriKind.Absolute);
-
-        return new ConnectionSettings
-        {
-            ServerUri = uri,
-            AccessKey = key,
-            DeviceId = ResolveDeviceId(paths),
-            Locale = System.Globalization.CultureInfo.CurrentUICulture.Name,
-            AllowInsecureHttp = uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback,
-            WantMonthStats = true,
-        };
-    }
-
     /// <summary>
-    /// A stable per-installation id, so the account owner can see and revoke one machine.
+    /// Lets <c>--server</c> and <c>--key</c> point a dev build at the fake server.
     /// </summary>
     /// <remarks>
-    /// Not a secret and not derived from hardware. The pre-rewrite build keyed its
-    /// settings encryption off the Windows registry MachineGuid, which had no
-    /// cross-platform equivalent and silently wiped every stored credential elsewhere.
+    /// These write through to the same places the settings pane writes to — the settings
+    /// file and the OS keychain — rather than living in a parallel configuration path, so
+    /// there is exactly one answer to "where is the client getting its address from".
+    /// There is deliberately no broker token here or anywhere else in the client.
     /// </remarks>
-    private static string ResolveDeviceId(IAppPaths paths)
+    private static void ApplyCommandLineOverrides(string[] args, IAppPaths paths)
     {
-        string path = Path.Combine(paths.ConfigDirectory, "device-id");
+        string? server = Argument(args, "--server") ?? Environment.GetEnvironmentVariable("RCKTMON_SERVER");
+        string? key = Argument(args, "--key") ?? Environment.GetEnvironmentVariable("RCKTMON_KEY");
 
-        try
+        if (server is null && key is null)
         {
-            if (File.Exists(path))
-            {
-                string existing = File.ReadAllText(path).Trim();
-                if (Guid.TryParse(existing, out _))
-                {
-                    return existing;
-                }
-            }
+            return;
+        }
 
-            string created = Guid.NewGuid().ToString("D");
-            File.WriteAllText(path, created);
-            return created;
-        }
-        catch (IOException)
+        if (key is not null)
         {
-            // A read-only or unavailable config directory should not stop the app from
-            // starting; the server treats an unknown device id as a new install.
-            return Guid.NewGuid().ToString("D");
+            SecretStoreFactory.Create(paths.ConfigDirectory).Write(SecretKeys.AccessKey, key);
         }
+
+        if (server is null)
+        {
+            return;
+        }
+
+        using var store = new JsonFileStore<ClientSettings>(
+            Path.Combine(paths.ConfigDirectory, "settings.json"),
+            TimeSpan.Zero);
+
+        ClientSettings settings = store.Load();
+        settings.ServerAddress = server;
+
+        if (string.IsNullOrEmpty(settings.DeviceId))
+        {
+            settings.DeviceId = Guid.NewGuid().ToString("D");
+        }
+
+        store.Save(settings);
+        store.Flush();
     }
 
     private static string? Argument(string[] args, string name)

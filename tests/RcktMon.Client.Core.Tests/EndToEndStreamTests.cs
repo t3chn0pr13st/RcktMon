@@ -43,6 +43,8 @@ public sealed class EndToEndStreamTests : IAsyncLifetime
                 InstrumentCount = 120,
                 TicksPerSecond = 20,
                 Port = _port,
+                SignalBacklog = 40,
+                SignalWindowTicks = 20,
             }));
         builder.Services.AddSingleton<MarketHub>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<MarketHub>());
@@ -55,6 +57,8 @@ public sealed class EndToEndStreamTests : IAsyncLifetime
         _server.MapGrpcService<FakeSessionService>();
         _server.MapGrpcService<FakeCatalogService>();
         _server.MapGrpcService<FakeMarketDataService>();
+        _server.MapGrpcService<FakeSignalService>();
+        _server.MapGrpcService<FakeStatusService>();
 
         await _server.StartAsync();
     }
@@ -103,6 +107,41 @@ public sealed class EndToEndStreamTests : IAsyncLifetime
         }, lifetime.Token);
 
         Assert.True(store.LastSeq > seqAfterSnapshot);
+
+        await lifetime.CancelAsync();
+        await run;
+    }
+
+    [Fact]
+    public async Task Signal_history_and_server_status_reach_their_stores()
+    {
+        // The feed and the "is the market open or is our pipeline broken" distinction are
+        // both first-class product behaviour, so both get an end-to-end test rather than
+        // being assumed to work because the quote stream does.
+        using var store = new QuoteStore();
+        using var signals = new SignalStore();
+        var status = new MarketStatusStore();
+
+        await using var connection = new RcktMonConnection(
+            Settings(), store, NullLogger<RcktMonConnection>.Instance, signals, status);
+
+        using var lifetime = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        Task run = connection.RunAsync(lifetime.Token);
+
+        await WaitFor(() =>
+        {
+            signals.Drain();
+            return signals.Count > 0;
+        }, lifetime.Token);
+
+        Assert.True(signals.Count >= 40, $"expected the seeded backlog, got {signals.Count}");
+        Assert.All(signals.Recent(10), signal => Assert.False(string.IsNullOrEmpty(signal.Headline)));
+
+        await WaitFor(() => status.Drain(), lifetime.Token);
+
+        Assert.NotNull(status.Latest);
+        Assert.NotEmpty(status.Latest!.Sessions);
+        Assert.Equal(32, status.Latest.MarketData.ShardsTotal);
 
         await lifetime.CancelAsync();
         await run;

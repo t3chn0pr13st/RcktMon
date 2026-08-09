@@ -1,6 +1,7 @@
 using System.Reactive;
 using System.Reactive.Subjects;
 using CommunityToolkit.Mvvm.ComponentModel;
+using RcktMon.Protocol;
 using RcktMon.Protocol.V1;
 
 namespace RcktMon.Client.Core.Market;
@@ -23,6 +24,16 @@ namespace RcktMon.Client.Core.Market;
 public sealed partial class InstrumentRow : ObservableObject
 {
     private readonly Subject<Unit> _sortKeyChanged = new();
+
+    private readonly int[] _sparklineRing = new int[SparklineCodec.Points];
+    private int _sparklineCount;
+    private int _sparklineHead;
+
+    /// <summary>When the price cell last started flashing. Owned by <see cref="QuoteStore"/>.</summary>
+    internal DateTimeOffset FlashStartedAt;
+
+    /// <summary>When a sparkline point was last appended. Owned by <see cref="QuoteStore"/>.</summary>
+    internal DateTimeOffset SparklineAppendedAt;
 
     public InstrumentRow(string uid, string ticker, string name)
     {
@@ -60,6 +71,11 @@ public sealed partial class InstrumentRow : ObservableObject
     [ObservableProperty] private int _lot = 1;
     [ObservableProperty] private InstrumentClass _instrumentClass;
     [ObservableProperty] private bool _shortEnabled;
+    [ObservableProperty] private string _isin = string.Empty;
+    [ObservableProperty] private string _figi = string.Empty;
+
+    /// <summary>Earliest candle upstream, used to explain an empty sparkline.</summary>
+    [ObservableProperty] private string _firstCandleDate = string.Empty;
 
     // ---- live quote ----
 
@@ -81,23 +97,60 @@ public sealed partial class InstrumentRow : ObservableObject
     [ObservableProperty] private TradingStatus _status;
     [ObservableProperty] private DateTimeOffset? _lastTradeTime;
 
+    /// <summary>Monthly baselines, present only when the client asked for them.</summary>
+    [ObservableProperty] private MonthStats? _month;
+
     /// <summary>Last 60 one-minute closes as basis points relative to <see cref="DayOpen"/>.</summary>
+    /// <remarks>
+    /// Seeded from the snapshot and then extended locally from the price stream. Deltas
+    /// carry no sparkline — sending 60 points per instrument per tick would dwarf the rest
+    /// of the payload — so the client keeps its own ring and republishes it on a slow
+    /// cadence.
+    /// </remarks>
     [ObservableProperty] private int[] _sparkline = [];
 
     // ---- derived UI state ----
 
     /// <summary>
-    /// Sign of the most recent price change, for the cell flash. Reset by the view once
-    /// the animation has run; the view is also responsible for throttling it, since an
-    /// unthrottled flash on a fast mover reads as a strobe rather than as information.
+    /// Sign of the most recent price change. Persists until the next move, unlike
+    /// <see cref="Flash"/>.
     /// </summary>
     [ObservableProperty] private int _lastTickDirection;
+
+    /// <summary>
+    /// Transient flash state for the price cell: +1 up, -1 down, 0 idle.
+    /// </summary>
+    /// <remarks>
+    /// Set by <see cref="QuoteStore"/> on a real move and cleared by
+    /// <see cref="QuoteStore.DecayTransient"/> a few hundred milliseconds later. The store
+    /// also throttles it: an unthrottled flash on a fast mover is a strobe, not
+    /// information.
+    /// </remarks>
+    [ObservableProperty] private int _flash;
+
+    /// <summary>True while the price cell should be lit green.</summary>
+    public bool IsFlashUp => Flash > 0;
+
+    /// <summary>True while the price cell should be lit red.</summary>
+    public bool IsFlashDown => Flash < 0;
+
+    partial void OnFlashChanged(int value)
+    {
+        OnPropertyChanged(nameof(IsFlashUp));
+        OnPropertyChanged(nameof(IsFlashDown));
+    }
 
     /// <summary>When this instrument last produced a signal, for the row accent bar.</summary>
     [ObservableProperty] private DateTimeOffset? _lastSignalAt;
 
+    /// <summary>True while <see cref="LastSignalAt"/> is recent enough to accent the row.</summary>
+    [ObservableProperty] private bool _hasRecentSignal;
+
     /// <summary>Set when the server reports its data for this instrument as stale.</summary>
     [ObservableProperty] private bool _isStale;
+
+    /// <summary>True while the user has this instrument on their watchlist.</summary>
+    [ObservableProperty] private bool _isWatched;
 
     /// <summary>True while the instrument is not actually tradable right now.</summary>
     public bool IsInactive =>
@@ -106,7 +159,14 @@ public sealed partial class InstrumentRow : ObservableObject
             or TradingStatus.NotAvailable
             or TradingStatus.Unspecified;
 
+    /// <summary>Mid price, used where a single reference price is needed.</summary>
+    public decimal Spread => BestAsk > 0m && BestBid > 0m ? BestAsk - BestBid : 0m;
+
     partial void OnStatusChanged(TradingStatus value) => OnPropertyChanged(nameof(IsInactive));
+
+    partial void OnBestBidChanged(decimal value) => OnPropertyChanged(nameof(Spread));
+
+    partial void OnBestAskChanged(decimal value) => OnPropertyChanged(nameof(Spread));
 
     /// <summary>Reads the value the given column sorts by. Non-numeric columns return null.</summary>
     /// <remarks>
@@ -130,6 +190,64 @@ public sealed partial class InstrumentRow : ObservableObject
     };
 
     internal void RaiseSortKeyChanged() => _sortKeyChanged.OnNext(Unit.Default);
+
+    /// <summary>Replaces the sparkline ring with the server's snapshot of it.</summary>
+    internal void SeedSparkline(IReadOnlyList<int> points)
+    {
+        _sparklineCount = 0;
+        _sparklineHead = 0;
+
+        int start = Math.Max(0, points.Count - _sparklineRing.Length);
+        for (int i = start; i < points.Count; i++)
+        {
+            PushSparklinePoint(points[i]);
+        }
+
+        PublishSparkline();
+    }
+
+    /// <summary>Appends the current price to the ring, as basis points against the open.</summary>
+    internal void PushCurrentPrice()
+    {
+        if (DayOpen <= 0m)
+        {
+            return;
+        }
+
+        decimal bp = (Price - DayOpen) / DayOpen * 10_000m;
+        PushSparklinePoint((int)decimal.Round(bp, 0, MidpointRounding.AwayFromZero));
+        PublishSparkline();
+    }
+
+    private void PushSparklinePoint(int basisPoints)
+    {
+        _sparklineRing[_sparklineHead] = basisPoints;
+        _sparklineHead = (_sparklineHead + 1) % _sparklineRing.Length;
+
+        if (_sparklineCount < _sparklineRing.Length)
+        {
+            _sparklineCount++;
+        }
+    }
+
+    /// <summary>Copies the ring out oldest-first and raises a change so the cell redraws.</summary>
+    private void PublishSparkline()
+    {
+        if (_sparklineCount == 0)
+        {
+            return;
+        }
+
+        var published = new int[_sparklineCount];
+        int start = (_sparklineHead - _sparklineCount + _sparklineRing.Length) % _sparklineRing.Length;
+
+        for (int i = 0; i < _sparklineCount; i++)
+        {
+            published[i] = _sparklineRing[(start + i) % _sparklineRing.Length];
+        }
+
+        Sparkline = published;
+    }
 }
 
 /// <summary>Sortable columns of the monitor grid.</summary>

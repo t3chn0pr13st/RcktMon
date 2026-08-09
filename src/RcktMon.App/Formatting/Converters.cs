@@ -5,6 +5,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Media;
 using Avalonia.Styling;
 using RcktMon.Client.Core.Connection;
+using RcktMon.Protocol.V1;
 
 namespace RcktMon.App.Formatting;
 
@@ -187,6 +188,152 @@ public sealed class ConnectionTextConverter : IValueConverter
             _ => "Нет соединения",
         };
     }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>Resolves a resource key held in a view model into the resource itself.</summary>
+/// <remarks>
+/// View models name their rail icon by key rather than holding a <c>Geometry</c>, so they
+/// stay free of drawing types and remain testable headlessly.
+/// </remarks>
+public sealed class ResourceLookupConverter : IValueConverter
+{
+    public static ResourceLookupConverter Instance { get; } = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is not string key || Application.Current is not { } app)
+        {
+            return AvaloniaProperty.UnsetValue;
+        }
+
+        return app.TryFindResource(key, app.ActualThemeVariant, out object? resource)
+            ? resource
+            : AvaloniaProperty.UnsetValue;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>Relative time in Russian: "только что", "3 минуты назад", "вчера 14:20".</summary>
+public sealed class RelativeTimeConverter : IValueConverter
+{
+    public static RelativeTimeConverter Instance { get; } = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value switch
+        {
+            DateTimeOffset at => Humanize.Relative(at, DateTimeOffset.UtcNow),
+            DateTime at => Humanize.Relative(at, DateTimeOffset.UtcNow),
+            _ => string.Empty,
+        };
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>Trading status as a word rather than an enum name.</summary>
+public sealed class TradingStatusConverter : IValueConverter
+{
+    public static TradingStatusConverter Instance { get; } = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is TradingStatus status ? Humanize.Status(status) : string.Empty;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>Signal kind as a word.</summary>
+public sealed class SignalKindConverter : IValueConverter
+{
+    public static SignalKindConverter Instance { get; } = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is SignalKind kind ? Humanize.SignalKindName(kind) : string.Empty;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>
+/// Compares a bound value with a converter parameter, for radio-style option groups.
+/// </summary>
+/// <remarks>
+/// Avalonia has no <c>RadioButton</c> group binding to an enum, and hand-rolling one
+/// property per option is how a settings pane ends up with a dozen booleans that can
+/// disagree with each other.
+/// </remarks>
+public sealed class EnumMatchConverter : IValueConverter
+{
+    public static EnumMatchConverter Instance { get; } = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is not null && parameter is not null &&
+        string.Equals(value.ToString(), parameter.ToString(), StringComparison.Ordinal);
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        // Only the checked direction is meaningful: unchecking a radio button in a group
+        // happens as a side effect of checking another one.
+        if (value is not true || parameter is null)
+        {
+            return AvaloniaProperty.UnsetValue;
+        }
+
+        Type enumType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        return enumType.IsEnum && Enum.TryParse(enumType, parameter.ToString(), out object? parsed)
+            ? parsed
+            : AvaloniaProperty.UnsetValue;
+    }
+}
+
+/// <summary>Dims rows for instruments that are not currently tradable.</summary>
+public sealed class InactiveOpacityConverter : IValueConverter
+{
+    public static InactiveOpacityConverter Instance { get; } = new();
+
+    /// <summary>Enough to recede, not so much that the row becomes unreadable.</summary>
+    private const double Dimmed = 0.55;
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is true ? Dimmed : 1.0;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>Renders a flag as a word, because "True" in a table is not a translation.</summary>
+public sealed class YesNoConverter : IValueConverter
+{
+    public static YesNoConverter Instance { get; } = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value switch
+        {
+            true => "Да",
+            false => "Нет",
+            _ => "—",
+        };
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>Fades the watchlist star for instruments that are not starred.</summary>
+public sealed class WatchOpacityConverter : IValueConverter
+{
+    public static WatchOpacityConverter Instance { get; } = new();
+
+    /// <summary>Visible enough to be discoverable, faint enough not to read as active.</summary>
+    private const double Unwatched = 0.22;
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is true ? 1.0 : Unwatched;
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotSupportedException();

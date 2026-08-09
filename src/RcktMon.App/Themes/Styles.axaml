@@ -1,12 +1,13 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:RcktMon.App.Controls">
 
     <!--
         Control styling built entirely on the semantic tokens.
 
         Avalonia has no triggers; everything conditional here is expressed with
-        pseudo-class selectors (:pointerover, :checked, :focus-visible), which is the
-        direct replacement for the WPF build's ControlTemplate.Triggers and
+        pseudo-class selectors (:pointerover, :checked, :selected, :focus-visible), which
+        is the direct replacement for the WPF build's ControlTemplate.Triggers and
         DataTemplate.Triggers.
     -->
 
@@ -28,6 +29,22 @@
         <Setter Property="FontSize" Value="12" />
     </Style>
 
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="TextBlock.h2">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="TextBlock.label">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+
     <Style Selector="TextBlock.numeric">
         <!-- Tabular figures keep digits from shifting sideways as prices tick, which is
              what makes a fast-updating column readable instead of jittery. -->
@@ -36,7 +53,24 @@
         <Setter Property="HorizontalAlignment" Value="Right" />
     </Style>
 
-    <!-- ===== header / chrome ===== -->
+    <Style Selector="TextBlock.mono">
+        <Setter Property="FontFamily" Value="Inter, $Default" />
+        <Setter Property="FontFeatures" Value="tnum=1" />
+    </Style>
+
+    <!-- Everything focusable gets a visible ring. Keyboard users are not a special case. -->
+    <Style Selector=":is(Control):focus-visible">
+        <Setter Property="FocusAdorner">
+            <FocusAdornerTemplate>
+                <Border BorderBrush="{DynamicResource Brush.Accent}"
+                        BorderThickness="2"
+                        CornerRadius="{DynamicResource Radius.Small}"
+                        Margin="-2" />
+            </FocusAdornerTemplate>
+        </Setter>
+    </Style>
+
+    <!-- ===== chrome ===== -->
 
     <Style Selector="Border.appbar">
         <Setter Property="Background" Value="{DynamicResource Brush.Surface.2}" />
@@ -52,10 +86,75 @@
         <Setter Property="Padding" Value="14,6" />
     </Style>
 
+    <Style Selector="Border.rail">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.2}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+        <Setter Property="BorderThickness" Value="0,0,1,0" />
+    </Style>
+
     <Style Selector="Border.pill">
         <Setter Property="CornerRadius" Value="{DynamicResource Radius.Pill}" />
         <Setter Property="Padding" Value="10,4" />
         <Setter Property="Background" Value="{DynamicResource Brush.Surface.3}" />
+    </Style>
+
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.2}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Large}" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style Selector="Border.banner">
+        <Setter Property="Background" Value="{DynamicResource Brush.Warning.Muted}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Warning}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="14,8" />
+    </Style>
+
+    <Style Selector="Border.banner.error">
+        <Setter Property="Background" Value="{DynamicResource Brush.Negative.Muted}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Negative}" />
+    </Style>
+
+    <!-- ===== left rail ===== -->
+
+    <Style Selector="ListBox.rail">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="ListBox.rail ListBoxItem">
+        <Setter Property="Padding" Value="10,9" />
+        <Setter Property="Margin" Value="0,1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Medium}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
+    </Style>
+
+    <Style Selector="ListBox.rail ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.Hover}" />
+    </Style>
+
+    <Style Selector="ListBox.rail ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Accent.Muted}" />
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource Brush.Accent}" />
+    </Style>
+
+    <Style Selector="ListBox.rail ListBoxItem:selected PathIcon">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Accent}" />
+    </Style>
+
+    <!-- Collapsed rail keeps the icons and drops everything that needs width. -->
+    <Style Selector="ListBox.rail.collapsed :is(Control).raillabel">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="PathIcon.rail">
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
     </Style>
 
     <!-- ===== filter chips ===== -->
@@ -80,13 +179,65 @@
         <Setter Property="TextBlock.Foreground" Value="{DynamicResource Brush.Accent}" />
     </Style>
 
-    <!-- ===== search ===== -->
+    <Style Selector="Button.chip">
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Pill}" />
+        <Setter Property="Padding" Value="12,5" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.3}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <Style Selector="Button.chip:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.Hover}" />
+    </Style>
+
+    <!-- ===== buttons ===== -->
+
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="{DynamicResource Brush.Accent}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.OnAccent}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Medium}" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="Button.primary /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Accent}" />
+    </Style>
+
+    <Style Selector="Button.ghost">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8,5" />
+    </Style>
+
+    <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.Hover}" />
+    </Style>
+
+    <Style Selector="Button.link">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Accent}" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <!-- ===== inputs ===== -->
 
     <Style Selector="TextBox.search">
         <Setter Property="CornerRadius" Value="{DynamicResource Radius.Medium}" />
         <Setter Property="Background" Value="{DynamicResource Brush.Surface.3}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
         <Setter Property="MinWidth" Value="260" />
+    </Style>
+
+    <Style Selector="TextBox.field">
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Small}" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.3}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
     </Style>
 
     <!-- ===== grid ===== -->
@@ -117,9 +268,64 @@
         <Setter Property="Padding" Value="10,0" />
     </Style>
 
-    <!-- Instruments that are not currently tradable recede rather than disappear. -->
-    <Style Selector="DataGridRow.inactive">
-        <Setter Property="Opacity" Value="0.55" />
+    <!-- ===== price flash =====
+
+         A short tint on the price cell, thrown away by the store a few hundred
+         milliseconds later. The fade-out is a brush transition rather than an animation
+         so nothing has to be started, tracked or stopped per row.
+    -->
+    <Style Selector="Border.pricecell">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Small}" />
+        <Setter Property="Padding" Value="6,2" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.35" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Border.pricecell.flash-up">
+        <Setter Property="Background" Value="{DynamicResource Brush.Flash.Up}" />
+    </Style>
+
+    <Style Selector="Border.pricecell.flash-down">
+        <Setter Property="Background" Value="{DynamicResource Brush.Flash.Down}" />
+    </Style>
+
+    <!-- Left accent on rows that signalled recently. -->
+    <Style Selector="Border.accent">
+        <Setter Property="Width" Value="3" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Accent}" />
+        <Setter Property="Margin" Value="0,3,7,3" />
+    </Style>
+
+    <!-- ===== signals feed ===== -->
+
+    <Style Selector="Border.signalcard">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.2}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Medium}" />
+        <Setter Property="Padding" Value="14,11" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <Style Selector="Border.signalcard:pointerover">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.3}" />
+    </Style>
+
+    <Style Selector="Border.groupheader">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface.1}" />
+        <Setter Property="Padding" Value="0,10,0,6" />
+    </Style>
+
+    <!-- ===== sparkline defaults ===== -->
+
+    <Style Selector="controls|Sparkline">
+        <Setter Property="PositiveBrush" Value="{DynamicResource Brush.Positive}" />
+        <Setter Property="NegativeBrush" Value="{DynamicResource Brush.Negative}" />
     </Style>
 
 </Styles>

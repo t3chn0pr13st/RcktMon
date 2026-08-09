@@ -24,6 +24,10 @@
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.1" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.1" />
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.1.1" />
+    <!-- Real drawing in headless tests, so a rendered frame can be captured and compared
+         rather than only the visual tree being inspected. -->
+    <PackageVersion Include="Avalonia.Skia" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Headless" Version="12.1.1" />
   </ItemGroup>
 
   <ItemGroup Label="MVVM and collections">

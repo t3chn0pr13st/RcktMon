@@ -2,182 +2,153 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:RcktMon.App.ViewModels"
         xmlns:fmt="using:RcktMon.App.Formatting"
-        xmlns:market="using:RcktMon.Client.Core.Market"
         x:Class="RcktMon.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="RcktMon"
-        Width="1280" Height="800"
-        MinWidth="900" MinHeight="520"
+        Width="1360" Height="860"
+        MinWidth="1000" MinHeight="600"
         Background="{DynamicResource Brush.Surface.1}">
 
     <Window.Resources>
-        <fmt:SignedPercentConverter x:Key="Percent" />
-        <fmt:CompactNumberConverter x:Key="Compact" />
-        <fmt:VolumeBarWidthConverter x:Key="BarWidth" />
         <fmt:ConnectionTextConverter x:Key="ConnText" />
         <fmt:ConnectionBrushConverter x:Key="ConnBrush" />
+        <fmt:ResourceLookupConverter x:Key="Icon" />
     </Window.Resources>
 
-    <DockPanel>
+    <Panel>
 
-        <!-- ============ app bar ============ -->
-        <Border Classes="appbar" DockPanel.Dock="Top">
-            <Grid ColumnDefinitions="Auto,*,Auto">
+        <DockPanel>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <TextBlock Text="RcktMon" FontSize="17" FontWeight="Bold"
-                               Foreground="{DynamicResource Brush.Accent}" VerticalAlignment="Center" />
-                    <TextBlock Classes="tertiary" VerticalAlignment="Center"
-                               Text="{Binding ServerAddress}" />
-                </StackPanel>
+            <!-- ============ app bar ============ -->
+            <Border Classes="appbar" DockPanel.Dock="Top">
+                <Grid ColumnDefinitions="Auto,*,Auto">
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
-                            HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBox x:Name="SearchBox" Classes="search"
-                             PlaceholderText="Поиск по тикеру или названию   (Ctrl+K)"
-                             Text="{Binding Monitor.SearchText}" />
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Button Classes="ghost" Command="{Binding ToggleRailCommand}"
+                                AutomationProperties.Name="Свернуть или развернуть панель навигации">
+                            <PathIcon Classes="rail" Data="{DynamicResource Icon.Instruments}" />
+                        </Button>
 
-                    <ToggleButton Classes="chip" Content="Растущие"
-                                  IsChecked="{Binding Monitor.GainersOnly}"
-                                  AutomationProperties.Name="Показывать только растущие" />
-                    <ToggleButton Classes="chip" Content="Падающие"
-                                  IsChecked="{Binding Monitor.LosersOnly}"
-                                  AutomationProperties.Name="Показывать только падающие" />
-                    <Button Classes="chip" Content="Сбросить"
-                            Command="{Binding Monitor.ClearFiltersCommand}" />
-                </StackPanel>
+                        <TextBlock Text="RcktMon" FontSize="17" FontWeight="Bold"
+                                   Foreground="{DynamicResource Brush.Accent}" VerticalAlignment="Center" />
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <!-- Connection pill. Visible on every screen by design: silently stale
-                         prices are the dangerous failure mode for this product. -->
-                    <Border Classes="pill" ToolTip.Tip="{Binding Status.Detail}">
-                        <StackPanel Orientation="Horizontal" Spacing="7">
-                            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
-                                     Fill="{Binding Status, Converter={StaticResource ConnBrush}}" />
-                            <TextBlock FontSize="12" VerticalAlignment="Center"
-                                       Text="{Binding Status, Converter={StaticResource ConnText}}" />
-                        </StackPanel>
-                    </Border>
+                        <TextBlock Classes="tertiary" VerticalAlignment="Center"
+                                   Text="{Binding CurrentPage.Title}" />
+                    </StackPanel>
 
-                    <Button Classes="chip" Content="Тема"
-                            Command="{Binding ToggleThemeCommand}"
-                            AutomationProperties.Name="Переключить светлую и тёмную тему" />
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Classes="secondary" VerticalAlignment="Center"
+                                   Text="{Binding MarketPhase}" />
+                        <TextBlock Classes="tertiary" VerticalAlignment="Center"
+                                   Text="{Binding MarketCountdown}" />
+                    </StackPanel>
 
-            </Grid>
-        </Border>
-
-        <!-- ============ status bar ============ -->
-        <Border Classes="statusbar" DockPanel.Dock="Bottom">
-            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
-                <TextBlock Grid.Column="0" Classes="tertiary">
-                    <Run Text="Инструментов:" />
-                    <Run Text="{Binding Monitor.TotalCount}" />
-                </TextBlock>
-                <TextBlock Grid.Column="1" Classes="tertiary" Margin="16,0,0,0">
-                    <Run Text="Показано:" />
-                    <Run Text="{Binding Monitor.VisibleCount}" />
-                </TextBlock>
-                <TextBlock Grid.Column="3" Classes="tertiary" Text="{Binding AccountName}" />
-            </Grid>
-        </Border>
-
-        <!-- ============ monitor grid ============ -->
-        <DataGrid ItemsSource="{Binding Monitor.Rows}"
-                  IsReadOnly="True"
-                  CanUserSortColumns="False"
-                  CanUserReorderColumns="True"
-                  CanUserResizeColumns="True"
-                  SelectionMode="Single"
-                  HeadersVisibility="Column"
-                  AutoGenerateColumns="False">
-
-            <!-- Sorting is owned by the DynamicData pipeline, not the grid: the grid has
-                 no way to re-sort on property change, which is the whole point here. -->
-
-            <DataGrid.Columns>
-
-                <DataGridTemplateColumn Header="Инструмент" Width="240" CanUserSort="False">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate x:DataType="market:InstrumentRow">
-                            <StackPanel VerticalAlignment="Center" Margin="0,3">
-                                <TextBlock Text="{Binding Ticker}" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding Name}" Classes="tertiary"
-                                           TextTrimming="CharacterEllipsis" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <!-- Connection pill. Visible on every screen by design: silently stale
+                             prices are the dangerous failure mode for this product. -->
+                        <Border Classes="pill" ToolTip.Tip="{Binding Status.Detail}">
+                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                         Fill="{Binding Status, Converter={StaticResource ConnBrush}}" />
+                                <TextBlock FontSize="12" VerticalAlignment="Center"
+                                           Text="{Binding Status, Converter={StaticResource ConnText}}" />
                             </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                        </Border>
 
-                <DataGridTemplateColumn Header="Цена" Width="110" CanUserSort="False">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate x:DataType="market:InstrumentRow">
-                            <TextBlock Classes="numeric" VerticalAlignment="Center"
-                                       Text="{Binding Price, StringFormat={}{0:N2}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                        <Button Classes="chip" Content="Тема"
+                                Command="{Binding ToggleThemeCommand}"
+                                AutomationProperties.Name="Переключить светлую и тёмную тему" />
+                    </StackPanel>
 
-                <!-- The diverging colour bucket. Colour is paired with an arrow and a sign
-                     so meaning never depends on hue alone. -->
-                <DataGridTemplateColumn Header="Изм." Width="120" CanUserSort="False">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate x:DataType="market:InstrumentRow">
-                            <Border CornerRadius="4" Padding="6,2" Margin="0,2"
-                                    HorizontalAlignment="Stretch"
-                                    Background="{Binding DayChange, Converter={x:Static fmt:ChangeBucketConverter.Fill}}">
-                                <TextBlock Classes="numeric" FontWeight="SemiBold"
-                                           Text="{Binding DayChange, Converter={StaticResource Percent}}"
-                                           Foreground="{Binding DayChange, Converter={x:Static fmt:ChangeBucketConverter.Foreground}}" />
-                            </Border>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                </Grid>
+            </Border>
 
-                <DataGridTemplateColumn Header="Объём" Width="110" CanUserSort="False">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate x:DataType="market:InstrumentRow">
-                            <TextBlock Classes="numeric" VerticalAlignment="Center"
-                                       Text="{Binding DayVolume, Converter={StaticResource Compact}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+            <!-- ============ degraded / stale banner ============ -->
+            <Border Classes="banner" DockPanel.Dock="Top" IsVisible="{Binding IsStale}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="⚠" VerticalAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center"
+                               Text="Котировки не обновлялись более 10 секунд, хотя биржа открыта. Данные на экране могут быть устаревшими." />
+                    <Button Classes="link" Content="Переподключиться" Command="{Binding ReconnectCommand}" />
+                </StackPanel>
+            </Border>
 
-                <!-- "Unusual volume" as a bar, not a percentage to be parsed. -->
-                <DataGridTemplateColumn Header="× среднего" Width="140" CanUserSort="False">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate x:DataType="market:InstrumentRow">
-                            <Grid VerticalAlignment="Center" Margin="0,4">
-                                <Border HorizontalAlignment="Left" CornerRadius="3" Height="18"
-                                        Background="{DynamicResource Brush.VolumeBar}"
-                                        Width="{Binding DayVolOfAvg, Converter={StaticResource BarWidth}, ConverterParameter=110}" />
-                                <TextBlock Classes="numeric" Margin="0,0,6,0"
-                                           Text="{Binding DayVolOfAvg, StringFormat={}{0:N2}×}" />
-                            </Grid>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+            <Border Classes="banner error" DockPanel.Dock="Top"
+                    IsVisible="{Binding Status.IsTerminal}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="⛔" VerticalAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center" Text="{Binding Status.Detail}" />
+                    <Button Classes="link" Content="Открыть настройки"
+                            Command="{Binding NavigateCommand}" CommandParameter="settings" />
+                </StackPanel>
+            </Border>
 
-                <DataGridTemplateColumn Header="Валюта" Width="90" CanUserSort="False">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate x:DataType="market:InstrumentRow">
-                            <TextBlock Classes="secondary" VerticalAlignment="Center"
-                                       Text="{Binding Currency}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+            <!-- ============ status bar ============ -->
+            <Border Classes="statusbar" DockPanel.Dock="Bottom">
+                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+                    <TextBlock Grid.Column="0" Classes="tertiary" Text="{Binding ServerAddress}" />
 
-                <DataGridTemplateColumn Header="Биржа" Width="*" CanUserSort="False">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate x:DataType="market:InstrumentRow">
-                            <TextBlock Classes="secondary" VerticalAlignment="Center"
-                                       Text="{Binding Exchange}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                    <TextBlock Grid.Column="1" Classes="tertiary" Margin="16,0,0,0">
+                        <Run Text="Обновлений/с:" />
+                        <Run Text="{Binding UpdatesPerSecond}" />
+                    </TextBlock>
 
-            </DataGrid.Columns>
-        </DataGrid>
+                    <TextBlock Grid.Column="2" Classes="tertiary" Margin="16,0,0,0">
+                        <Run Text="Возраст данных:" />
+                        <Run Text="{Binding DataAge}" />
+                    </TextBlock>
 
-    </DockPanel>
+                    <TextBlock Grid.Column="4" Classes="tertiary" Margin="16,0,0,0">
+                        <Run Text="Сигналов сегодня:" />
+                        <Run Text="{Binding SignalsToday}" />
+                    </TextBlock>
+
+                    <TextBlock Grid.Column="5" Classes="tertiary" Margin="16,0,0,0"
+                               Text="{Binding AccountName}" />
+                </Grid>
+            </Border>
+
+            <!-- ============ rail + page ============ -->
+            <Grid ColumnDefinitions="Auto,*">
+
+                <Border Grid.Column="0" Classes="rail" Width="{Binding RailWidth}">
+                    <ListBox Classes="rail"
+                             Classes.collapsed="{Binding !IsRailExpanded}"
+                             ItemsSource="{Binding Pages}"
+                             SelectedItem="{Binding CurrentPage}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PageViewModel">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ToolTip.Tip="{Binding Title}">
+                                    <PathIcon Grid.Column="0" Classes="rail"
+                                              Data="{Binding IconKey, Converter={StaticResource Icon}}" />
+                                    <TextBlock Grid.Column="1" Classes="raillabel" Margin="12,0,0,0"
+                                               VerticalAlignment="Center" Text="{Binding Title}" />
+                                    <Border Grid.Column="2" Classes="pill raillabel" Padding="6,1"
+                                            IsVisible="{Binding HasBadge}">
+                                        <TextBlock FontSize="11" Text="{Binding Badge}" />
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+
+                <!-- Pages are kept alive, so switching back restores scroll and selection. -->
+                <TransitioningContentControl Grid.Column="1" Content="{Binding CurrentPage}">
+                    <TransitioningContentControl.PageTransition>
+                        <CrossFade Duration="0:0:0.12" />
+                    </TransitioningContentControl.PageTransition>
+                </TransitioningContentControl>
+
+            </Grid>
+
+        </DockPanel>
+
+        <!-- ============ first-run onboarding ============ -->
+        <ContentControl Content="{Binding Onboarding}"
+                        IsVisible="{Binding IsOnboarding}"
+                        Background="{DynamicResource Brush.Surface.1}" />
+
+    </Panel>
 </Window>

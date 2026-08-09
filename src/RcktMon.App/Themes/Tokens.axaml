@@ -13,7 +13,7 @@
         individually. Every bucket below clears 4.5:1 against its own surface.
 
         Colour is never the only channel — the grid pairs these with an arrow glyph and a
-        signed number. A colour-blind-safe palette swaps this whole dictionary at runtime.
+        signed number. Themes/ColourBlind.axaml swaps this palette for a blue/orange one.
     -->
 
     <ResourceDictionary.ThemeDictionaries>
@@ -31,6 +31,7 @@
             <SolidColorBrush x:Key="Brush.Text.Primary" Color="#E8EAED" />
             <SolidColorBrush x:Key="Brush.Text.Secondary" Color="#A0A7B4" />
             <SolidColorBrush x:Key="Brush.Text.Tertiary" Color="#6C7480" />
+            <SolidColorBrush x:Key="Brush.Text.OnAccent" Color="#14161A" />
 
             <!-- Brand orange, carried over from the WPF build for continuity. -->
             <SolidColorBrush x:Key="Brush.Accent" Color="#FF7A18" />
@@ -39,6 +40,8 @@
             <SolidColorBrush x:Key="Brush.Positive" Color="#22E06E" />
             <SolidColorBrush x:Key="Brush.Negative" Color="#FF3B3B" />
             <SolidColorBrush x:Key="Brush.Warning" Color="#F5A524" />
+            <SolidColorBrush x:Key="Brush.Warning.Muted" Color="#26F5A524" />
+            <SolidColorBrush x:Key="Brush.Negative.Muted" Color="#26FF3B3B" />
 
             <!-- Diverging change ramp: saturation carries magnitude on a dark surface. -->
             <SolidColorBrush x:Key="Brush.Chg.Up.4" Color="#22E06E" />
@@ -80,6 +83,7 @@
             <SolidColorBrush x:Key="Brush.Text.Primary" Color="#16181D" />
             <SolidColorBrush x:Key="Brush.Text.Secondary" Color="#545B66" />
             <SolidColorBrush x:Key="Brush.Text.Tertiary" Color="#79808B" />
+            <SolidColorBrush x:Key="Brush.Text.OnAccent" Color="#FFFFFF" />
 
             <SolidColorBrush x:Key="Brush.Accent" Color="#C2540A" />
             <SolidColorBrush x:Key="Brush.Accent.Muted" Color="#22C2540A" />
@@ -87,6 +91,8 @@
             <SolidColorBrush x:Key="Brush.Positive" Color="#14532D" />
             <SolidColorBrush x:Key="Brush.Negative" Color="#7F1D1D" />
             <SolidColorBrush x:Key="Brush.Warning" Color="#92400E" />
+            <SolidColorBrush x:Key="Brush.Warning.Muted" Color="#1E92400E" />
+            <SolidColorBrush x:Key="Brush.Negative.Muted" Color="#1E7F1D1D" />
 
             <!-- On a light surface, magnitude reads as depth rather than brightness. -->
             <SolidColorBrush x:Key="Brush.Chg.Up.4" Color="#14532D" />
@@ -118,13 +124,29 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <!-- Non-colour tokens: shared across variants. -->
-    <x:Double x:Key="Size.Row.Compact">26</x:Double>
-    <x:Double x:Key="Size.Row.Comfortable">34</x:Double>
+    <x:Double x:Key="Size.Row.Compact">28</x:Double>
+    <x:Double x:Key="Size.Row.Comfortable">36</x:Double>
     <x:Double x:Key="Size.Rail.Expanded">208</x:Double>
     <x:Double x:Key="Size.Rail.Collapsed">56</x:Double>
     <CornerRadius x:Key="Radius.Small">4</CornerRadius>
     <CornerRadius x:Key="Radius.Medium">8</CornerRadius>
+    <CornerRadius x:Key="Radius.Large">12</CornerRadius>
     <CornerRadius x:Key="Radius.Pill">999</CornerRadius>
     <Thickness x:Key="Space.Panel">16</Thickness>
+
+    <!--
+        Rail and page icons.
+
+        Fill-only geometry rather than an icon font: a font is another asset to license,
+        ship and fall back from, and seven shapes do not justify one.
+    -->
+    <StreamGeometry x:Key="Icon.Dashboard">M3,3 H10 V10 H3 Z M14,3 H21 V8 H14 Z M14,12 H21 V21 H14 Z M3,14 H10 V21 H3 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Monitor">M4,13 H8 V20 H4 Z M10,6 H14 V20 H10 Z M16,10 H20 V20 H16 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Signals">M13,2 L4,14 H11 L10,22 L20,9 H13 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Instruments">M3,5 H21 V7 H3 Z M3,11 H21 V13 H3 Z M3,17 H21 V19 H3 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Settings">M4,6 H20 V8 H4 Z M7,3.5 H9 V10.5 H7 Z M4,16 H20 V18 H4 Z M15,13.5 H17 V20.5 H15 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Star">M12,2.5 L14.9,8.6 L21.5,9.5 L16.7,14.1 L17.9,20.7 L12,17.6 L6.1,20.7 L7.3,14.1 L2.5,9.5 L9.1,8.6 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Close">M6,7.4 L7.4,6 L12,10.6 L16.6,6 L18,7.4 L13.4,12 L18,16.6 L16.6,18 L12,13.4 L7.4,18 L6,16.6 L10.6,12 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Search">M10,3 A7,7 0 1 0 10,17 A7,7 0 1 0 10,3 Z M10,5 A5,5 0 1 1 10,15 A5,5 0 1 1 10,5 Z M15.5,14 L21,19.5 L19.5,21 L14,15.5 Z</StreamGeometry>
 
 </ResourceDictionary>

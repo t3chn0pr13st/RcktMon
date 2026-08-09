@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/RcktMon.Client.Core.Tests/RcktMon.Client.Core.Tests.csproj" />
+    <Project Path="tests/RcktMon.App.UiTests/RcktMon.App.UiTests.csproj" />
     <Project Path="tests/RcktMon.Protocol.Tests/RcktMon.Protocol.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">

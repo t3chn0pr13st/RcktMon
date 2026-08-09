@@ -10,7 +10,8 @@ using RcktMon.Protocol.V1;
 namespace RcktMon.Client.Core.Connection;
 
 /// <summary>
-/// Owns the gRPC channel and keeps a quote stream alive for as long as the app is running.
+/// Owns the gRPC channel and keeps the quote, signal and status streams alive for as long
+/// as the app is running.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -21,6 +22,11 @@ namespace RcktMon.Client.Core.Connection;
 /// snapshot. A transport that silently drops in-flight messages on reconnect would lose
 /// alerts without anyone noticing, which is the worst failure this product can have.
 /// </para>
+/// <para>
+/// The three streams live and die together. That is deliberate: they share one channel, a
+/// failure on one almost always means the connection is gone, and a client showing live
+/// quotes next to a frozen signal feed would be lying about which alerts have fired.
+/// </para>
 /// </remarks>
 public sealed class RcktMonConnection : IAsyncDisposable
 {
@@ -30,30 +36,49 @@ public sealed class RcktMonConnection : IAsyncDisposable
     /// <summary>How long quotes may go unrefreshed before the connection counts as degraded.</summary>
     private static readonly TimeSpan StaleAfter = TimeSpan.FromSeconds(10);
 
+    /// <summary>How far back the signal feed is backfilled on the first connection.</summary>
+    private static readonly TimeSpan HistoryWindow = TimeSpan.FromDays(3);
+
     private readonly ConnectionSettings _settings;
     private readonly QuoteStore _store;
+    private readonly SignalStore? _signals;
+    private readonly MarketStatusStore? _status;
     private readonly ILogger<RcktMonConnection> _logger;
-    private readonly BehaviorSubject<ConnectionStatus> _status = new(new ConnectionStatus(ConnectionState.Disconnected));
+    private readonly BehaviorSubject<ConnectionStatus> _state = new(new ConnectionStatus(ConnectionState.Disconnected));
 
     private GrpcChannel? _channel;
     private string _catalogEtag = string.Empty;
     private uint _lastDroppedTicks;
+    private bool _historyLoaded;
 
-    public RcktMonConnection(ConnectionSettings settings, QuoteStore store, ILogger<RcktMonConnection> logger)
+    public RcktMonConnection(
+        ConnectionSettings settings,
+        QuoteStore store,
+        ILogger<RcktMonConnection> logger,
+        SignalStore? signals = null,
+        MarketStatusStore? status = null)
     {
         _settings = settings;
         _store = store;
         _logger = logger;
+        _signals = signals;
+        _status = status;
     }
 
     /// <summary>Current and subsequent connection states.</summary>
-    public IObservable<ConnectionStatus> Status => _status;
+    public IObservable<ConnectionStatus> Status => _state;
 
     /// <summary>The most recent state, for callers that just want to read it once.</summary>
-    public ConnectionStatus CurrentStatus => _status.Value;
+    public ConnectionStatus CurrentStatus => _state.Value;
 
     /// <summary>Server handshake result, available once connected at least once.</summary>
     public HelloResponse? Session { get; private set; }
+
+    /// <summary>Alert-profile calls, available once connected.</summary>
+    public ProfileClient? Profiles { get; private set; }
+
+    /// <summary>Candle history for the inspector chart, available once connected.</summary>
+    public HistoryClient? History { get; private set; }
 
     /// <summary>True when the server advertised the given capability for this account.</summary>
     public bool Can(string capability) => Session?.Capabilities.Contains(capability) is true;
@@ -103,6 +128,8 @@ public sealed class RcktMonConnection : IAsyncDisposable
                 failure = ex is RpcException rpcEx ? rpcEx.Status.Detail : ex.Message;
             }
 
+            _status?.Reset();
+
             TimeSpan delay = Backoff(++attempt);
             Publish(ConnectionState.Reconnecting, failure, delay);
 
@@ -125,8 +152,47 @@ public sealed class RcktMonConnection : IAsyncDisposable
         CallInvoker invoker = channel.Intercept(new AuthInterceptor(_settings));
 
         await HandshakeAsync(invoker, ct).ConfigureAwait(false);
+
+        Profiles = new ProfileClient(invoker);
+        History = new HistoryClient(invoker);
+
         await LoadCatalogAsync(invoker, ct).ConfigureAwait(false);
-        await StreamQuotesAsync(invoker, ct).ConfigureAwait(false);
+        await LoadSignalHistoryAsync(invoker, ct).ConfigureAwait(false);
+
+        // One cancellation source for all three streams: whichever fails first takes the
+        // others down, and the supervisor restarts the whole set together.
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct);
+
+        var streams = new List<Task> { StreamQuotesAsync(invoker, linked.Token) };
+
+        if (_signals is not null)
+        {
+            streams.Add(StreamSignalsAsync(invoker, linked.Token));
+        }
+
+        if (_status is not null)
+        {
+            streams.Add(StreamStatusAsync(invoker, linked.Token));
+        }
+
+        await Task.WhenAny(streams).ConfigureAwait(false);
+        await linked.CancelAsync().ConfigureAwait(false);
+
+        // Observe every task so none of them faults unobserved, but let a real failure
+        // through: cancellation of the siblings is expected and carries no information.
+        foreach (Task stream in streams)
+        {
+            try
+            {
+                await stream.ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (RpcException rpc) when (rpc.StatusCode == StatusCode.Cancelled)
+            {
+            }
+        }
     }
 
     private async Task HandshakeAsync(CallInvoker invoker, CancellationToken ct)
@@ -186,6 +252,39 @@ public sealed class RcktMonConnection : IAsyncDisposable
         _logger.LogInformation("Catalog loaded: {Count} instruments ({Etag})", batch.Count, _catalogEtag);
     }
 
+    /// <summary>
+    /// Backfills the signal feed once, so it does not start empty on a fresh launch.
+    /// </summary>
+    /// <remarks>
+    /// Only on the first successful connection. Reconnects resume from the last applied
+    /// id instead, which is both cheaper and gapless.
+    /// </remarks>
+    private async Task LoadSignalHistoryAsync(CallInvoker invoker, CancellationToken ct)
+    {
+        if (_signals is null || _historyLoaded || !Can(Capabilities.SignalHistory))
+        {
+            return;
+        }
+
+        var client = new SignalService.SignalServiceClient(invoker);
+
+        ListSignalsResponse response = await client.ListSignalsAsync(
+            new ListSignalsRequest
+            {
+                From = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(
+                    DateTimeOffset.UtcNow - HistoryWindow),
+                To = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow),
+                PageSize = 500,
+            },
+            cancellationToken: ct).ConfigureAwait(false);
+
+        _signals.EnqueueRange(response.Signals);
+        _historyLoaded = true;
+
+        _logger.LogInformation(
+            "Signal history loaded: {Count} of {Total}", response.Signals.Count, response.TotalCount);
+    }
+
     private async Task StreamQuotesAsync(CallInvoker invoker, CancellationToken ct)
     {
         var marketData = new MarketDataService.MarketDataServiceClient(invoker);
@@ -225,6 +324,35 @@ public sealed class RcktMonConnection : IAsyncDisposable
             {
                 Publish(ConnectionState.Connected);
             }
+        }
+    }
+
+    private async Task StreamSignalsAsync(CallInvoker invoker, CancellationToken ct)
+    {
+        var client = new SignalService.SignalServiceClient(invoker);
+
+        using AsyncServerStreamingCall<Signal> call = client.StreamSignals(
+            new StreamSignalsRequest { SinceId = _signals!.LastId },
+            cancellationToken: ct);
+
+        _logger.LogInformation("Signal stream open (since id {Id})", _signals.LastId);
+
+        await foreach (Signal signal in call.ResponseStream.ReadAllAsync(ct).ConfigureAwait(false))
+        {
+            _signals.Enqueue(signal);
+        }
+    }
+
+    private async Task StreamStatusAsync(CallInvoker invoker, CancellationToken ct)
+    {
+        var client = new StatusService.StatusServiceClient(invoker);
+
+        using AsyncServerStreamingCall<ServerStatus> call =
+            client.StreamStatus(new StreamStatusRequest(), cancellationToken: ct);
+
+        await foreach (ServerStatus status in call.ResponseStream.ReadAllAsync(ct).ConfigureAwait(false))
+        {
+            _status!.Enqueue(status);
         }
     }
 
@@ -310,16 +438,16 @@ public sealed class RcktMonConnection : IAsyncDisposable
         var next = new ConnectionStatus(state, detail, retryIn);
 
         // Avoid waking the UI on every heartbeat when nothing actually changed.
-        if (_status.Value != next)
+        if (_state.Value != next)
         {
-            _status.OnNext(next);
+            _state.OnNext(next);
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        _status.OnCompleted();
-        _status.Dispose();
+        _state.OnCompleted();
+        _state.Dispose();
 
         if (_channel is not null)
         {

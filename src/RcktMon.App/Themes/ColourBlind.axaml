@@ -1,0 +1,77 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Colour-blind-safe palette: blue for up, orange for down.
+
+        Merged over Tokens.axaml when the setting is on, so only the hues that carry
+        direction are replaced and every surface, border and text colour stays put.
+
+        Red/green is the single most common confusion, and it is exactly the pair a
+        market app reaches for first. Blue/orange separates cleanly under deuteranopia
+        and protanopia and stays distinguishable in greyscale, which also helps anyone
+        reading a screenshot. The arrow glyph and the sign are still there either way —
+        this palette is a second channel, not a replacement for the first.
+    -->
+
+    <ResourceDictionary.ThemeDictionaries>
+
+        <ResourceDictionary x:Key="Dark">
+
+            <SolidColorBrush x:Key="Brush.Positive" Color="#4CA6FF" />
+            <SolidColorBrush x:Key="Brush.Negative" Color="#FF9E3D" />
+
+            <SolidColorBrush x:Key="Brush.Chg.Up.4" Color="#4CA6FF" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.3" Color="#6FB6FF" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.2" Color="#8FC6FF" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.1" Color="#AFD5FF" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.1" Color="#FFD5AF" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.2" Color="#FFC48F" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.3" Color="#FFB166" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.4" Color="#FF9E3D" />
+
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.4" Color="#334CA6FF" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.3" Color="#264CA6FF" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.2" Color="#1A4CA6FF" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.1" Color="#0F4CA6FF" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.1" Color="#0FFF9E3D" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.2" Color="#1AFF9E3D" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.3" Color="#26FF9E3D" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.4" Color="#33FF9E3D" />
+
+            <SolidColorBrush x:Key="Brush.Flash.Up" Color="#404CA6FF" />
+            <SolidColorBrush x:Key="Brush.Flash.Down" Color="#40FF9E3D" />
+
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Light">
+
+            <SolidColorBrush x:Key="Brush.Positive" Color="#0B4A80" />
+            <SolidColorBrush x:Key="Brush.Negative" Color="#8A4200" />
+
+            <SolidColorBrush x:Key="Brush.Chg.Up.4" Color="#0B4A80" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.3" Color="#175F9C" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.2" Color="#226FB2" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.1" Color="#2C7CC2" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.1" Color="#C06A18" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.2" Color="#AD5C10" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.3" Color="#9B4E08" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.4" Color="#8A4200" />
+
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.4" Color="#260B4A80" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.3" Color="#1C0B4A80" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.2" Color="#120B4A80" />
+            <SolidColorBrush x:Key="Brush.Chg.Up.Fill.1" Color="#0A0B4A80" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.1" Color="#0A8A4200" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.2" Color="#128A4200" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.3" Color="#1C8A4200" />
+            <SolidColorBrush x:Key="Brush.Chg.Down.Fill.4" Color="#268A4200" />
+
+            <SolidColorBrush x:Key="Brush.Flash.Up" Color="#300B4A80" />
+            <SolidColorBrush x:Key="Brush.Flash.Down" Color="#308A4200" />
+
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

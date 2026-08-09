@@ -1,9 +1,14 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:app="using:RcktMon.App"
              x:Class="RcktMon.App.RcktMonApp"
              RequestedThemeVariant="Default">
 
     <!-- Default follows the OS. Both variants are fully specified in Tokens.axaml. -->
+
+    <Application.DataTemplates>
+        <app:ViewLocator />
+    </Application.DataTemplates>
 
     <Application.Styles>
         <FluentTheme />

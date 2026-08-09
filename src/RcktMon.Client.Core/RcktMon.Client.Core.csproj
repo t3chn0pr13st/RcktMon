@@ -15,6 +15,8 @@
     <PackageReference Include="Grpc.Net.Client" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <!-- DPAPI backend for ISecretStore. No-ops off Windows; the factory picks another. -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
   </ItemGroup>
 
   <ItemGroup>

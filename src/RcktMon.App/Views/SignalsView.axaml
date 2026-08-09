@@ -1,0 +1,173 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RcktMon.App.ViewModels"
+             xmlns:fmt="using:RcktMon.App.Formatting"
+             xmlns:market="using:RcktMon.Client.Core.Market"
+             x:Class="RcktMon.App.Views.SignalsView"
+             x:DataType="vm:SignalsViewModel">
+
+    <UserControl.Resources>
+        <fmt:SignedPercentConverter x:Key="Percent" />
+        <fmt:CompactNumberConverter x:Key="Compact" />
+        <fmt:RelativeTimeConverter x:Key="Ago" />
+        <fmt:SignalKindConverter x:Key="KindName" />
+        <fmt:EnumMatchConverter x:Key="EnumIs" />
+    </UserControl.Resources>
+
+    <UserControl.DataTemplates>
+
+        <!-- Cards, not grid rows. A signal is a sentence; a grid makes the reader
+             reassemble it from eight columns every single time. -->
+        <DataTemplate DataType="market:SignalEntry">
+            <Border Classes="signalcard">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+
+                    <Border Grid.Column="0" Width="4" CornerRadius="2" Margin="0,2"
+                            Background="{Binding PriceChange, Converter={x:Static fmt:ChangeBucketConverter.Foreground}}" />
+
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock FontSize="14" TextWrapping="Wrap" Text="{Binding Headline}" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock Classes="tertiary" Text="{Binding Kind, Converter={StaticResource KindName}}" />
+                            <TextBlock Classes="tertiary" Text="{Binding Currency}" />
+                            <TextBlock Classes="tertiary">
+                                <Run Text="объём" />
+                                <Run Text="{Binding Volume, Converter={StaticResource Compact}}" />
+                            </TextBlock>
+                            <TextBlock Classes="tertiary">
+                                <Run Text="за день" />
+                                <Run Text="{Binding DayChange, Converter={StaticResource Percent}}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Right">
+                        <TextBlock Classes="tertiary" HorizontalAlignment="Right"
+                                   ToolTip.Tip="{Binding FiredAt}"
+                                   Text="{Binding FiredAt, Converter={StaticResource Ago}}" />
+                        <Button Classes="chip" Content="В монитор"
+                                Command="{Binding $parent[UserControl].((vm:SignalsViewModel)DataContext).OpenInstrumentCommand}"
+                                CommandParameter="{Binding}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="vm:SignalGroupHeader">
+            <Border Classes="groupheader">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Classes="h2" Text="{Binding Title}" />
+                    <TextBlock Classes="tertiary" VerticalAlignment="Bottom" Text="{Binding Count}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+    </UserControl.DataTemplates>
+
+    <DockPanel>
+
+        <!-- ============ filters ============ -->
+        <Border DockPanel.Dock="Left" Width="230"
+                Background="{DynamicResource Brush.Surface.2}"
+                BorderBrush="{DynamicResource Brush.Border}"
+                BorderThickness="0,0,1,0">
+            <StackPanel Margin="14" Spacing="14">
+
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="label" Text="Поиск" />
+                    <TextBox Classes="field" PlaceholderText="Тикер или текст"
+                             Text="{Binding SearchText}" />
+                </StackPanel>
+
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="label" Text="Период" />
+                    <StackPanel Spacing="2">
+                        <RadioButton GroupName="range" Content="Сегодня"
+                                     IsChecked="{Binding Range, Converter={StaticResource EnumIs}, ConverterParameter=Today}" />
+                        <RadioButton GroupName="range" Content="Два дня"
+                                     IsChecked="{Binding Range, Converter={StaticResource EnumIs}, ConverterParameter=TwoDays}" />
+                        <RadioButton GroupName="range" Content="Всё, что есть"
+                                     IsChecked="{Binding Range, Converter={StaticResource EnumIs}, ConverterParameter=All}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="label" Text="Тип сигнала" />
+                    <ItemsControl ItemsSource="{Binding Kinds}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FilterChip">
+                                <CheckBox Content="{Binding Label}" IsChecked="{Binding IsSelected}"
+                                          Click="OnFilterChanged" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel Spacing="6" IsVisible="{Binding Currencies.Count}">
+                    <TextBlock Classes="label" Text="Валюта" />
+                    <ItemsControl ItemsSource="{Binding Currencies}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FilterChip">
+                                <CheckBox Content="{Binding Label}" IsChecked="{Binding IsSelected}"
+                                          Click="OnFilterChanged" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <Button Classes="chip" HorizontalAlignment="Stretch" Content="Сбросить"
+                        Command="{Binding ClearFiltersCommand}" />
+            </StackPanel>
+        </Border>
+
+        <!-- ============ header ============ -->
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="20,16,20,8">
+            <StackPanel Grid.Column="0" Spacing="2">
+                <TextBlock Classes="h1" Text="Сигналы" />
+                <TextBlock Classes="tertiary">
+                    <Run Text="Найдено:" />
+                    <Run Text="{Binding MatchCount}" />
+                    <Run Text="· сегодня:" />
+                    <Run Text="{Binding TodayCount}" />
+                </TextBlock>
+            </StackPanel>
+
+            <!-- Freezing the feed is what makes a fast-moving list readable. -->
+            <ToggleButton Grid.Column="1" Classes="chip" Content="Live"
+                          IsChecked="{Binding IsLive}"
+                          ToolTip.Tip="Когда выключено, лента не перестраивается — удобно, чтобы прочитать карточку."
+                          AutomationProperties.Name="Живое обновление ленты" />
+        </Grid>
+
+        <!-- ============ feed ============ -->
+        <Panel Margin="20,0,20,16">
+            <ListBox ItemsSource="{Binding Items}"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     SelectionMode="Single">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10"
+                        MaxWidth="420" IsVisible="{Binding IsEmpty}">
+                <TextBlock Classes="h2" HorizontalAlignment="Center" Text="Пока пусто" />
+                <TextBlock Classes="secondary" TextAlignment="Center" TextWrapping="Wrap"
+                           Text="Сигналов, подходящих под фильтры, нет. Попробуйте расширить период или снять фильтры."
+                           IsVisible="{Binding IsFilteredEmpty}" />
+                <TextBlock Classes="secondary" TextAlignment="Center" TextWrapping="Wrap"
+                           Text="Как только сработает первое правило, оповещение появится здесь и придёт в Telegram."
+                           IsVisible="{Binding !IsFilteredEmpty}" />
+                <Button Classes="primary" HorizontalAlignment="Center" Content="Сбросить фильтры"
+                        Command="{Binding ClearFiltersCommand}"
+                        IsVisible="{Binding IsFilteredEmpty}" />
+            </StackPanel>
+        </Panel>
+
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,404 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RcktMon.App.ViewModels"
+             xmlns:fmt="using:RcktMon.App.Formatting"
+             xmlns:controls="using:RcktMon.App.Controls"
+             xmlns:market="using:RcktMon.Client.Core.Market"
+             xmlns:settings="using:RcktMon.Client.Core.Settings"
+             x:Class="RcktMon.App.Views.MonitorView"
+             x:DataType="vm:MonitorViewModel">
+
+    <UserControl.Resources>
+        <fmt:SignedPercentConverter x:Key="Percent" />
+        <fmt:CompactNumberConverter x:Key="Compact" />
+        <fmt:VolumeBarWidthConverter x:Key="BarWidth" />
+        <fmt:TradingStatusConverter x:Key="StatusText" />
+        <fmt:RelativeTimeConverter x:Key="Ago" />
+        <fmt:InactiveOpacityConverter x:Key="InactiveOpacity" />
+        <fmt:WatchOpacityConverter x:Key="WatchOpacity" />
+    </UserControl.Resources>
+
+    <DockPanel>
+
+        <!-- ============ toolbar ============ -->
+        <StackPanel DockPanel.Dock="Top" Margin="14,12,14,8" Spacing="8">
+
+            <Grid ColumnDefinitions="*,Auto">
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                    <TextBox x:Name="SearchBox" Classes="search" Width="280"
+                             PlaceholderText="Тикер или название   (Ctrl+K)"
+                             Text="{Binding SearchText}"
+                             AutomationProperties.Name="Поиск инструмента" />
+
+                    <ComboBox Width="180" ItemsSource="{Binding Views}"
+                              SelectedItem="{Binding SelectedView}"
+                              AutomationProperties.Name="Сохранённые виды">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="settings:SavedView">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Button Classes="chip" Content="Применить"
+                            Command="{Binding ApplyViewCommand}"
+                            CommandParameter="{Binding SelectedView}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <ToggleButton Classes="chip" Content="Графики"
+                                  IsChecked="{Binding ShowSparklines}"
+                                  ToolTip.Tip="Спарклайны в отдельной колонке. Самая дорогая ячейка в гриде, поэтому выключены по умолчанию."
+                                  AutomationProperties.Name="Показывать спарклайны" />
+
+                    <ToggleButton Classes="chip" Content="Плотно"
+                                  IsChecked="{Binding CompactDensity}"
+                                  AutomationProperties.Name="Компактная плотность строк" />
+
+                    <Button Classes="chip" Content="Колонки">
+                        <Button.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedRight">
+                                <StackPanel Width="240" Spacing="6">
+                                    <TextBlock Classes="h2" Text="Колонки" />
+
+                                    <ItemsControl ItemsSource="{Binding Columns}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:MonitorColumnState">
+                                                <CheckBox Content="{Binding Header}"
+                                                          IsChecked="{Binding IsVisible}"
+                                                          IsEnabled="{Binding CanHide}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Button Classes="chip" Content="Сбросить"
+                                            Command="{Binding ResetColumnsCommand}" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+
+                    <Button Classes="chip" Content="Сохранить вид">
+                        <Button.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedRight">
+                                <StackPanel Width="260" Spacing="8">
+                                    <TextBlock Classes="label"
+                                               Text="Фильтры, сортировка и колонки сохраняются под именем" />
+                                    <TextBox Classes="field" PlaceholderText="Название вида"
+                                             Text="{Binding NewViewName}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Classes="primary" Content="Сохранить"
+                                                Command="{Binding SaveViewCommand}" />
+                                        <Button Classes="chip" Content="Удалить текущий"
+                                                Command="{Binding DeleteViewCommand}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- filter chips: OR inside a category, AND across categories -->
+            <WrapPanel Orientation="Horizontal">
+                <ToggleButton Classes="chip" Margin="0,0,6,6" IsChecked="{Binding GainersOnly}">
+                    <TextBlock>
+                        <Run Text="Растущие" /><Run Text=" · " /><Run Text="{Binding GainersCount}" />
+                    </TextBlock>
+                </ToggleButton>
+
+                <ToggleButton Classes="chip" Margin="0,0,6,6" IsChecked="{Binding LosersOnly}">
+                    <TextBlock>
+                        <Run Text="Падающие" /><Run Text=" · " /><Run Text="{Binding LosersCount}" />
+                    </TextBlock>
+                </ToggleButton>
+
+                <ToggleButton Classes="chip" Margin="0,0,6,6" IsChecked="{Binding UnusualVolumeOnly}">
+                    <TextBlock>
+                        <Run Text="Объём выше среднего" /><Run Text=" · " /><Run Text="{Binding UnusualVolumeCount}" />
+                    </TextBlock>
+                </ToggleButton>
+
+                <ToggleButton Classes="chip" Margin="0,0,6,6" IsChecked="{Binding SignalledOnly}">
+                    <TextBlock>
+                        <Run Text="Сигналили сегодня" /><Run Text=" · " /><Run Text="{Binding SignalledCount}" />
+                    </TextBlock>
+                </ToggleButton>
+
+                <ToggleButton Classes="chip" Margin="0,0,6,6" IsChecked="{Binding WatchlistOnly}">
+                    <TextBlock>
+                        <Run Text="Мой список" /><Run Text=" · " /><Run Text="{Binding WatchlistCount}" />
+                    </TextBlock>
+                </ToggleButton>
+
+                <Rectangle Width="1" Margin="6,2,10,8" Fill="{DynamicResource Brush.Border}" />
+
+                <ItemsControl ItemsSource="{Binding CurrencyChips}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FilterChip">
+                            <ToggleButton Classes="chip" Margin="0,0,6,6"
+                                          Content="{Binding Display}"
+                                          IsChecked="{Binding IsSelected}"
+                                          Click="OnChipToggled" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <ItemsControl ItemsSource="{Binding ExchangeChips}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FilterChip">
+                            <ToggleButton Classes="chip" Margin="0,0,6,6"
+                                          Content="{Binding Display}"
+                                          IsChecked="{Binding IsSelected}"
+                                          Click="OnChipToggled" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button Classes="chip" Margin="0,0,6,6" Content="Сбросить фильтры"
+                        Command="{Binding ClearFiltersCommand}"
+                        IsVisible="{Binding HasActiveFilter}" />
+            </WrapPanel>
+        </StackPanel>
+
+        <!-- ============ grid + inspector ============ -->
+        <Grid ColumnDefinitions="*,Auto,Auto">
+
+            <Panel Grid.Column="0">
+
+                <DataGrid x:Name="Grid"
+                          ItemsSource="{Binding Rows}"
+                          SelectedItem="{Binding SelectedRow}"
+                          RowHeight="{Binding RowHeight}"
+                          IsReadOnly="True"
+                          CanUserSortColumns="False"
+                          CanUserReorderColumns="True"
+                          CanUserResizeColumns="True"
+                          SelectionMode="Single"
+                          HeadersVisibility="Column"
+                          AutoGenerateColumns="False">
+
+                    <!-- Sorting is owned by the DynamicData pipeline, not the grid: the grid
+                         has no way to re-sort on property change, which is the whole point
+                         here. Header clicks are routed to the view model in code-behind. -->
+
+                    <DataGrid.Columns>
+
+                        <DataGridTemplateColumn Width="230" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <Grid ColumnDefinitions="Auto,Auto,*"
+                                          Opacity="{Binding IsInactive, Converter={StaticResource InactiveOpacity}}">
+
+                                        <!-- Accent for an instrument that signalled in the last
+                                             quarter of an hour, faded out by the store. -->
+                                        <Border Grid.Column="0" Classes="accent"
+                                                IsVisible="{Binding HasRecentSignal}" />
+
+                                        <Button Grid.Column="1" Classes="ghost" Padding="2" Margin="0,0,6,0"
+                                                Click="OnWatchClicked"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.Name="В избранное">
+                                            <PathIcon Width="12" Height="12"
+                                                      Data="{DynamicResource Icon.Star}"
+                                                      Foreground="{DynamicResource Brush.Accent}"
+                                                      Opacity="{Binding IsWatched, Converter={StaticResource WatchOpacity}}" />
+                                        </Button>
+
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Ticker}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Name}" Classes="tertiary"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="108" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <Border Classes="pricecell"
+                                            Classes.flash-up="{Binding IsFlashUp}"
+                                            Classes.flash-down="{Binding IsFlashDown}"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Classes="numeric"
+                                                   Text="{Binding Price, StringFormat={}{0:N2}}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- The diverging colour bucket. Colour is paired with an arrow and a
+                             sign so meaning never depends on hue alone. -->
+                        <DataGridTemplateColumn Width="116" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <Border CornerRadius="4" Padding="6,2" Margin="0,2"
+                                            HorizontalAlignment="Stretch"
+                                            Background="{Binding DayChange, Converter={x:Static fmt:ChangeBucketConverter.Fill}}">
+                                        <TextBlock Classes="numeric" FontWeight="SemiBold"
+                                                   Text="{Binding DayChange, Converter={StaticResource Percent}}"
+                                                   Foreground="{Binding DayChange, Converter={x:Static fmt:ChangeBucketConverter.Foreground}}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="96" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <controls:Sparkline Source="{Binding Sparkline}"
+                                                        Margin="0,6" MinWidth="60" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="104" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <TextBlock Classes="numeric" VerticalAlignment="Center"
+                                               Text="{Binding DayVolume, Converter={StaticResource Compact}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- "Unusual volume" as a bar, not a percentage to be parsed. -->
+                        <DataGridTemplateColumn Width="130" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <Grid VerticalAlignment="Center" Margin="0,4">
+                                        <Border HorizontalAlignment="Left" CornerRadius="3" Height="18"
+                                                Background="{DynamicResource Brush.VolumeBar}"
+                                                Width="{Binding DayVolOfAvg, Converter={StaticResource BarWidth}, ConverterParameter=110}" />
+                                        <TextBlock Classes="numeric" Margin="0,0,6,0"
+                                                   Text="{Binding DayVolOfAvg, StringFormat={}{0:N2}×}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="110" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <TextBlock Classes="numeric" VerticalAlignment="Center"
+                                               Text="{Binding DayVolumeCost, Converter={StaticResource Compact}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="96" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <TextBlock Classes="numeric" VerticalAlignment="Center"
+                                               Text="{Binding BestBid, StringFormat={}{0:N2}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="96" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <TextBlock Classes="numeric" VerticalAlignment="Center"
+                                               Text="{Binding BestAsk, StringFormat={}{0:N2}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="84" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <TextBlock Classes="secondary" VerticalAlignment="Center"
+                                               Text="{Binding Currency}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="92" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <TextBlock Classes="secondary" VerticalAlignment="Center"
+                                               Text="{Binding Exchange}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="150" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <TextBlock Classes="secondary" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"
+                                               Text="{Binding Sector}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="130" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <TextBlock Classes="secondary" VerticalAlignment="Center"
+                                               Text="{Binding Status, Converter={StaticResource StatusText}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="100" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="market:InstrumentRow">
+                                    <TextBlock Classes="tertiary" VerticalAlignment="Center"
+                                               Text="{Binding LastTradeTime, Converter={StaticResource Ago}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- Empty states. Never a blank grid with no explanation. -->
+                <Border IsVisible="{Binding IsEmpty}" Background="{DynamicResource Brush.Surface.1}">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Spacing="10" MaxWidth="420">
+                        <TextBlock Classes="h2" HorizontalAlignment="Center"
+                                   Text="Ничего не найдено"
+                                   IsVisible="{Binding HasActiveFilter}" />
+                        <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
+                                   Text="Ни один инструмент не подходит под текущие фильтры."
+                                   IsVisible="{Binding HasActiveFilter}" />
+                        <Button Classes="primary" HorizontalAlignment="Center"
+                                Content="Сбросить фильтры"
+                                Command="{Binding ClearFiltersCommand}"
+                                IsVisible="{Binding HasActiveFilter}" />
+
+                        <TextBlock Classes="h2" HorizontalAlignment="Center"
+                                   Text="Ожидание данных"
+                                   IsVisible="{Binding !HasActiveFilter}" />
+                        <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
+                                   Text="Каталог инструментов ещё не получен от сервера."
+                                   IsVisible="{Binding !HasActiveFilter}" />
+                    </StackPanel>
+                </Border>
+            </Panel>
+
+            <GridSplitter Grid.Column="1" Width="4" ResizeDirection="Columns"
+                          Background="{DynamicResource Brush.Border}"
+                          IsVisible="{Binding Inspector.IsOpen}" />
+
+            <ContentControl Grid.Column="2" Width="380"
+                            Content="{Binding Inspector}"
+                            IsVisible="{Binding Inspector.IsOpen}" />
+
+        </Grid>
+
+    </DockPanel>
+</UserControl>

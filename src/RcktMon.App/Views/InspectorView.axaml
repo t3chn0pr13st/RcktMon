@@ -1,0 +1,203 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RcktMon.App.ViewModels"
+             xmlns:fmt="using:RcktMon.App.Formatting"
+             xmlns:controls="using:RcktMon.App.Controls"
+             xmlns:market="using:RcktMon.Client.Core.Market"
+             x:Class="RcktMon.App.Views.InspectorView"
+             x:DataType="vm:InspectorViewModel">
+
+    <UserControl.Resources>
+        <fmt:SignedPercentConverter x:Key="Percent" />
+        <fmt:CompactNumberConverter x:Key="Compact" />
+        <fmt:RelativeTimeConverter x:Key="Ago" />
+        <fmt:TradingStatusConverter x:Key="StatusText" />
+        <fmt:SignalKindConverter x:Key="KindName" />
+    </UserControl.Resources>
+
+    <Border Background="{DynamicResource Brush.Surface.2}"
+            BorderBrush="{DynamicResource Brush.Border}"
+            BorderThickness="1,0,0,0">
+
+        <ScrollViewer>
+            <StackPanel Margin="16" Spacing="14">
+
+                <!-- header -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Classes="h1" Text="{Binding Row.Ticker}" />
+                        <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{Binding Row.Name}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="1" Classes="ghost" Command="{Binding CloseCommand}"
+                            VerticalAlignment="Top" AutomationProperties.Name="Закрыть панель">
+                        <PathIcon Width="12" Height="12" Data="{DynamicResource Icon.Close}" />
+                    </Button>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border Classes="pill">
+                        <TextBlock FontSize="11" Text="{Binding Row.Exchange}" />
+                    </Border>
+                    <Border Classes="pill">
+                        <TextBlock FontSize="11" Text="{Binding Row.Currency}" />
+                    </Border>
+                    <Border Classes="pill">
+                        <TextBlock FontSize="11" Text="{Binding Row.Status, Converter={StaticResource StatusText}}" />
+                    </Border>
+                </StackPanel>
+
+                <!-- price -->
+                <StackPanel Spacing="2">
+                    <TextBlock Classes="mono" FontSize="30" FontWeight="SemiBold"
+                               Text="{Binding Row.Price, StringFormat={}{0:N2}}" />
+                    <TextBlock Classes="mono" FontSize="15"
+                               Text="{Binding Row.DayChange, Converter={StaticResource Percent}}"
+                               Foreground="{Binding Row.DayChange, Converter={x:Static fmt:ChangeBucketConverter.Foreground}}" />
+                </StackPanel>
+
+                <!-- chart -->
+                <Border Classes="card" Padding="12" Height="150">
+                    <Panel>
+                        <controls:Sparkline Source="{Binding Chart}"
+                                            ShowArea="True" StrokeThickness="2" />
+
+                        <TextBlock Classes="tertiary" VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" TextWrapping="Wrap"
+                                   TextAlignment="Center"
+                                   Text="{Binding ChartMessage}"
+                                   IsVisible="{Binding ChartMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                        <TextBlock Classes="tertiary" VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" Text="Загрузка графика…"
+                                   IsVisible="{Binding IsChartLoading}" />
+                    </Panel>
+                </Border>
+
+                <!-- key numbers -->
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+                    <StackPanel Grid.Row="0" Grid.Column="0">
+                        <TextBlock Classes="label" Text="Bid" />
+                        <TextBlock Classes="mono" Text="{Binding Row.BestBid, StringFormat={}{0:N2}}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="1">
+                        <TextBlock Classes="label" Text="Ask" />
+                        <TextBlock Classes="mono" Text="{Binding Row.BestAsk, StringFormat={}{0:N2}}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Grid.Column="0">
+                        <TextBlock Classes="label" Text="Спред" />
+                        <TextBlock Classes="mono" Text="{Binding SpreadFraction, StringFormat={}{0:P3}}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1">
+                        <TextBlock Classes="label" Text="Открытие дня" />
+                        <TextBlock Classes="mono" Text="{Binding Row.DayOpen, StringFormat={}{0:N2}}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Grid.Column="0">
+                        <TextBlock Classes="label" Text="Объём" />
+                        <TextBlock Classes="mono" Text="{Binding Row.DayVolume, Converter={StaticResource Compact}}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="1">
+                        <TextBlock Classes="label" Text="× среднего" />
+                        <TextBlock Classes="mono" Text="{Binding Row.DayVolOfAvg, StringFormat={}{0:N2}×}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="3" Grid.Column="0">
+                        <TextBlock Classes="label" Text="Оборот" />
+                        <TextBlock Classes="mono" Text="{Binding Row.DayVolumeCost, Converter={StaticResource Compact}}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="3" Grid.Column="1">
+                        <TextBlock Classes="label" Text="Последняя сделка" />
+                        <TextBlock Classes="mono" Text="{Binding Row.LastTradeTime, Converter={StaticResource Ago}}" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- identity -->
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="h2" Text="Инструмент" />
+
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                          ColumnSpacing="10" RowSpacing="4">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="tertiary" Text="ISIN" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Classes="mono" FontSize="12" Text="{Binding Row.Isin}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Classes="tertiary" Text="FIGI" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Classes="mono" FontSize="12" Text="{Binding Row.Figi}" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Classes="tertiary" Text="Сектор" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" FontSize="12" Text="{Binding Row.Sector}" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Classes="tertiary" Text="Лот" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Classes="mono" FontSize="12" Text="{Binding Row.Lot}" />
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Classes="chip" Content="Копировать тикер" Command="{Binding CopyTickerCommand}" />
+                        <Button Classes="chip" Content="Копировать ISIN" Command="{Binding CopyIsinCommand}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- month baselines -->
+                <StackPanel Spacing="6" IsVisible="{Binding Month, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <TextBlock Classes="h2" Text="За месяц" />
+
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto"
+                          ColumnSpacing="10" RowSpacing="4">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="tertiary" Text="Максимум" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Classes="mono" FontSize="12"
+                                   Text="{Binding Month.MonthHigh.Units}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Classes="tertiary" Text="Минимум" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Classes="mono" FontSize="12"
+                                   Text="{Binding Month.MonthLow.Units}" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Classes="tertiary" Text="Средний объём" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Classes="mono" FontSize="12"
+                                   Text="{Binding Month.AvgDayVolume, Converter={StaticResource Compact}}" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- recent signals for this instrument -->
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="h2" Text="Сигналы" />
+
+                    <TextBlock Classes="tertiary" Text="Сигналов по этому инструменту пока не было."
+                               IsVisible="{Binding !RecentSignals.Count}" />
+
+                    <ItemsControl ItemsSource="{Binding RecentSignals}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="market:SignalEntry">
+                                <Border Classes="signalcard" Padding="10,8">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock FontSize="12" TextWrapping="Wrap" Text="{Binding Headline}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Classes="tertiary"
+                                                       Text="{Binding Kind, Converter={StaticResource KindName}}" />
+                                            <TextBlock Classes="tertiary"
+                                                       Text="{Binding FiredAt, Converter={StaticResource Ago}}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!--
+                    The order ticket's placeholder. Reserved deliberately: the client-side
+                    trading token is a later phase, and leaving room for it now means the
+                    information architecture will not have to be redone around it.
+                -->
+                <Border Classes="card" IsEnabled="False" Opacity="0.6">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="h2" Text="Торговля" />
+                        <TextBlock Classes="tertiary" TextWrapping="Wrap"
+                                   Text="Выставление заявок появится позже. RcktMon никогда не спрашивает брокерский токен для получения котировок." />
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

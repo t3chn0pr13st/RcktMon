@@ -1,0 +1,193 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RcktMon.App.ViewModels"
+             xmlns:fmt="using:RcktMon.App.Formatting"
+             xmlns:market="using:RcktMon.Client.Core.Market"
+             x:Class="RcktMon.App.Views.InstrumentsView"
+             x:DataType="vm:InstrumentsViewModel">
+
+    <UserControl.Resources>
+        <fmt:TradingStatusConverter x:Key="StatusText" />
+        <fmt:RelativeTimeConverter x:Key="Ago" />
+        <fmt:InactiveOpacityConverter x:Key="InactiveOpacity" />
+        <fmt:YesNoConverter x:Key="YesNo" />
+    </UserControl.Resources>
+
+    <DockPanel>
+
+        <!-- ============ server health ============ -->
+        <StackPanel DockPanel.Dock="Top" Margin="20,16,20,10" Spacing="12">
+
+            <TextBlock Classes="h1" Text="Инструменты" />
+
+            <Border Classes="card" Padding="14">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Ellipse Width="9" Height="9" VerticalAlignment="Center"
+                                     Fill="{DynamicResource Brush.Positive}"
+                                     IsVisible="{Binding !IsDegraded}" />
+                            <Ellipse Width="9" Height="9" VerticalAlignment="Center"
+                                     Fill="{DynamicResource Brush.Warning}"
+                                     IsVisible="{Binding IsDegraded}" />
+                            <TextBlock Classes="h2" Text="Поток рыночных данных" />
+                        </StackPanel>
+                        <TextBlock Classes="secondary" Text="{Binding HealthDetail}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20">
+                        <StackPanel>
+                            <TextBlock Classes="label" Text="Шарды" />
+                            <TextBlock Classes="mono">
+                                <Run Text="{Binding ShardsHealthy}" /><Run Text=" / " /><Run Text="{Binding ShardsTotal}" />
+                            </TextBlock>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Classes="label" Text="Подписано" />
+                            <TextBlock Classes="mono" Text="{Binding SubscribedCount}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Both time zones, always. A schedule shown only in Moscow time is wrong for
+                 every user outside Moscow, which is exactly the bug being replaced. -->
+            <ItemsControl ItemsSource="{Binding Sessions}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="12" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ExchangeSessionRow">
+                        <Border Classes="card" Padding="14,10" MinWidth="260">
+                            <StackPanel Spacing="2">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock FontWeight="SemiBold" Text="{Binding Exchange}" />
+                                    <TextBlock Classes="tertiary" Text="{Binding Phase}" />
+                                </StackPanel>
+                                <TextBlock Classes="secondary" FontSize="12">
+                                    <Run Text="Локально:" /><Run Text=" " /><Run Text="{Binding LocalWindow}" />
+                                </TextBlock>
+                                <TextBlock Classes="tertiary" FontSize="12">
+                                    <Run Text="MSK:" /><Run Text=" " /><Run Text="{Binding MoscowWindow}" />
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBox Classes="search" Width="280" PlaceholderText="Тикер, название или ISIN"
+                         Text="{Binding SearchText}" />
+                <ToggleButton Classes="chip" Content="Только торгуемые" IsChecked="{Binding TradableOnly}" />
+                <ToggleButton Classes="chip" Content="Можно шортить" IsChecked="{Binding ShortableOnly}" />
+                <Button Classes="chip" Content="Сбросить" Command="{Binding ClearFiltersCommand}" />
+                <TextBlock Classes="tertiary" VerticalAlignment="Center" Margin="8,0,0,0">
+                    <Run Text="Показано:" /><Run Text=" " /><Run Text="{Binding VisibleCount}" />
+                </TextBlock>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- ============ instrument table ============ -->
+        <DataGrid ItemsSource="{Binding Rows}"
+                  IsReadOnly="True"
+                  CanUserSortColumns="False"
+                  CanUserResizeColumns="True"
+                  SelectionMode="Single"
+                  HeadersVisibility="Column"
+                  AutoGenerateColumns="False"
+                  Margin="20,0,20,16">
+
+            <DataGrid.Columns>
+
+                <DataGridTemplateColumn Header="Тикер" Width="110">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock VerticalAlignment="Center" FontWeight="SemiBold"
+                                       Opacity="{Binding IsInactive, Converter={StaticResource InactiveOpacity}}"
+                                       Text="{Binding Ticker}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Название" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                       Text="{Binding Name}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Биржа" Width="110">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{Binding Exchange}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Класс" Width="90">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{Binding ClassCode}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Статус" Width="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock VerticalAlignment="Center"
+                                       Text="{Binding Status, Converter={StaticResource StatusText}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Данные" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                                         Fill="{DynamicResource Brush.Warning}"
+                                         IsVisible="{Binding IsStale}" />
+                                <TextBlock Classes="tertiary"
+                                           Text="{Binding LastTradeTime, Converter={StaticResource Ago}}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Шорт" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock Classes="secondary" VerticalAlignment="Center"
+                                       Text="{Binding ShortEnabled, Converter={StaticResource YesNo}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Лот" Width="86">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock Classes="numeric" VerticalAlignment="Center" Text="{Binding Lot}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Первая свеча" Width="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="market:InstrumentRow">
+                            <TextBlock Classes="tertiary" VerticalAlignment="Center"
+                                       Text="{Binding FirstCandleDate}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+</UserControl>
