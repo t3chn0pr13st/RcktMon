@@ -19,6 +19,7 @@ public sealed class FakeSignalService(MarketHub hub) : SignalService.SignalServi
         ServerCallContext context)
     {
         CancellationToken ct = context.CancellationToken;
+        string locale = SessionLocales.For(context);
 
         var live = Channel.CreateBounded<Signal>(new BoundedChannelOptions(BufferedSignals)
         {
@@ -46,7 +47,7 @@ public sealed class FakeSignalService(MarketHub hub) : SignalService.SignalServi
 
             foreach (Signal signal in hub.Signals.Since(request.SinceId, request.Kinds))
             {
-                await responseStream.WriteAsync(signal, ct).ConfigureAwait(false);
+                await responseStream.WriteAsync(signal.Localized(locale), ct).ConfigureAwait(false);
                 highestSent = Math.Max(highestSent, signal.Id);
             }
 
@@ -57,7 +58,7 @@ public sealed class FakeSignalService(MarketHub hub) : SignalService.SignalServi
                     continue;
                 }
 
-                await responseStream.WriteAsync(signal, ct).ConfigureAwait(false);
+                await responseStream.WriteAsync(signal.Localized(locale), ct).ConfigureAwait(false);
                 highestSent = signal.Id;
             }
         }
@@ -75,6 +76,7 @@ public sealed class FakeSignalService(MarketHub hub) : SignalService.SignalServi
     public override Task<ListSignalsResponse> ListSignals(ListSignalsRequest request, ServerCallContext context)
     {
         (IReadOnlyList<Signal> items, string nextPageToken, int total) = hub.Signals.Query(request);
+        string locale = SessionLocales.For(context);
 
         var response = new ListSignalsResponse
         {
@@ -82,7 +84,7 @@ public sealed class FakeSignalService(MarketHub hub) : SignalService.SignalServi
             TotalCount = total,
         };
 
-        response.Signals.AddRange(items);
+        response.Signals.AddRange(items.Select(signal => signal.Localized(locale)));
         return Task.FromResult(response);
     }
 }

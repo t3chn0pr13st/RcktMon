@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using RcktMon.App.Localization;
 using RcktMon.Protocol;
 using RcktMon.Protocol.V1;
 
@@ -143,8 +145,13 @@ public sealed partial class AlertProfileViewModel : ObservableObject
         {
             AlertRuleGroupViewModel? first = Groups.FirstOrDefault();
             return first is null
-                ? "Нет правил"
-                : $"День от {first.DayPricePercent:0.#}% · {first.WindowPricePercent:0.#}% за {first.Minutes} мин";
+                ? Strings.Profile_NoRules
+                : string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Profile_Summary,
+                    first.DayPricePercent.ToString("0.#", CultureInfo.CurrentCulture),
+                    first.WindowPricePercent.ToString("0.#", CultureInfo.CurrentCulture),
+                    first.Minutes);
         }
     }
 

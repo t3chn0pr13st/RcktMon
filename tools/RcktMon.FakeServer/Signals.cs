@@ -173,7 +173,14 @@ public sealed class SignalLog
         }
     }
 
-    /// <summary>Builds a signal with its headline already rendered, as the real server does.</summary>
+    /// <summary>
+    /// Builds a signal from its measured values.
+    /// </summary>
+    /// <remarks>
+    /// The headline is deliberately left empty. It is rendered when the signal is sent, in
+    /// the language that session asked for at handshake, because one stored signal is read
+    /// by clients in different languages.
+    /// </remarks>
     public static Signal Build(
         Instrument instrument,
         SignalKind kind,
@@ -206,40 +213,9 @@ public sealed class SignalLog
             Currency = instrument.Currency,
         };
 
-        signal.Headline = Headline(signal);
+        // No headline here: it is rendered per session, in the language that session
+        // asked for during the handshake.
         return signal;
-    }
-
-    /// <summary>
-    /// The one-line summary shown in the feed, on the dashboard and in Telegram.
-    /// </summary>
-    /// <remarks>
-    /// Rendered server-side on purpose: the same sentence has to appear in the app, in a
-    /// channel post and in the web account, and three implementations of it would drift.
-    /// </remarks>
-    private static string Headline(Signal signal)
-    {
-        System.Globalization.CultureInfo ru = System.Globalization.CultureInfo.GetCultureInfo("ru-RU");
-
-        string change = signal.PriceChange.ToDecimal().ToString("+0.00%;-0.00%;0.00%", ru);
-        string from = signal.PriceFrom.ToDecimal().ToString("N2", ru);
-        string to = signal.PriceTo.ToDecimal().ToString("N2", ru);
-        string volumeMultiple = signal.VolumeChange.ToDecimal().ToString("0.0", ru);
-
-        return signal.Kind switch
-        {
-            SignalKind.DayChange =>
-                $"{signal.Ticker} {signal.DayChange.ToDecimal().ToString("+0.00%;-0.00%;0.00%", ru)} за день, " +
-                $"объём {signal.DayVolOfAvg.ToDecimal().ToString("0.0", ru)}× среднего",
-
-            SignalKind.MinutesPriceChange =>
-                $"{signal.Ticker} {change} за {signal.WindowMinutes} мин, {from} → {to}",
-
-            SignalKind.MinutesVolumeChange =>
-                $"{signal.Ticker} объём {volumeMultiple}× среднего за {signal.WindowMinutes} мин",
-
-            _ => signal.Ticker,
-        };
     }
 
     private static bool Matches(Signal signal, IReadOnlyCollection<SignalKind> kinds) =>

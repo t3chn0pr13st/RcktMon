@@ -29,4 +29,24 @@
     <AvaloniaResource Include="Assets/**" />
   </ItemGroup>
 
+  <!--
+    English is the neutral resource set and Russian is a satellite assembly, so a locale
+    the app has never heard of lands on English rather than on a half-translated screen.
+    The strongly typed class is generated at build time: C# gets compile-checked names,
+    and XAML looks the same keys up by string through the Localizer.
+  -->
+  <PropertyGroup>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Localization/Strings.resx">
+      <Generator>MSBuild:Compile</Generator>
+      <StronglyTypedFileName>$(IntermediateOutputPath)Strings.Designer.cs</StronglyTypedFileName>
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedNamespace>RcktMon.App.Localization</StronglyTypedNamespace>
+      <StronglyTypedClassName>Strings</StronglyTypedClassName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

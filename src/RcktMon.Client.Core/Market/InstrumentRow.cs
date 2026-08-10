@@ -191,6 +191,22 @@ public sealed partial class InstrumentRow : ObservableObject
 
     internal void RaiseSortKeyChanged() => _sortKeyChanged.OnNext(Unit.Default);
 
+    /// <summary>
+    /// Re-raises the properties whose display text is produced by a converter.
+    /// </summary>
+    /// <remarks>
+    /// A converter only runs when its source value changes, so a trading status or a
+    /// relative timestamp keeps the old language after the interface language switches.
+    /// Nudging the properties is cheap and happens once per switch, unlike making every
+    /// such binding a multi-binding on the current culture.
+    /// </remarks>
+    public void RefreshFormattedText()
+    {
+        OnPropertyChanged(nameof(Status));
+        OnPropertyChanged(nameof(LastTradeTime));
+        OnPropertyChanged(nameof(ShortEnabled));
+    }
+
     /// <summary>Replaces the sparkline ring with the server's snapshot of it.</summary>
     internal void SeedSparkline(IReadOnlyList<int> points)
     {

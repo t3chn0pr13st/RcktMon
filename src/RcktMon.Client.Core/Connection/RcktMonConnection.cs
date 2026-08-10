@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reactive.Subjects;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
@@ -93,7 +94,8 @@ public sealed class RcktMonConnection : IAsyncDisposable
 
         while (!ct.IsCancellationRequested)
         {
-            string? failure;
+            ConnectionFault fault;
+            string? detail;
 
             try
             {
@@ -104,7 +106,8 @@ public sealed class RcktMonConnection : IAsyncDisposable
                 // A clean end of stream is still a disconnect; reconnect promptly rather
                 // than treating it as success.
                 attempt = 0;
-                failure = "Сервер закрыл поток";
+                fault = ConnectionFault.Of(ConnectionFaultKind.StreamClosed);
+                detail = null;
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -113,25 +116,41 @@ public sealed class RcktMonConnection : IAsyncDisposable
             catch (RpcException rpc) when (rpc.StatusCode is StatusCode.Unauthenticated or StatusCode.PermissionDenied)
             {
                 _logger.LogError("Access key rejected: {Status} {Detail}", rpc.StatusCode, rpc.Status.Detail);
-                Publish(ConnectionState.Unauthorized, rpc.Status.Detail);
+                Publish(
+                    ConnectionState.Unauthorized,
+                    ConnectionFault.Of(ConnectionFaultKind.KeyRejected),
+                    rpc.Status.Detail);
                 return;
             }
             catch (ProtocolVersionMismatchException ex)
             {
                 _logger.LogError("{Message}", ex.Message);
-                Publish(ConnectionState.VersionMismatch, ex.Message);
+                Publish(
+                    ConnectionState.VersionMismatch,
+                    new ConnectionFault(
+                        ConnectionFaultKind.ClientTooOld,
+                        ex.RequiredMajor.ToString(CultureInfo.InvariantCulture),
+                        ex.ClientMajor.ToString(CultureInfo.InvariantCulture)),
+                    ex.Message);
                 return;
+            }
+            catch (InsecureAddressException ex)
+            {
+                _logger.LogError("{Message}", ex.Message);
+                fault = new ConnectionFault(ConnectionFaultKind.InsecureAddress, ex.Address.ToString());
+                detail = ex.Message;
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Quote stream failed");
-                failure = ex is RpcException rpcEx ? rpcEx.Status.Detail : ex.Message;
+                fault = ConnectionFault.Of(ConnectionFaultKind.Transport);
+                detail = ex is RpcException rpcEx ? rpcEx.Status.Detail : ex.Message;
             }
 
             _status?.Reset();
 
             TimeSpan delay = Backoff(++attempt);
-            Publish(ConnectionState.Reconnecting, failure, delay);
+            Publish(ConnectionState.Reconnecting, fault, detail, delay);
 
             try
             {
@@ -212,9 +231,7 @@ public sealed class RcktMonConnection : IAsyncDisposable
 
         if (ProtocolVersion.Major < hello.MinSupportedClientMajor)
         {
-            throw new ProtocolVersionMismatchException(
-                $"Этой версии RcktMon требуется обновление: сервер поддерживает протокол " +
-                $"не ниже v{hello.MinSupportedClientMajor}, клиент реализует v{ProtocolVersion.Major}.");
+            throw new ProtocolVersionMismatchException(hello.MinSupportedClientMajor, ProtocolVersion.Major);
         }
 
         Session = hello;
@@ -369,11 +386,13 @@ public sealed class RcktMonConnection : IAsyncDisposable
         {
             Publish(
                 ConnectionState.Degraded,
-                $"Сервер пропускает обновления для этого клиента ({control.DroppedTicks})");
+                new ConnectionFault(
+                    ConnectionFaultKind.DroppedTicks,
+                    control.DroppedTicks.ToString(CultureInfo.InvariantCulture)));
         }
         else if (stale)
         {
-            Publish(ConnectionState.Degraded, "Котировки не обновлялись более 10 секунд");
+            Publish(ConnectionState.Degraded, ConnectionFault.Of(ConnectionFaultKind.QuotesStale));
         }
         else
         {
@@ -390,9 +409,7 @@ public sealed class RcktMonConnection : IAsyncDisposable
 
         if (!_settings.AllowInsecureHttp && _settings.ServerUri.Scheme != Uri.UriSchemeHttps)
         {
-            throw new InvalidOperationException(
-                $"Отказ от незашифрованного подключения к {_settings.ServerUri}. " +
-                "Используйте https или явно включите AllowInsecureHttp для локальной разработки.");
+            throw new InsecureAddressException(_settings.ServerUri);
         }
 
         _channel = GrpcChannel.ForAddress(_settings.ServerUri, new GrpcChannelOptions
@@ -433,9 +450,13 @@ public sealed class RcktMonConnection : IAsyncDisposable
         : OperatingSystem.IsLinux() ? "linux"
         : "unknown";
 
-    private void Publish(ConnectionState state, string? detail = null, TimeSpan? retryIn = null)
+    private void Publish(
+        ConnectionState state,
+        ConnectionFault fault = default,
+        string? detail = null,
+        TimeSpan? retryIn = null)
     {
-        var next = new ConnectionStatus(state, detail, retryIn);
+        var next = new ConnectionStatus(state, fault, detail, retryIn);
 
         // Avoid waking the UI on every heartbeat when nothing actually changed.
         if (_state.Value != next)
@@ -489,7 +510,30 @@ public sealed class RcktMonConnection : IAsyncDisposable
 }
 
 /// <summary>Thrown when the server requires a newer client than this one.</summary>
-public sealed class ProtocolVersionMismatchException(string message) : Exception(message);
+/// <remarks>
+/// Carries the two version numbers rather than a finished sentence, so the UI can say it
+/// in the user's language.
+/// </remarks>
+public sealed class ProtocolVersionMismatchException(int requiredMajor, int clientMajor)
+    : Exception($"Server requires protocol v{requiredMajor} or newer; this client implements v{clientMajor}.")
+{
+    /// <summary>Lowest protocol major the server will talk to.</summary>
+    public int RequiredMajor { get; } = requiredMajor;
+
+    /// <summary>Protocol major this client implements.</summary>
+    public int ClientMajor { get; } = clientMajor;
+}
+
+/// <summary>Thrown when asked to talk cleartext to something that is not loopback.</summary>
+/// <remarks>
+/// Guards against shipping a build that silently talks to the production server over
+/// cleartext because a development flag leaked into a release configuration.
+/// </remarks>
+public sealed class InsecureAddressException(Uri address)
+    : Exception($"Refusing an unencrypted connection to {address}.")
+{
+    public Uri Address { get; } = address;
+}
 
 /// <summary>The client's own version string, taken from the assembly.</summary>
 public static class ClientVersion

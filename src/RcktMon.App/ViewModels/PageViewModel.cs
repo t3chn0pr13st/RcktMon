@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using RcktMon.App.Localization;
 using RcktMon.Client.Core.Market;
 
 namespace RcktMon.App.ViewModels;
@@ -12,20 +13,29 @@ namespace RcktMon.App.ViewModels;
 /// the stores on a single timer and hands each page the result, rather than every page
 /// owning a timer of its own.
 /// </remarks>
-public abstract partial class PageViewModel : ObservableObject
+public abstract partial class PageViewModel : ObservableObject, IDisposable
 {
-    protected PageViewModel(string key, string title, string iconKey)
+    private readonly IDisposable _titleSubscription;
+
+    protected PageViewModel(string key, string titleKey, string iconKey)
     {
         Key = key;
-        Title = title;
+        TitleKey = titleKey;
         IconKey = iconKey;
+
+        // Subscribed rather than read once, so the rail relabels itself when the language
+        // changes instead of waiting for a restart.
+        _titleSubscription = Localizer.Instance.Observe(titleKey).Subscribe(text => Title = text);
     }
 
     /// <summary>Stable identifier, persisted as the start page.</summary>
     public string Key { get; }
 
-    /// <summary>Rail label and page heading.</summary>
-    public string Title { get; }
+    /// <summary>Resource key of the rail label.</summary>
+    public string TitleKey { get; }
+
+    /// <summary>Rail label and page heading, in the current interface language.</summary>
+    [ObservableProperty] private string _title = string.Empty;
 
     /// <summary>Resource key of the rail icon geometry.</summary>
     public string IconKey { get; }
@@ -46,6 +56,17 @@ public abstract partial class PageViewModel : ObservableObject
     {
     }
 
+    /// <summary>
+    /// Called after the interface language changes.
+    /// </summary>
+    /// <remarks>
+    /// Bound resource strings update themselves; this is for text a page has already
+    /// composed — a formatted sentence, or a list built through a converter.
+    /// </remarks>
+    public virtual void LanguageChanged()
+    {
+    }
+
     /// <summary>Called on every drain pass, whether or not the page is visible.</summary>
     /// <remarks>
     /// Deliberately also when hidden: rail badges and the dashboard's "signals today"
@@ -55,4 +76,6 @@ public abstract partial class PageViewModel : ObservableObject
     public virtual void Drained(in DrainResult result)
     {
     }
+
+    public virtual void Dispose() => _titleSubscription.Dispose();
 }

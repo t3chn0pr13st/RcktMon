@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using RcktMon.App.Formatting;
+using RcktMon.App.Localization;
 using RcktMon.Client.Core.Market;
 using RcktMon.Protocol.V1;
 
@@ -39,17 +40,34 @@ public sealed partial class SignalsViewModel : PageViewModel
     private (int Count, long TopId, int Signature) _rendered = (-1, -1, 0);
 
     public SignalsViewModel(ClientSession session, Action<string> navigateToInstrument)
-        : base("signals", "Сигналы", "Icon.Signals")
+        : base("signals", "Nav_Signals", "Icon.Signals")
     {
         _session = session;
         _navigateToInstrument = navigateToInstrument;
 
         Kinds =
         [
-            new FilterChip(nameof(SignalKind.DayChange), Humanize.SignalKindName(SignalKind.DayChange)),
-            new FilterChip(nameof(SignalKind.MinutesPriceChange), Humanize.SignalKindName(SignalKind.MinutesPriceChange)),
-            new FilterChip(nameof(SignalKind.MinutesVolumeChange), Humanize.SignalKindName(SignalKind.MinutesVolumeChange)),
+            new FilterChip(nameof(SignalKind.DayChange), string.Empty),
+            new FilterChip(nameof(SignalKind.MinutesPriceChange), string.Empty),
+            new FilterChip(nameof(SignalKind.MinutesVolumeChange), string.Empty),
         ];
+
+        // Relabelled on a language change rather than captured once, so the filter list
+        // does not stay in the old language until restart.
+        _kindLabels = Localizer.Instance.Observe("SignalKind_DayChange").Subscribe(_ =>
+        {
+            Kinds[0].Label = Humanize.SignalKindName(SignalKind.DayChange);
+            Kinds[1].Label = Humanize.SignalKindName(SignalKind.MinutesPriceChange);
+            Kinds[2].Label = Humanize.SignalKindName(SignalKind.MinutesVolumeChange);
+        });
+    }
+
+    private readonly IDisposable _kindLabels;
+
+    public override void Dispose()
+    {
+        _kindLabels.Dispose();
+        base.Dispose();
     }
 
     /// <summary>Headers and signals interleaved, ready to bind to a virtualised list.</summary>
@@ -148,6 +166,8 @@ public sealed partial class SignalsViewModel : PageViewModel
             _navigateToInstrument(signal.InstrumentUid);
         }
     }
+
+    public override void LanguageChanged() => ForceRebuild();
 
     /// <summary>Recomputes the feed after a filter checkbox changed in the view.</summary>
     public void ReapplyFilters() => ForceRebuild();

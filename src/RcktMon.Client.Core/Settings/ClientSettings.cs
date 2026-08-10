@@ -95,6 +95,16 @@ public sealed class SavedView
 {
     public string Name { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Resource key for a preset's name, empty for a view the user saved.
+    /// </summary>
+    /// <remarks>
+    /// Presets follow the interface language; a name someone typed themselves stays
+    /// exactly as they typed it. Translating a user's own label would be presumptuous, and
+    /// it would also change every time they switched language.
+    /// </remarks>
+    public string NameKey { get; set; } = string.Empty;
+
     /// <summary>Presets ship with the app and cannot be overwritten, only copied.</summary>
     public bool IsPreset { get; set; }
 

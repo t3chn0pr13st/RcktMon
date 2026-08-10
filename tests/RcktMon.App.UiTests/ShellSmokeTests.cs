@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using RcktMon.App.ViewModels;
 using RcktMon.App.Views;
 using RcktMon.Client.Core.Connection;
@@ -90,6 +91,39 @@ public sealed class ShellSmokeTests(HeadlessSessionFixture fixture) : IClassFixt
 
                 Assert.True(monitor.Inspector.IsOpen);
                 Capture(window, "inspector");
+
+                // The interface language switches in place, with no restart: every
+                // translated string in the window is bound to the localizer.
+                Assert.Equal("Monitor", monitor.Title);
+
+                // Switching language re-establishes the session, because the server
+                // renders alert text in the session's language. The pages are rebuilt, so
+                // everything below re-reads them.
+                model.ApplyLanguage("ru");
+
+                Assert.True(
+                    Pump(
+                        model,
+                        () => model.Pages.OfType<MonitorViewModel>().FirstOrDefault() is { Rows.Count: > 0 },
+                        TimeSpan.FromSeconds(30)),
+                    "the session never came back after the language change");
+
+                monitor = model.Pages.OfType<MonitorViewModel>().First();
+                Pump(model, static () => false, TimeSpan.FromSeconds(1));
+
+                Assert.Equal("Монитор", monitor.Title);
+                Capture(window, "monitor-ru");
+
+                // Navigating re-applies the page template, so this view is built after the
+                // switch. It is the case that a naive implementation gets wrong: the first
+                // instance follows the language and later ones are stuck in the old one.
+                model.CurrentPage = model.Pages.First(page => page.Key == "settings");
+                Pump(model, static () => false, TimeSpan.FromSeconds(1));
+                Capture(window, "settings-ru");
+
+                Assert.Contains(
+                    window.GetVisualDescendants().OfType<TextBlock>(),
+                    text => text.Text == "Подключение");
 
                 window.Close();
                 model.Dispose();
@@ -201,6 +235,10 @@ public sealed class ShellSmokeTests(HeadlessSessionFixture fixture) : IClassFixt
             StartPage = "monitor",
             ShowSparklines = true,
             TickIntervalMs = 250,
+
+            // English, so the captured frames show the neutral resource set. The test
+            // switches to Russian at the end and captures that too.
+            Locale = "en",
         };
 
         File.WriteAllText(

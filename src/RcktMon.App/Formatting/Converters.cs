@@ -4,7 +4,10 @@ using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using Avalonia.Styling;
+using RcktMon.App.Localization;
 using RcktMon.Client.Core.Connection;
+using RcktMon.Client.Core.Settings;
+using RcktMon.Protocol;
 using RcktMon.Protocol.V1;
 
 namespace RcktMon.App.Formatting;
@@ -177,15 +180,18 @@ public sealed class ConnectionTextConverter : IValueConverter
 
         return status.State switch
         {
-            ConnectionState.Connected => "Подключено",
-            ConnectionState.Connecting => "Подключение…",
+            ConnectionState.Connected => Strings.Connection_Connected,
+            ConnectionState.Connecting => Strings.Connection_Connecting,
             ConnectionState.Reconnecting => status.RetryIn is { } retry
-                ? $"Переподключение через {retry.TotalSeconds:0} с"
-                : "Переподключение…",
-            ConnectionState.Degraded => status.Detail ?? "Данные могут быть устаревшими",
-            ConnectionState.Unauthorized => "Ключ доступа отклонён",
-            ConnectionState.VersionMismatch => "Требуется обновление",
-            _ => "Нет соединения",
+                ? string.Format(culture, Strings.Connection_ReconnectingIn, retry.TotalSeconds.ToString("0", culture))
+                : Strings.Connection_Reconnecting,
+
+            // Degraded says *why*: "degraded" on its own tells nobody whether to trust the
+            // number they are looking at.
+            ConnectionState.Degraded => FaultConverter.Describe(status) ?? Strings.Connection_Degraded,
+            ConnectionState.Unauthorized => Strings.Connection_Unauthorized,
+            ConnectionState.VersionMismatch => Strings.Connection_VersionMismatch,
+            _ => Strings.Connection_Disconnected,
         };
     }
 
@@ -315,8 +321,8 @@ public sealed class YesNoConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         value switch
         {
-            true => "Да",
-            false => "Нет",
+            true => Strings.Common_Yes,
+            false => Strings.Common_No,
             _ => "—",
         };
 
@@ -334,6 +340,104 @@ public sealed class WatchOpacityConverter : IValueConverter
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         value is true ? 1.0 : Unwatched;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>
+/// Turns a transport fault into a sentence.
+/// </summary>
+/// <remarks>
+/// The transport reports a fault kind and a couple of substitutions; the words live here,
+/// in the layer that knows what language the user reads.
+/// </remarks>
+public sealed class FaultConverter : IValueConverter
+{
+    public static FaultConverter Instance { get; } = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is ConnectionStatus status ? Describe(status) ?? status.Detail ?? string.Empty : string.Empty;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+
+    /// <summary>The localised explanation, or null when there is nothing to explain.</summary>
+    internal static string? Describe(ConnectionStatus status)
+    {
+        ConnectionFault fault = status.Fault;
+        CultureInfo culture = CultureInfo.CurrentCulture;
+
+        return fault.Kind switch
+        {
+            ConnectionFaultKind.StreamClosed => Strings.Fault_StreamClosed,
+            ConnectionFaultKind.InsecureAddress =>
+                string.Format(culture, Strings.Fault_InsecureAddress, fault.Argument),
+            ConnectionFaultKind.KeyRejected => Strings.Fault_KeyRejected,
+            ConnectionFaultKind.ClientTooOld =>
+                string.Format(culture, Strings.Fault_ClientTooOld, fault.Argument, fault.SecondArgument),
+            ConnectionFaultKind.DroppedTicks =>
+                string.Format(culture, Strings.Fault_DroppedTicks, fault.Argument),
+            ConnectionFaultKind.QuotesStale => Strings.Fault_QuotesStale,
+
+            // A raw transport message is not a sentence anyone wrote for a user, but it is
+            // better than silence when something unclassified goes wrong.
+            ConnectionFaultKind.Transport => status.Detail,
+            _ => null,
+        };
+    }
+}
+
+/// <summary>
+/// Renders a wire <c>Decimal</c> as a price.
+/// </summary>
+/// <remarks>
+/// Binding straight to <c>.Units</c> drops the fractional part, which turns 3046.85 into
+/// 3046 — quietly wrong in exactly the place a price is being read.
+/// </remarks>
+public sealed class ProtoDecimalConverter : IValueConverter
+{
+    public static ProtoDecimalConverter Instance { get; } = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is RcktMon.Protocol.V1.Decimal wire
+            ? wire.ToDecimal().ToString(parameter as string ?? "N2", culture)
+            : string.Empty;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>"1.3× volume" for the dashboard cards.</summary>
+public sealed class VolumeMultipleConverter : IValueConverter
+{
+    public static VolumeMultipleConverter Instance { get; } = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is decimal multiple
+            ? string.Format(culture, Strings.Dash_VolumeOfAverage, multiple.ToString("N1", culture))
+            : string.Empty;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>
+/// The display name of a saved view.
+/// </summary>
+/// <remarks>
+/// Presets are named by resource key so they follow the interface language; views the user
+/// saved keep the name they typed, in whatever language they typed it. Translating
+/// someone's own label would be presumptuous and would also change on every switch.
+/// </remarks>
+public sealed class SavedViewNameConverter : IValueConverter
+{
+    public static SavedViewNameConverter Instance { get; } = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is SavedView view
+            ? view.NameKey.Length > 0 ? Localizer.Instance[view.NameKey] : view.Name
+            : string.Empty;
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotSupportedException();

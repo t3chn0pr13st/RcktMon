@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DynamicData;
 using DynamicData.Binding;
+using RcktMon.App.Localization;
 using RcktMon.App.Threading;
 using RcktMon.Client.Core.Market;
 using RcktMon.Protocol.V1;
@@ -35,7 +36,7 @@ public readonly record struct ExchangeSessionRow(
 /// and the server's own health, so a user can tell whether a flat price is the market or
 /// the pipeline.
 /// </remarks>
-public sealed partial class InstrumentsViewModel : PageViewModel, IDisposable
+public sealed partial class InstrumentsViewModel : PageViewModel
 {
     private static readonly TimeSpan MoscowOffset = TimeSpan.FromHours(3);
 
@@ -48,7 +49,7 @@ public sealed partial class InstrumentsViewModel : PageViewModel, IDisposable
     private int _drains;
 
     public InstrumentsViewModel(ClientSession session)
-        : base("instruments", "Инструменты", "Icon.Instruments")
+        : base("instruments", "Nav_Instruments", "Icon.Instruments")
     {
         _session = session;
         _filter = new BehaviorSubject<Func<InstrumentRow, bool>>(static _ => true);
@@ -87,7 +88,7 @@ public sealed partial class InstrumentsViewModel : PageViewModel, IDisposable
 
     [ObservableProperty] private int _shardsTotal;
 
-    [ObservableProperty] private string _healthDetail = "Ожидание статуса сервера…";
+    [ObservableProperty] private string _healthDetail = string.Empty;
 
     [ObservableProperty] private bool _isDegraded;
 
@@ -106,6 +107,8 @@ public sealed partial class InstrumentsViewModel : PageViewModel, IDisposable
         _drains = 0;
         VisibleCount = Rows.Count;
     }
+
+    public override void LanguageChanged() => RefreshHealth();
 
     partial void OnSearchTextChanged(string value) => RefreshFilter();
 
@@ -133,7 +136,11 @@ public sealed partial class InstrumentsViewModel : PageViewModel, IDisposable
 
             HealthDetail = health.Degraded
                 ? health.DegradedReason
-                : $"Все шарды в норме · последнее событие {health.LastMarketEvent?.ToDateTimeOffset().ToLocalTime():HH:mm:ss}";
+                : string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Instruments_Healthy,
+                    health.LastMarketEvent?.ToDateTimeOffset().ToLocalTime()
+                        .ToString("HH:mm:ss", CultureInfo.CurrentCulture));
         }
 
         Sessions.Clear();
@@ -201,9 +208,10 @@ public sealed partial class InstrumentsViewModel : PageViewModel, IDisposable
         VisibleCount = Rows.Count;
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _pipeline.Dispose();
         _filter.Dispose();
+        base.Dispose();
     }
 }

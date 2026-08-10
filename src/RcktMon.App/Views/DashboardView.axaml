@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:RcktMon.App.Localization"
              xmlns:vm="using:RcktMon.App.ViewModels"
              xmlns:fmt="using:RcktMon.App.Formatting"
              xmlns:controls="using:RcktMon.App.Controls"
@@ -20,9 +21,9 @@
             <!-- ============ empty states ============ -->
             <Border Classes="card" IsVisible="{Binding !HasData}" Padding="28">
                 <StackPanel Spacing="10" HorizontalAlignment="Center">
-                    <TextBlock Classes="h1" HorizontalAlignment="Center" Text="Подключаемся к серверу" />
+                    <TextBlock Classes="h1" HorizontalAlignment="Center" Text="{l:Localize Dash_ConnectingTitle}" />
                     <TextBlock Classes="secondary" TextAlignment="Center" MaxWidth="460" TextWrapping="Wrap"
-                               Text="Как только придёт каталог инструментов и первый снимок котировок, здесь появятся сегодняшние движения." />
+                               Text="{l:Localize Dash_ConnectingBody}" />
                 </StackPanel>
             </Border>
 
@@ -31,16 +32,16 @@
 
                 <Border Classes="card" Margin="0,0,12,0">
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="label" Text="Сигналов сегодня" />
+                        <TextBlock Classes="label" Text="{l:Localize Dash_SignalsToday}" />
                         <TextBlock Classes="mono" FontSize="28" FontWeight="SemiBold"
                                    Text="{Binding SignalsToday}" />
-                        <Button Classes="link" Content="Открыть ленту" Command="{Binding OpenSignalsCommand}" />
+                        <Button Classes="link" Content="{l:Localize Dash_OpenFeed}" Command="{Binding OpenSignalsCommand}" />
                     </StackPanel>
                 </Border>
 
                 <Border Classes="card" Margin="0,0,12,0">
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="label" Text="Лидер роста" />
+                        <TextBlock Classes="label" Text="{l:Localize Dash_TopGainer}" />
                         <TextBlock FontSize="17" FontWeight="SemiBold" Text="{Binding TopGainer.Ticker}" />
                         <TextBlock Classes="mono"
                                    Text="{Binding TopGainer.DayChange, Converter={StaticResource Percent}}"
@@ -50,7 +51,7 @@
 
                 <Border Classes="card" Margin="0,0,12,0">
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="label" Text="Лидер падения" />
+                        <TextBlock Classes="label" Text="{l:Localize Dash_TopLoser}" />
                         <TextBlock FontSize="17" FontWeight="SemiBold" Text="{Binding TopLoser.Ticker}" />
                         <TextBlock Classes="mono"
                                    Text="{Binding TopLoser.DayChange, Converter={StaticResource Percent}}"
@@ -60,7 +61,7 @@
 
                 <Border Classes="card" Margin="0,0,12,0">
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="label" Text="Больше всех оборот" />
+                        <TextBlock Classes="label" Text="{l:Localize Dash_MostActive}" />
                         <TextBlock FontSize="17" FontWeight="SemiBold" Text="{Binding MostActive.Ticker}" />
                         <TextBlock Classes="mono"
                                    Text="{Binding MostActive.DayVolumeCost, Converter={StaticResource Compact}}" />
@@ -71,7 +72,7 @@
                      day actually is, from the exchange's own schedule. -->
                 <Border Classes="card">
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="label" Text="Сессия MOEX" />
+                        <TextBlock Classes="label" Text="{l:Localize Dash_Session}" />
                         <TextBlock FontSize="17" FontWeight="SemiBold" Text="{Binding SessionPhase}" />
                         <TextBlock Classes="tertiary" TextWrapping="Wrap" Text="{Binding SessionDetail}" />
                     </StackPanel>
@@ -82,14 +83,14 @@
             <!-- ============ market closed ============ -->
             <Border Classes="card" IsVisible="{Binding IsMarketClosed}">
                 <StackPanel Spacing="4">
-                    <TextBlock Classes="h2" Text="Биржа закрыта" />
+                    <TextBlock Classes="h2" Text="{l:Localize Dash_MarketClosed}" />
                     <TextBlock Classes="secondary" Text="{Binding SessionDetail}" />
                 </StackPanel>
             </Border>
 
             <!-- ============ rockets ============ -->
             <StackPanel Spacing="8" IsVisible="{Binding HasData}">
-                <TextBlock Classes="h2" Text="Сейчас летит" />
+                <TextBlock Classes="h2" Text="{l:Localize Dash_Rockets}" />
 
                 <ItemsControl ItemsSource="{Binding Rockets}">
                     <ItemsControl.ItemsPanel>
@@ -122,11 +123,11 @@
                                                 Background="{DynamicResource Brush.VolumeBar}"
                                                 Width="{Binding DayVolOfAvg, Converter={x:Static fmt:VolumeBarWidthConverter.Instance}, ConverterParameter=120}" />
                                         <TextBlock Grid.Column="1" Classes="tertiary"
-                                                   Text="{Binding DayVolOfAvg, StringFormat={}{0:N1}× объёма}" />
+                                                   Text="{Binding DayVolOfAvg, Converter={x:Static fmt:VolumeMultipleConverter.Instance}}" />
                                     </Grid>
 
                                     <Button Classes="chip" HorizontalAlignment="Stretch"
-                                            Content="Открыть в мониторе"
+                                            Content="{l:Localize Dash_OpenInMonitor}"
                                             Command="{Binding $parent[ItemsControl].((vm:DashboardViewModel)DataContext).OpenCommand}"
                                             CommandParameter="{Binding}" />
                                 </StackPanel>
@@ -139,13 +140,13 @@
             <!-- ============ recent signals strip ============ -->
             <StackPanel Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0" Classes="h2" Text="Последние сигналы" />
-                    <Button Grid.Column="1" Classes="link" Content="Вся лента"
+                    <TextBlock Grid.Column="0" Classes="h2" Text="{l:Localize Dash_RecentSignals}" />
+                    <Button Grid.Column="1" Classes="link" Content="{l:Localize Dash_WholeFeed}"
                             Command="{Binding OpenSignalsCommand}" />
                 </Grid>
 
                 <TextBlock Classes="tertiary" IsVisible="{Binding !RecentSignals.Count}"
-                           Text="Сегодня сигналов ещё не было. Пороги настраиваются в разделе «Настройки»." />
+                           Text="{l:Localize Dash_NoSignalsToday}" />
 
                 <ItemsControl ItemsSource="{Binding RecentSignals}">
                     <ItemsControl.ItemTemplate>

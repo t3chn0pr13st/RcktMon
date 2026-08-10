@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using RcktMon.App.Formatting;
+using RcktMon.App.Localization;
 using RcktMon.App.Threading;
 using RcktMon.Client.Core.Connection;
 using RcktMon.Client.Core.Market;
@@ -88,6 +89,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             _views.Views.AddRange(ViewPresets.Create());
         }
+
+        // Before anything subscribes: pages, columns and chips all take their text from
+        // the localizer at construction.
+        Localizer.Instance.Use(_settings.Locale);
 
         _session = CreateSession();
         _statusSubscription = SubscribeStatus(_session);
@@ -219,6 +224,35 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _viewsFile.Save(_views);
     }
 
+    /// <summary>Switches the interface language and remembers the choice.</summary>
+    /// <remarks>
+    /// Bound resource strings follow the localizer on their own. What needs a nudge is
+    /// text that has already been composed: a converter's output, a formatted sentence,
+    /// a list of cards. Everything below is that nudge, and it runs once per switch.
+    /// </remarks>
+    public void ApplyLanguage(string code)
+    {
+        _settings.Locale = code;
+        Localizer.Instance.Use(code);
+
+        OnPropertyChanged(nameof(Status));
+        _session.Quotes.RefreshFormattedText();
+
+        foreach (PageViewModel page in Pages)
+        {
+            page.LanguageChanged();
+        }
+
+        Tick();
+        Persist();
+
+        // The session carries the locale: signal headlines, preset names and the account
+        // label are rendered by the server in the language it was told at handshake. A
+        // language change therefore has to re-establish the session, or new alerts would
+        // keep arriving in the old language for the rest of the run.
+        Reconnect();
+    }
+
     /// <summary>Applies a theme preference to the running application.</summary>
     public void ApplyTheme(ThemePreference preference)
     {
@@ -310,14 +344,21 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         MarketPhase = Humanize.Phase(phase.Kind);
         MarketCountdown = phase switch
         {
-            { NextChangeAt: { } next } =>
-                $"{(phase.NextChangeOpens ? "открытие" : "закрытие")} {Humanize.Countdown(next - now)}",
-            { Kind: not MarketPhaseKind.Unknown, IsTradingDay: false } => "сегодня выходной",
+            { NextChangeAt: { } next } => string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                phase.NextChangeOpens ? Strings.Shell_Opens : Strings.Shell_Closes,
+                Humanize.Countdown(next - now)),
+            { Kind: not MarketPhaseKind.Unknown, IsTradingDay: false } => Strings.Shell_ClosedToday,
             _ => string.Empty,
         };
 
         DateTimeOffset? lastQuote = _session.Quotes.LastQuoteAt;
-        DataAge = lastQuote is null ? "—" : $"{(int)(now - lastQuote.Value).TotalSeconds} с";
+        DataAge = lastQuote is null
+            ? "—"
+            : string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                Strings.Shell_Seconds,
+                (int)(now - lastQuote.Value).TotalSeconds);
 
         // Only warn while the exchange is genuinely open. A motionless grid on a Sunday
         // is not a fault, and crying wolf about it is how a real warning gets ignored.
@@ -377,7 +418,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         Pages.Add(monitor);
         Pages.Add(new SignalsViewModel(_session, OpenInstrument));
         Pages.Add(new InstrumentsViewModel(_session));
-        Pages.Add(new SettingsViewModel(_session, _settings, _secrets, _paths, Persist, ApplyTheme, Reconnect));
+        Pages.Add(new SettingsViewModel(
+            _session, _settings, _secrets, _paths, Persist, ApplyTheme, Reconnect, ApplyLanguage));
 
         CurrentPage = Pages.FirstOrDefault(p => p.Key == _settings.StartPage) ?? Pages[1];
     }
@@ -461,9 +503,16 @@ internal static class ViewPresets
 {
     public static IEnumerable<SavedView> Create() =>
     [
-        new() { Name = "Все", IsPreset = true },
-        new() { Name = "Мой список", IsPreset = true, WatchlistOnly = true },
-        new() { Name = "Движения RUB", IsPreset = true, Currencies = ["RUB"] },
-        new() { Name = "Всплески объёма", IsPreset = true, UnusualVolumeOnly = true, SortColumn = MonitorColumn.DayVolOfAvg },
+        new() { Name = "All", NameKey = "View_All", IsPreset = true },
+        new() { Name = "Watchlist", NameKey = "View_Watchlist", IsPreset = true, WatchlistOnly = true },
+        new() { Name = "RUB movers", NameKey = "View_RubMovers", IsPreset = true, Currencies = ["RUB"] },
+        new()
+        {
+            Name = "Volume spikes",
+            NameKey = "View_VolumeSpikes",
+            IsPreset = true,
+            UnusualVolumeOnly = true,
+            SortColumn = MonitorColumn.DayVolOfAvg,
+        },
     ];
 }

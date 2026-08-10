@@ -210,6 +210,16 @@ public sealed class QuoteStore : IDisposable
         }
     }
 
+    /// <summary>Asks every row to re-render its converter-backed cells.</summary>
+    /// <remarks>Called after an interface language change; see the row's own remarks.</remarks>
+    public void RefreshFormattedText()
+    {
+        foreach (InstrumentRow row in _rows.Items)
+        {
+            row.RefreshFormattedText();
+        }
+    }
+
     /// <summary>Marks every row stale, or clears the mark. Driven by server health.</summary>
     public void SetStale(bool stale)
     {

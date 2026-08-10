@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:RcktMon.App.Localization"
              xmlns:vm="using:RcktMon.App.ViewModels"
              xmlns:fmt="using:RcktMon.App.Formatting"
              xmlns:controls="using:RcktMon.App.Controls"
@@ -13,6 +14,7 @@
         <fmt:RelativeTimeConverter x:Key="Ago" />
         <fmt:TradingStatusConverter x:Key="StatusText" />
         <fmt:SignalKindConverter x:Key="KindName" />
+        <fmt:ProtoDecimalConverter x:Key="Money" />
     </UserControl.Resources>
 
     <Border Background="{DynamicResource Brush.Surface.2}"
@@ -30,7 +32,7 @@
                     </StackPanel>
 
                     <Button Grid.Column="1" Classes="ghost" Command="{Binding CloseCommand}"
-                            VerticalAlignment="Top" AutomationProperties.Name="Закрыть панель">
+                            VerticalAlignment="Top" AutomationProperties.Name="{l:Localize Inspector_Close}">
                         <PathIcon Width="12" Height="12" Data="{DynamicResource Icon.Close}" />
                     </Button>
                 </Grid>
@@ -69,7 +71,7 @@
                                    IsVisible="{Binding ChartMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
                         <TextBlock Classes="tertiary" VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" Text="Загрузка графика…"
+                                   HorizontalAlignment="Center" Text="{l:Localize Inspector_ChartLoading}"
                                    IsVisible="{Binding IsChartLoading}" />
                     </Panel>
                 </Border>
@@ -86,36 +88,36 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="0">
-                        <TextBlock Classes="label" Text="Спред" />
+                        <TextBlock Classes="label" Text="{l:Localize Inspector_Spread}" />
                         <TextBlock Classes="mono" Text="{Binding SpreadFraction, StringFormat={}{0:P3}}" />
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="1">
-                        <TextBlock Classes="label" Text="Открытие дня" />
+                        <TextBlock Classes="label" Text="{l:Localize Inspector_DayOpen}" />
                         <TextBlock Classes="mono" Text="{Binding Row.DayOpen, StringFormat={}{0:N2}}" />
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="0">
-                        <TextBlock Classes="label" Text="Объём" />
+                        <TextBlock Classes="label" Text="{l:Localize Col_Volume}" />
                         <TextBlock Classes="mono" Text="{Binding Row.DayVolume, Converter={StaticResource Compact}}" />
                     </StackPanel>
                     <StackPanel Grid.Row="2" Grid.Column="1">
-                        <TextBlock Classes="label" Text="× среднего" />
+                        <TextBlock Classes="label" Text="{l:Localize Col_VolumeOfAverage}" />
                         <TextBlock Classes="mono" Text="{Binding Row.DayVolOfAvg, StringFormat={}{0:N2}×}" />
                     </StackPanel>
 
                     <StackPanel Grid.Row="3" Grid.Column="0">
-                        <TextBlock Classes="label" Text="Оборот" />
+                        <TextBlock Classes="label" Text="{l:Localize Col_Turnover}" />
                         <TextBlock Classes="mono" Text="{Binding Row.DayVolumeCost, Converter={StaticResource Compact}}" />
                     </StackPanel>
                     <StackPanel Grid.Row="3" Grid.Column="1">
-                        <TextBlock Classes="label" Text="Последняя сделка" />
+                        <TextBlock Classes="label" Text="{l:Localize Inspector_LastTrade}" />
                         <TextBlock Classes="mono" Text="{Binding Row.LastTradeTime, Converter={StaticResource Ago}}" />
                     </StackPanel>
                 </Grid>
 
                 <!-- identity -->
                 <StackPanel Spacing="6">
-                    <TextBlock Classes="h2" Text="Инструмент" />
+                    <TextBlock Classes="h2" Text="{l:Localize Inspector_Instrument}" />
 
                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto"
                           ColumnSpacing="10" RowSpacing="4">
@@ -125,34 +127,34 @@
                         <TextBlock Grid.Row="1" Grid.Column="0" Classes="tertiary" Text="FIGI" />
                         <TextBlock Grid.Row="1" Grid.Column="1" Classes="mono" FontSize="12" Text="{Binding Row.Figi}" />
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Classes="tertiary" Text="Сектор" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Classes="tertiary" Text="{l:Localize Col_Sector}" />
                         <TextBlock Grid.Row="2" Grid.Column="1" FontSize="12" Text="{Binding Row.Sector}" />
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Classes="tertiary" Text="Лот" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Classes="tertiary" Text="{l:Localize Col_Lot}" />
                         <TextBlock Grid.Row="3" Grid.Column="1" Classes="mono" FontSize="12" Text="{Binding Row.Lot}" />
                     </Grid>
 
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Classes="chip" Content="Копировать тикер" Command="{Binding CopyTickerCommand}" />
-                        <Button Classes="chip" Content="Копировать ISIN" Command="{Binding CopyIsinCommand}" />
+                        <Button Classes="chip" Content="{l:Localize Inspector_CopyTicker}" Command="{Binding CopyTickerCommand}" />
+                        <Button Classes="chip" Content="{l:Localize Inspector_CopyIsin}" Command="{Binding CopyIsinCommand}" />
                     </StackPanel>
                 </StackPanel>
 
                 <!-- month baselines -->
                 <StackPanel Spacing="6" IsVisible="{Binding Month, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <TextBlock Classes="h2" Text="За месяц" />
+                    <TextBlock Classes="h2" Text="{l:Localize Inspector_Month}" />
 
                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto"
                           ColumnSpacing="10" RowSpacing="4">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="tertiary" Text="Максимум" />
+                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="tertiary" Text="{l:Localize Inspector_High}" />
                         <TextBlock Grid.Row="0" Grid.Column="1" Classes="mono" FontSize="12"
-                                   Text="{Binding Month.MonthHigh.Units}" />
+                                   Text="{Binding Month.MonthHigh, Converter={StaticResource Money}}" />
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Classes="tertiary" Text="Минимум" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Classes="tertiary" Text="{l:Localize Inspector_Low}" />
                         <TextBlock Grid.Row="1" Grid.Column="1" Classes="mono" FontSize="12"
-                                   Text="{Binding Month.MonthLow.Units}" />
+                                   Text="{Binding Month.MonthLow, Converter={StaticResource Money}}" />
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Classes="tertiary" Text="Средний объём" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Classes="tertiary" Text="{l:Localize Inspector_AvgVolume}" />
                         <TextBlock Grid.Row="2" Grid.Column="1" Classes="mono" FontSize="12"
                                    Text="{Binding Month.AvgDayVolume, Converter={StaticResource Compact}}" />
                     </Grid>
@@ -160,9 +162,9 @@
 
                 <!-- recent signals for this instrument -->
                 <StackPanel Spacing="6">
-                    <TextBlock Classes="h2" Text="Сигналы" />
+                    <TextBlock Classes="h2" Text="{l:Localize Nav_Signals}" />
 
-                    <TextBlock Classes="tertiary" Text="Сигналов по этому инструменту пока не было."
+                    <TextBlock Classes="tertiary" Text="{l:Localize Inspector_NoSignals}"
                                IsVisible="{Binding !RecentSignals.Count}" />
 
                     <ItemsControl ItemsSource="{Binding RecentSignals}">
@@ -191,9 +193,9 @@
                 -->
                 <Border Classes="card" IsEnabled="False" Opacity="0.6">
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="h2" Text="Торговля" />
+                        <TextBlock Classes="h2" Text="{l:Localize Inspector_Trading}" />
                         <TextBlock Classes="tertiary" TextWrapping="Wrap"
-                                   Text="Выставление заявок появится позже. RcktMon никогда не спрашивает брокерский токен для получения котировок." />
+                                   Text="{l:Localize Inspector_TradingBody}" />
                     </StackPanel>
                 </Border>
 

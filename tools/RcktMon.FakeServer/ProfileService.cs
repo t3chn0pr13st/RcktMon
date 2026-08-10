@@ -31,13 +31,15 @@ public sealed class FakeProfileService(MarketHub hub) : ProfileService.ProfileSe
 
     public override Task<ListProfilesResponse> ListProfiles(ListProfilesRequest request, ServerCallContext context)
     {
+        string locale = SessionLocales.For(context);
+
         lock (Gate)
         {
-            EnsureSeeded();
+            EnsureSeeded(locale);
 
             var response = new ListProfilesResponse { ActiveProfileId = _activeProfileId };
             response.Profiles.AddRange(Profiles.Values.Select(Clone));
-            response.Presets.AddRange(Presets().Select(Clone));
+            response.Presets.AddRange(Presets(locale).Select(Clone));
             return Task.FromResult(response);
         }
     }
@@ -49,7 +51,7 @@ public sealed class FakeProfileService(MarketHub hub) : ProfileService.ProfileSe
 
         lock (Gate)
         {
-            EnsureSeeded();
+            EnsureSeeded(SessionLocales.For(context));
 
             AlertProfile stored = Clone(profile);
             if (string.IsNullOrEmpty(stored.Id))
@@ -75,15 +77,17 @@ public sealed class FakeProfileService(MarketHub hub) : ProfileService.ProfileSe
 
     public override Task<DeleteProfileResponse> DeleteProfile(DeleteProfileRequest request, ServerCallContext context)
     {
+        string locale = SessionLocales.For(context);
+
         lock (Gate)
         {
-            EnsureSeeded();
+            EnsureSeeded(locale);
 
             if (Profiles.Count <= 1)
             {
                 throw new RpcException(new Status(
                     StatusCode.FailedPrecondition,
-                    "Нельзя удалить последний профиль оповещений."));
+                    FakeStrings.LastProfile(locale)));
             }
 
             Profiles.Remove(request.Id);
@@ -101,13 +105,15 @@ public sealed class FakeProfileService(MarketHub hub) : ProfileService.ProfileSe
         SetActiveProfileRequest request,
         ServerCallContext context)
     {
+        string locale = SessionLocales.For(context);
+
         lock (Gate)
         {
-            EnsureSeeded();
+            EnsureSeeded(locale);
 
             if (!Profiles.ContainsKey(request.Id))
             {
-                throw new RpcException(new Status(StatusCode.NotFound, "Профиль не найден."));
+                throw new RpcException(new Status(StatusCode.NotFound, FakeStrings.ProfileNotFound(locale)));
             }
 
             _activeProfileId = request.Id;
@@ -162,8 +168,10 @@ public sealed class FakeProfileService(MarketHub hub) : ProfileService.ProfileSe
             Count = pair.Value,
         }));
 
+        string locale = SessionLocales.For(context);
+
         response.SampleHeadlines.AddRange(
-            hub.Signals.Recent(3).Select(signal => signal.Headline));
+            hub.Signals.Recent(3).Select(signal => FakeStrings.Headline(signal, locale)));
 
         return Task.FromResult(response);
     }
@@ -189,33 +197,33 @@ public sealed class FakeProfileService(MarketHub hub) : ProfileService.ProfileSe
     private static void Add(Dictionary<SignalKind, int> target, SignalKind kind, int count) =>
         target[kind] = target.TryGetValue(kind, out int existing) ? existing + count : count;
 
-    private static void EnsureSeeded()
+    private static void EnsureSeeded(string locale)
     {
         if (Profiles.Count > 0)
         {
             return;
         }
 
-        AlertProfile balanced = Preset("balanced", "Сбалансированный", 0.05m, 2.0m, 0.02m, 3.0m, 5, 5);
+        AlertProfile balanced = Preset("balanced", locale, 0.05m, 2.0m, 0.02m, 3.0m, 5, 5);
         balanced.Id = Guid.NewGuid().ToString("N");
         balanced.PresetKey = string.Empty;
-        balanced.Name = "Мой профиль";
+        balanced.Name = FakeStrings.DefaultProfileName(locale);
         balanced.IsActive = true;
 
         Profiles[balanced.Id] = balanced;
         _activeProfileId = balanced.Id;
     }
 
-    private static IReadOnlyList<AlertProfile> Presets() =>
+    private static IReadOnlyList<AlertProfile> Presets(string locale) =>
     [
-        Preset("conservative", "Консервативный", 0.07m, 3.0m, 0.03m, 5.0m, 5, 5),
-        Preset("balanced", "Сбалансированный", 0.05m, 2.0m, 0.02m, 3.0m, 5, 5),
-        Preset("aggressive", "Агрессивный", 0.03m, 1.2m, 0.01m, 1.5m, 3, 3),
+        Preset("conservative", locale, 0.07m, 3.0m, 0.03m, 5.0m, 5, 5),
+        Preset("balanced", locale, 0.05m, 2.0m, 0.02m, 3.0m, 5, 5),
+        Preset("aggressive", locale, 0.03m, 1.2m, 0.01m, 1.5m, 3, 3),
     ];
 
     private static AlertProfile Preset(
         string key,
-        string name,
+        string locale,
         decimal dayChange,
         decimal dayVolume,
         decimal windowPrice,
@@ -223,7 +231,7 @@ public sealed class FakeProfileService(MarketHub hub) : ProfileService.ProfileSe
         int minutes,
         int volumeMinutes)
     {
-        var profile = new AlertProfile { Id = key, Name = name, PresetKey = key };
+        var profile = new AlertProfile { Id = key, Name = FakeStrings.PresetName(key, locale), PresetKey = key };
 
         // One group per currency, matching how the WPF settings pane was organised. The
         // key is a free string so this can become per-exchange later without a break.

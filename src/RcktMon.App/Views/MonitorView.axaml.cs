@@ -113,7 +113,10 @@ public partial class MonitorView : UserControl
                         target.IsVisible = captured.IsVisible;
                         ApplyStretch();
                         break;
+                    // Both the arrow and the language can change the header text.
                     case nameof(MonitorColumnState.SortIndicator):
+                    case nameof(MonitorColumnState.Header):
+                    case nameof(MonitorColumnState.DisplayHeader):
                         target.Header = captured.DisplayHeader;
                         break;
                     case nameof(MonitorColumnState.Width):

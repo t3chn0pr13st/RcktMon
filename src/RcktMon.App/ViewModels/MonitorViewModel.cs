@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DynamicData;
 using DynamicData.Binding;
+using RcktMon.App.Localization;
 using RcktMon.App.Threading;
 using RcktMon.Client.Core.Market;
 using RcktMon.Client.Core.Settings;
@@ -18,7 +19,8 @@ public sealed partial class FilterChip(string key, string label) : ObservableObj
 {
     public string Key { get; } = key;
 
-    public string Label { get; } = label;
+    /// <summary>Chip text. Settable because some chips are labelled from resources.</summary>
+    [ObservableProperty] private string _label = label;
 
     [ObservableProperty] private bool _isSelected;
 
@@ -28,6 +30,8 @@ public sealed partial class FilterChip(string key, string label) : ObservableObj
     public string Display => Count > 0 ? $"{Label} · {Count}" : Label;
 
     partial void OnCountChanged(int value) => OnPropertyChanged(nameof(Display));
+
+    partial void OnLabelChanged(string value) => OnPropertyChanged(nameof(Display));
 }
 
 /// <summary>
@@ -44,7 +48,7 @@ public sealed partial class FilterChip(string key, string label) : ObservableObj
 /// The shape of the pipeline below is load-bearing; see the comments on each stage.
 /// </para>
 /// </remarks>
-public sealed partial class MonitorViewModel : PageViewModel, IDisposable
+public sealed partial class MonitorViewModel : PageViewModel
 {
     /// <summary>
     /// How long row *order* may lag behind the data.
@@ -83,7 +87,7 @@ public sealed partial class MonitorViewModel : PageViewModel, IDisposable
     private int _knownRowCount = -1;
 
     public MonitorViewModel(ClientSession session, ClientSettings settings, Action persist)
-        : base("monitor", "Монитор", "Icon.Monitor")
+        : base("monitor", "Nav_Monitor", "Icon.Monitor")
     {
         _session = session;
         _settings = settings;
@@ -205,6 +209,26 @@ public sealed partial class MonitorViewModel : PageViewModel, IDisposable
 
     /// <summary>True while the grid has nothing to show at all.</summary>
     public bool IsEmpty => VisibleCount == 0;
+
+    public override void LanguageChanged()
+    {
+        Inspector.LanguageChanged();
+        SyncSortIndicators();
+
+        // Preset view names come from resources through a converter, which only runs when
+        // its bound value changes — and a SavedView does not change. Re-seating the items
+        // is the cheapest way to make the list re-render, and it happens once per switch.
+        SavedView? selected = SelectedView;
+        List<SavedView> views = [.. Views];
+
+        Views.Clear();
+        foreach (SavedView view in views)
+        {
+            Views.Add(view);
+        }
+
+        SelectedView = selected;
+    }
 
     public override void Drained(in DrainResult result)
     {
@@ -466,7 +490,7 @@ public sealed partial class MonitorViewModel : PageViewModel, IDisposable
     private void SaveView()
     {
         string name = string.IsNullOrWhiteSpace(NewViewName)
-            ? SelectedView?.Name ?? "Мой вид"
+            ? SelectedView?.Name ?? Strings.View_Mine
             : NewViewName.Trim();
 
         SavedView captured = CaptureView(name);
@@ -665,11 +689,18 @@ public sealed partial class MonitorViewModel : PageViewModel, IDisposable
         }
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _pipeline.Dispose();
         _filter.Dispose();
         _comparer.Dispose();
         Inspector.Dispose();
+
+        foreach (MonitorColumnState column in Columns)
+        {
+            column.Dispose();
+        }
+
+        base.Dispose();
     }
 }

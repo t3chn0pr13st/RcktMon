@@ -10,12 +10,16 @@ public sealed class FakeSessionService(MarketHub hub) : SessionService.SessionSe
 {
     public override Task<HelloResponse> Hello(HelloRequest request, ServerCallContext context)
     {
+        // Remembered per device, because only this call carries the locale and every
+        // later one has to render text in the same language.
+        SessionLocales.Remember(request.DeviceId, request.Locale);
+
         var response = new HelloResponse
         {
             ProtocolMajor = ProtocolVersion.Major,
             ProtocolMinor = ProtocolVersion.Minor,
             AccountId = "fake-account",
-            AccountDisplayName = "Локальный стенд",
+            AccountDisplayName = FakeStrings.AccountName(request.Locale),
             ServerVersion = $"fake-server/{ProtocolVersion.Display}",
             ServerTime = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow),
             MinSupportedClientMajor = ProtocolVersion.Major,

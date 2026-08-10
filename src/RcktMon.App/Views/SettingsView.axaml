@@ -1,5 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:RcktMon.App.Localization"
+             xmlns:loc="using:RcktMon.App.Localization"
              xmlns:vm="using:RcktMon.App.ViewModels"
              xmlns:fmt="using:RcktMon.App.Formatting"
              x:Class="RcktMon.App.Views.SettingsView"
@@ -13,58 +15,58 @@
         <StackPanel Margin="20" Spacing="16" MaxWidth="900" HorizontalAlignment="Left">
 
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Grid.Column="0" Classes="h1" Text="Настройки" />
+                <TextBlock Grid.Column="0" Classes="h1" Text="{l:Localize Nav_Settings}" />
 
                 <!-- Saved as you type. No Apply button anywhere, on purpose. -->
                 <Border Grid.Column="1" Classes="pill" IsVisible="{Binding ShowSaved}">
-                    <TextBlock FontSize="12" Text="Сохранено" Foreground="{DynamicResource Brush.Positive}" />
+                    <TextBlock FontSize="12" Text="{l:Localize Common_Saved}" Foreground="{DynamicResource Brush.Positive}" />
                 </Border>
             </Grid>
 
             <!-- ============ connection ============ -->
             <Border Classes="card">
                 <StackPanel Spacing="12">
-                    <TextBlock Classes="h2" Text="Подключение" />
+                    <TextBlock Classes="h2" Text="{l:Localize Settings_Connection}" />
 
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="label" Text="Адрес сервера" />
+                        <TextBlock Classes="label" Text="{l:Localize Settings_ServerAddress}" />
                         <TextBox Classes="field" Text="{Binding ServerAddress}"
                                  PlaceholderText="https://api.rcktmon.ru" />
                     </StackPanel>
 
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="label" Text="Ключ доступа" />
+                        <TextBlock Classes="label" Text="{l:Localize Settings_AccessKey}" />
                         <TextBox Classes="field" PasswordChar="•" Text="{Binding AccessKey}"
                                  PlaceholderText="rm_…" />
                         <TextBlock Classes="tertiary" TextWrapping="Wrap">
-                            <Run Text="Хранится тут:" />
+                            <Run Text="{l:Localize Settings_StoredIn}" />
                             <Run Text="{Binding SecretBackend}" />
                         </TextBlock>
                         <TextBlock Classes="tertiary" TextWrapping="Wrap"
-                                   Text="RcktMon никогда не спрашивает брокерский токен: котировки подписывает сервер своими ключами." />
+                                   Text="{l:Localize Settings_NoBrokerToken}" />
                     </StackPanel>
 
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="label" Text="Интервал обновления, мс" />
+                        <TextBlock Classes="label" Text="{l:Localize Settings_TickInterval}" />
                         <NumericUpDown Minimum="250" Maximum="5000" Increment="250" Width="160"
                                        Value="{Binding TickIntervalMs}" />
                         <TextBlock Classes="tertiary" TextWrapping="Wrap"
-                                   Text="Сервер сам ограничит значение своим диапазоном и тарифом аккаунта." />
+                                   Text="{l:Localize Settings_TickIntervalHint}" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button Classes="primary" Content="Переподключиться"
+                        <Button Classes="primary" Content="{l:Localize Common_Reconnect}"
                                 Command="{Binding ReconnectCommand}" />
                         <TextBlock Classes="secondary" VerticalAlignment="Center"
                                    IsVisible="{Binding ConnectionNeedsRestart}"
-                                   Text="Адрес или ключ изменились — применятся после переподключения." />
+                                   Text="{l:Localize Settings_RestartHint}" />
                     </StackPanel>
 
                     <StackPanel Spacing="2">
-                        <TextBlock Classes="label" Text="Идентификатор установки" />
+                        <TextBlock Classes="label" Text="{l:Localize Settings_DeviceId}" />
                         <TextBlock Classes="mono" FontSize="12" Text="{Binding DeviceId}" />
                         <TextBlock Classes="tertiary" TextWrapping="Wrap"
-                                   Text="Не секрет. Нужен, чтобы владелец аккаунта видел и отзывал отдельные устройства." />
+                                   Text="{l:Localize Settings_DeviceIdHint}" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -73,8 +75,8 @@
             <Border Classes="card">
                 <StackPanel Spacing="12">
                     <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Grid.Column="0" Classes="h2" Text="Профили оповещений" />
-                        <Button Grid.Column="1" Classes="chip" Content="Обновить"
+                        <TextBlock Grid.Column="0" Classes="h2" Text="{l:Localize Settings_Profiles}" />
+                        <Button Grid.Column="1" Classes="chip" Content="{l:Localize Common_Refresh}"
                                 Command="{Binding ReloadProfilesCommand}" />
                     </Grid>
 
@@ -93,7 +95,7 @@
                                     <DataTemplate x:DataType="vm:AlertProfileViewModel">
                                         <StackPanel>
                                             <TextBlock Text="{Binding Name}" />
-                                            <TextBlock Classes="tertiary" Text="Активен"
+                                            <TextBlock Classes="tertiary" Text="{l:Localize Settings_Active}"
                                                        IsVisible="{Binding IsActive}" />
                                         </StackPanel>
                                     </DataTemplate>
@@ -101,13 +103,13 @@
                             </ListBox>
 
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <Button Classes="chip" Content="Сделать активным"
+                                <Button Classes="chip" Content="{l:Localize Settings_MakeActive}"
                                         Command="{Binding ActivateProfileCommand}" />
-                                <Button Classes="chip" Content="Удалить"
+                                <Button Classes="chip" Content="{l:Localize Common_Delete}"
                                         Command="{Binding DeleteProfileCommand}" />
                             </StackPanel>
 
-                            <TextBlock Classes="label" Text="Начать с пресета" />
+                            <TextBlock Classes="label" Text="{l:Localize Settings_StartFromPreset}" />
                             <ItemsControl ItemsSource="{Binding Presets}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:AlertProfileViewModel">
@@ -127,7 +129,7 @@
                         <StackPanel Grid.Column="1" Spacing="12">
 
                             <StackPanel Spacing="4">
-                                <TextBlock Classes="label" Text="Название профиля" />
+                                <TextBlock Classes="label" Text="{l:Localize Settings_ProfileName}" />
                                 <TextBox Classes="field" Text="{Binding SelectedProfile.Name}" />
                             </StackPanel>
 
@@ -136,14 +138,14 @@
                             <Border Background="{DynamicResource Brush.Surface.3}"
                                     CornerRadius="{DynamicResource Radius.Medium}" Padding="12">
                                 <StackPanel Spacing="4">
-                                    <TextBlock Classes="label" Text="С этими порогами сработало бы примерно" />
+                                    <TextBlock Classes="label" Text="{l:Localize Settings_PreviewLabel}" />
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock Classes="mono" FontSize="24" FontWeight="SemiBold"
                                                    Text="{Binding EstimatedSignalsPerDay}" />
                                         <TextBlock Classes="secondary" VerticalAlignment="Bottom"
-                                                   Text="сигналов в день" />
+                                                   Text="{l:Localize Settings_PerDay}" />
                                         <TextBlock Classes="tertiary" VerticalAlignment="Bottom"
-                                                   Text="считаем…" IsVisible="{Binding IsPreviewing}" />
+                                                   Text="{l:Localize Settings_Counting}" IsVisible="{Binding IsPreviewing}" />
                                     </StackPanel>
                                     <TextBlock Classes="tertiary" TextWrapping="Wrap" Text="{Binding PreviewDetail}" />
 
@@ -165,7 +167,7 @@
 
                                                 <Grid ColumnDefinitions="*,Auto,Auto">
                                                     <TextBlock Grid.Column="0" Classes="h2" Text="{Binding GroupKey}" />
-                                                    <CheckBox Grid.Column="1" Content="Включено"
+                                                    <CheckBox Grid.Column="1" Content="{l:Localize Settings_Enabled}"
                                                               IsChecked="{Binding Enabled}" />
                                                     <CheckBox Grid.Column="2" Content="Telegram" Margin="12,0,0,0"
                                                               IsChecked="{Binding TelegramEnabled}" />
@@ -175,42 +177,42 @@
                                                       ColumnSpacing="12" RowSpacing="10">
 
                                                     <StackPanel Grid.Row="0" Grid.Column="0" Spacing="2">
-                                                        <TextBlock Classes="label" Text="Дневное изменение, %" />
+                                                        <TextBlock Classes="label" Text="{l:Localize Settings_DayChangePercent}" />
                                                         <NumericUpDown Minimum="0" Maximum="100" Increment="0.5"
                                                                        FormatString="0.##"
                                                                        Value="{Binding DayPricePercent}" />
                                                     </StackPanel>
 
                                                     <StackPanel Grid.Row="0" Grid.Column="1" Spacing="2">
-                                                        <TextBlock Classes="label" Text="Объём, × среднего за день" />
+                                                        <TextBlock Classes="label" Text="{l:Localize Settings_DayVolumeMultiple}" />
                                                         <NumericUpDown Minimum="0" Maximum="50" Increment="0.1"
                                                                        FormatString="0.##"
                                                                        Value="{Binding DayVolumeMultiple}" />
                                                     </StackPanel>
 
                                                     <StackPanel Grid.Row="1" Grid.Column="0" Spacing="2">
-                                                        <TextBlock Classes="label" Text="Изменение цены за N минут, %" />
+                                                        <TextBlock Classes="label" Text="{l:Localize Settings_WindowPricePercent}" />
                                                         <NumericUpDown Minimum="0" Maximum="100" Increment="0.25"
                                                                        FormatString="0.##"
                                                                        Value="{Binding WindowPricePercent}" />
                                                     </StackPanel>
 
                                                     <StackPanel Grid.Row="1" Grid.Column="1" Spacing="2">
-                                                        <TextBlock Classes="label" Text="Объём за N минут, × среднего" />
+                                                        <TextBlock Classes="label" Text="{l:Localize Settings_WindowVolumeMultiple}" />
                                                         <NumericUpDown Minimum="0" Maximum="50" Increment="0.1"
                                                                        FormatString="0.##"
                                                                        Value="{Binding WindowVolumeMultiple}" />
                                                     </StackPanel>
 
                                                     <StackPanel Grid.Row="2" Grid.Column="0" Spacing="2">
-                                                        <TextBlock Classes="label" Text="Окно цены, минут" />
+                                                        <TextBlock Classes="label" Text="{l:Localize Settings_PriceWindow}" />
                                                         <NumericUpDown Minimum="1" Maximum="60" Increment="1"
                                                                        FormatString="0"
                                                                        Value="{Binding Minutes}" />
                                                     </StackPanel>
 
                                                     <StackPanel Grid.Row="2" Grid.Column="1" Spacing="2">
-                                                        <TextBlock Classes="label" Text="Окно объёма, минут" />
+                                                        <TextBlock Classes="label" Text="{l:Localize Settings_VolumeWindow}" />
                                                         <NumericUpDown Minimum="1" Maximum="60" Increment="1"
                                                                        FormatString="0"
                                                                        Value="{Binding VolumeMinutes}" />
@@ -219,12 +221,12 @@
 
                                                 <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                                                     <StackPanel Grid.Column="0" Spacing="2">
-                                                        <TextBlock Classes="label" Text="Только эти тикеры" />
-                                                        <TextBox Classes="field" PlaceholderText="regex, пусто = все"
+                                                        <TextBlock Classes="label" Text="{l:Localize Settings_IncludeTickers}" />
+                                                        <TextBox Classes="field" PlaceholderText="{l:Localize Settings_IncludePlaceholder}"
                                                                  Text="{Binding IncludePattern}" />
                                                     </StackPanel>
                                                     <StackPanel Grid.Column="1" Spacing="2">
-                                                        <TextBlock Classes="label" Text="Исключить тикеры" />
+                                                        <TextBlock Classes="label" Text="{l:Localize Settings_ExcludeTickers}" />
                                                         <TextBox Classes="field" PlaceholderText="regex"
                                                                  Text="{Binding ExcludePattern}" />
                                                     </StackPanel>
@@ -244,28 +246,45 @@
             <!-- ============ appearance ============ -->
             <Border Classes="card">
                 <StackPanel Spacing="12">
-                    <TextBlock Classes="h2" Text="Внешний вид" />
+                    <TextBlock Classes="h2" Text="{l:Localize Settings_Appearance}" />
 
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="label" Text="Тема" />
+                        <TextBlock Classes="label" Text="{l:Localize Settings_Theme}" />
                         <StackPanel Orientation="Horizontal" Spacing="14">
-                            <RadioButton GroupName="theme" Content="Как в системе"
+                            <RadioButton GroupName="theme" Content="{l:Localize Settings_ThemeSystem}"
                                          IsChecked="{Binding Theme, Converter={StaticResource EnumIs}, ConverterParameter=System}" />
-                            <RadioButton GroupName="theme" Content="Светлая"
+                            <RadioButton GroupName="theme" Content="{l:Localize Settings_ThemeLight}"
                                          IsChecked="{Binding Theme, Converter={StaticResource EnumIs}, ConverterParameter=Light}" />
-                            <RadioButton GroupName="theme" Content="Тёмная"
+                            <RadioButton GroupName="theme" Content="{l:Localize Settings_ThemeDark}"
                                          IsChecked="{Binding Theme, Converter={StaticResource EnumIs}, ConverterParameter=Dark}" />
                         </StackPanel>
                     </StackPanel>
 
-                    <CheckBox Content="Компактные строки в гриде" IsChecked="{Binding CompactDensity}" />
-                    <CheckBox Content="Спарклайны в мониторе" IsChecked="{Binding ShowSparklines}" />
+                    <CheckBox Content="{l:Localize Settings_CompactRows}" IsChecked="{Binding CompactDensity}" />
+                    <CheckBox Content="{l:Localize Settings_Sparklines}" IsChecked="{Binding ShowSparklines}" />
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="label" Text="{l:Localize Settings_Language}" />
+                        <ComboBox Width="200"
+                                  ItemsSource="{Binding Languages}"
+                                  SelectedValue="{Binding Language}"
+                                  SelectedValueBinding="{Binding Code}"
+                                  AutomationProperties.Name="{l:Localize Settings_Language}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="loc:LanguageOption">
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBlock Classes="tertiary" TextWrapping="Wrap" MaxWidth="520"
+                                   Text="{l:Localize Settings_LanguageHint}" />
+                    </StackPanel>
 
                     <StackPanel Spacing="2">
-                        <CheckBox Content="Палитра для дальтоников (синий/оранжевый)"
+                        <CheckBox Content="{l:Localize Settings_ColourBlind}"
                                   IsChecked="{Binding ColourBlindSafe}" />
                         <TextBlock Classes="tertiary" TextWrapping="Wrap" MaxWidth="520"
-                                   Text="Направление всегда дублируется стрелкой и знаком, так что цвет — второй канал, а не единственный." />
+                                   Text="{l:Localize Settings_ColourBlindHint}" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -273,15 +292,15 @@
             <!-- ============ advanced ============ -->
             <Border Classes="card">
                 <StackPanel Spacing="8">
-                    <TextBlock Classes="h2" Text="Дополнительно" />
+                    <TextBlock Classes="h2" Text="{l:Localize Settings_Advanced}" />
 
                     <StackPanel Spacing="2">
-                        <TextBlock Classes="label" Text="Каталог настроек" />
+                        <TextBlock Classes="label" Text="{l:Localize Settings_ConfigDirectory}" />
                         <SelectableTextBlock Classes="mono" FontSize="12" Text="{Binding ConfigDirectory}" />
                     </StackPanel>
 
                     <StackPanel Spacing="2">
-                        <TextBlock Classes="label" Text="Каталог логов" />
+                        <TextBlock Classes="label" Text="{l:Localize Settings_LogDirectory}" />
                         <SelectableTextBlock Classes="mono" FontSize="12" Text="{Binding LogDirectory}" />
                     </StackPanel>
                 </StackPanel>

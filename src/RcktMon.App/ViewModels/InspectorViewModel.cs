@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using RcktMon.App.Localization;
 using RcktMon.Client.Core.Market;
 using RcktMon.Protocol;
 using RcktMon.Protocol.V1;
@@ -93,6 +95,20 @@ public sealed partial class InspectorViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(SpreadFraction));
     }
 
+    /// <summary>Rebuilds the signal list so its cards pick up the new language.</summary>
+    public void LanguageChanged()
+    {
+        if (Row is { } row)
+        {
+            RecentSignals.Clear();
+
+            foreach (SignalEntry signal in _session.Signals.ForInstrument(row.Uid, 12))
+            {
+                RecentSignals.Add(signal);
+            }
+        }
+    }
+
     [RelayCommand]
     private void Close() => Show(null);
 
@@ -118,7 +134,7 @@ public sealed partial class InspectorViewModel : ObservableObject, IDisposable
     {
         if (_session.Connection.History is not { } history)
         {
-            ChartMessage = "Нет соединения с сервером";
+            ChartMessage = Strings.Inspector_NoConnection;
             return;
         }
 
@@ -143,8 +159,8 @@ public sealed partial class InspectorViewModel : ObservableObject, IDisposable
             if (candles.Count == 0)
             {
                 ChartMessage = row.FirstCandleDate.Length > 0
-                    ? $"Нет минутных данных (первая свеча {row.FirstCandleDate})"
-                    : "Нет минутных данных";
+                    ? string.Format(CultureInfo.CurrentCulture, Strings.Inspector_NoChartSince, row.FirstCandleDate)
+                    : Strings.Inspector_NoChart;
                 return;
             }
 
@@ -156,7 +172,7 @@ public sealed partial class InspectorViewModel : ObservableObject, IDisposable
         }
         catch (Grpc.Core.RpcException ex)
         {
-            ChartMessage = $"График недоступен: {ex.Status.Detail}";
+            ChartMessage = string.Format(CultureInfo.CurrentCulture, Strings.Inspector_ChartFailed, ex.Status.Detail);
         }
         finally
         {

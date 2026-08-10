@@ -1,0 +1,857 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Russian interface text.
+
+    Generated-friendly but hand-edited: keep the keys sorted and keep this file and
+    Strings.ru.resx in step. A test asserts the two key sets are identical, because a
+    missing translation shows up as a raw key on screen and nowhere else.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Chip_Gainers" xml:space="preserve">
+    <value>Растущие</value>
+  </data>
+  <data name="Chip_Losers" xml:space="preserve">
+    <value>Падающие</value>
+  </data>
+  <data name="Chip_SignalledToday" xml:space="preserve">
+    <value>Сигналили сегодня</value>
+  </data>
+  <data name="Chip_UnusualVolume" xml:space="preserve">
+    <value>Объём выше среднего</value>
+  </data>
+  <data name="Chip_Watchlist" xml:space="preserve">
+    <value>Мой список</value>
+  </data>
+  <data name="Col_Ask" xml:space="preserve">
+    <value>Ask</value>
+  </data>
+  <data name="Col_Bid" xml:space="preserve">
+    <value>Bid</value>
+  </data>
+  <data name="Col_Change" xml:space="preserve">
+    <value>Изм.</value>
+  </data>
+  <data name="Col_Class" xml:space="preserve">
+    <value>Класс</value>
+  </data>
+  <data name="Col_Currency" xml:space="preserve">
+    <value>Валюта</value>
+  </data>
+  <data name="Col_Data" xml:space="preserve">
+    <value>Данные</value>
+  </data>
+  <data name="Col_Exchange" xml:space="preserve">
+    <value>Биржа</value>
+  </data>
+  <data name="Col_FirstCandle" xml:space="preserve">
+    <value>Первая свеча</value>
+  </data>
+  <data name="Col_Instrument" xml:space="preserve">
+    <value>Инструмент</value>
+  </data>
+  <data name="Col_LastTrade" xml:space="preserve">
+    <value>Сделка</value>
+  </data>
+  <data name="Col_Lot" xml:space="preserve">
+    <value>Лот</value>
+  </data>
+  <data name="Col_Name" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="Col_Price" xml:space="preserve">
+    <value>Цена</value>
+  </data>
+  <data name="Col_Sector" xml:space="preserve">
+    <value>Сектор</value>
+  </data>
+  <data name="Col_Short" xml:space="preserve">
+    <value>Шорт</value>
+  </data>
+  <data name="Col_Sparkline" xml:space="preserve">
+    <value>График</value>
+  </data>
+  <data name="Col_Status" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="Col_Ticker" xml:space="preserve">
+    <value>Тикер</value>
+  </data>
+  <data name="Col_Turnover" xml:space="preserve">
+    <value>Оборот</value>
+  </data>
+  <data name="Col_Volume" xml:space="preserve">
+    <value>Объём</value>
+  </data>
+  <data name="Col_VolumeOfAverage" xml:space="preserve">
+    <value>× среднего</value>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>Применить</value>
+  </data>
+  <data name="Common_Back" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="Common_ClearFilters" xml:space="preserve">
+    <value>Сбросить фильтры</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="Common_Done" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="Common_MissingView" xml:space="preserve">
+    <value>Не найдена разметка {0}</value>
+  </data>
+  <data name="Common_Next" xml:space="preserve">
+    <value>Далее</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="Common_NoData" xml:space="preserve">
+    <value>(нет данных)</value>
+  </data>
+  <data name="Common_Reconnect" xml:space="preserve">
+    <value>Переподключиться</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
+  <data name="Common_Reset" xml:space="preserve">
+    <value>Сбросить</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="Common_Saved" xml:space="preserve">
+    <value>Сохранено</value>
+  </data>
+  <data name="Common_Skip" xml:space="preserve">
+    <value>Пропустить</value>
+  </data>
+  <data name="Common_Theme" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="Connection_Connected" xml:space="preserve">
+    <value>Подключено</value>
+  </data>
+  <data name="Connection_Connecting" xml:space="preserve">
+    <value>Подключение…</value>
+  </data>
+  <data name="Connection_Degraded" xml:space="preserve">
+    <value>Данные могут быть устаревшими</value>
+  </data>
+  <data name="Connection_Disconnected" xml:space="preserve">
+    <value>Нет соединения</value>
+  </data>
+  <data name="Connection_Reconnecting" xml:space="preserve">
+    <value>Переподключение…</value>
+  </data>
+  <data name="Connection_ReconnectingIn" xml:space="preserve">
+    <value>Переподключение через {0} с</value>
+  </data>
+  <data name="Connection_Unauthorized" xml:space="preserve">
+    <value>Ключ доступа отклонён</value>
+  </data>
+  <data name="Connection_VersionMismatch" xml:space="preserve">
+    <value>Требуется обновление</value>
+  </data>
+  <data name="Countdown_HoursMinutes" xml:space="preserve">
+    <value>через {0} ч {1} мин</value>
+  </data>
+  <data name="Countdown_Imminent" xml:space="preserve">
+    <value>вот-вот</value>
+  </data>
+  <data name="Countdown_Minutes" xml:space="preserve">
+    <value>через {0} {1}</value>
+  </data>
+  <data name="Countdown_Seconds" xml:space="preserve">
+    <value>через {0} с</value>
+  </data>
+  <data name="Dash_ConnectingBody" xml:space="preserve">
+    <value>Как только придёт каталог инструментов и первый снимок котировок, здесь появятся сегодняшние движения.</value>
+  </data>
+  <data name="Dash_ConnectingTitle" xml:space="preserve">
+    <value>Подключаемся к серверу</value>
+  </data>
+  <data name="Dash_MarketClosed" xml:space="preserve">
+    <value>Биржа закрыта</value>
+  </data>
+  <data name="Dash_MostActive" xml:space="preserve">
+    <value>Больше всех оборот</value>
+  </data>
+  <data name="Dash_NoSignalsToday" xml:space="preserve">
+    <value>Сегодня сигналов ещё не было. Пороги настраиваются в разделе «Настройки».</value>
+  </data>
+  <data name="Dash_OpenFeed" xml:space="preserve">
+    <value>Открыть ленту</value>
+  </data>
+  <data name="Dash_OpenInMonitor" xml:space="preserve">
+    <value>Открыть в мониторе</value>
+  </data>
+  <data name="Dash_RecentSignals" xml:space="preserve">
+    <value>Последние сигналы</value>
+  </data>
+  <data name="Dash_Rockets" xml:space="preserve">
+    <value>Сейчас летит</value>
+  </data>
+  <data name="Dash_Session" xml:space="preserve">
+    <value>Сессия MOEX</value>
+  </data>
+  <data name="Dash_SignalsToday" xml:space="preserve">
+    <value>Сигналов сегодня</value>
+  </data>
+  <data name="Dash_TopGainer" xml:space="preserve">
+    <value>Лидер роста</value>
+  </data>
+  <data name="Dash_TopLoser" xml:space="preserve">
+    <value>Лидер падения</value>
+  </data>
+  <data name="Dash_VolumeOfAverage" xml:space="preserve">
+    <value>{0}× объёма</value>
+  </data>
+  <data name="Dash_WholeFeed" xml:space="preserve">
+    <value>Вся лента</value>
+  </data>
+  <data name="Fault_ClientTooOld" xml:space="preserve">
+    <value>Этой версии RcktMon требуется обновление: сервер поддерживает протокол не ниже v{0}, клиент реализует v{1}.</value>
+  </data>
+  <data name="Fault_DroppedTicks" xml:space="preserve">
+    <value>Сервер пропускает обновления для этого клиента ({0})</value>
+  </data>
+  <data name="Fault_InsecureAddress" xml:space="preserve">
+    <value>Отказ от незашифрованного подключения к {0}. Используйте https или явно включите незащищённое подключение для локальной разработки.</value>
+  </data>
+  <data name="Fault_KeyRejected" xml:space="preserve">
+    <value>Ключ доступа отклонён или отозван</value>
+  </data>
+  <data name="Fault_QuotesStale" xml:space="preserve">
+    <value>Котировки не обновлялись более 10 секунд</value>
+  </data>
+  <data name="Fault_StreamClosed" xml:space="preserve">
+    <value>Сервер закрыл поток</value>
+  </data>
+  <data name="Group_Earlier" xml:space="preserve">
+    <value>Ранее</value>
+  </data>
+  <data name="Group_Today" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="Group_Yesterday" xml:space="preserve">
+    <value>Вчера</value>
+  </data>
+  <data name="Inspector_AvgVolume" xml:space="preserve">
+    <value>Средний объём</value>
+  </data>
+  <data name="Inspector_ChartFailed" xml:space="preserve">
+    <value>График недоступен: {0}</value>
+  </data>
+  <data name="Inspector_ChartLoading" xml:space="preserve">
+    <value>Загрузка графика…</value>
+  </data>
+  <data name="Inspector_Close" xml:space="preserve">
+    <value>Закрыть панель</value>
+  </data>
+  <data name="Inspector_CopyIsin" xml:space="preserve">
+    <value>Копировать ISIN</value>
+  </data>
+  <data name="Inspector_CopyTicker" xml:space="preserve">
+    <value>Копировать тикер</value>
+  </data>
+  <data name="Inspector_DayOpen" xml:space="preserve">
+    <value>Открытие дня</value>
+  </data>
+  <data name="Inspector_High" xml:space="preserve">
+    <value>Максимум</value>
+  </data>
+  <data name="Inspector_Instrument" xml:space="preserve">
+    <value>Инструмент</value>
+  </data>
+  <data name="Inspector_LastTrade" xml:space="preserve">
+    <value>Последняя сделка</value>
+  </data>
+  <data name="Inspector_Low" xml:space="preserve">
+    <value>Минимум</value>
+  </data>
+  <data name="Inspector_Month" xml:space="preserve">
+    <value>За месяц</value>
+  </data>
+  <data name="Inspector_NoChart" xml:space="preserve">
+    <value>Нет минутных данных</value>
+  </data>
+  <data name="Inspector_NoChartSince" xml:space="preserve">
+    <value>Нет минутных данных (первая свеча {0})</value>
+  </data>
+  <data name="Inspector_NoConnection" xml:space="preserve">
+    <value>Нет соединения с сервером</value>
+  </data>
+  <data name="Inspector_NoSignals" xml:space="preserve">
+    <value>Сигналов по этому инструменту пока не было.</value>
+  </data>
+  <data name="Inspector_Spread" xml:space="preserve">
+    <value>Спред</value>
+  </data>
+  <data name="Inspector_Trading" xml:space="preserve">
+    <value>Торговля</value>
+  </data>
+  <data name="Inspector_TradingBody" xml:space="preserve">
+    <value>Выставление заявок появится позже. RcktMon никогда не спрашивает брокерский токен для получения котировок.</value>
+  </data>
+  <data name="Instruments_Health" xml:space="preserve">
+    <value>Поток рыночных данных</value>
+  </data>
+  <data name="Instruments_Healthy" xml:space="preserve">
+    <value>Все шарды в норме · последнее событие {0}</value>
+  </data>
+  <data name="Instruments_Local" xml:space="preserve">
+    <value>Локально:</value>
+  </data>
+  <data name="Instruments_SearchPlaceholder" xml:space="preserve">
+    <value>Тикер, название или ISIN</value>
+  </data>
+  <data name="Instruments_Shards" xml:space="preserve">
+    <value>Шарды</value>
+  </data>
+  <data name="Instruments_ShortableOnly" xml:space="preserve">
+    <value>Можно шортить</value>
+  </data>
+  <data name="Instruments_Shown" xml:space="preserve">
+    <value>Показано:</value>
+  </data>
+  <data name="Instruments_Subscribed" xml:space="preserve">
+    <value>Подписано</value>
+  </data>
+  <data name="Instruments_TradableOnly" xml:space="preserve">
+    <value>Только торгуемые</value>
+  </data>
+  <data name="Instruments_WaitingStatus" xml:space="preserve">
+    <value>Ожидание статуса сервера…</value>
+  </data>
+  <data name="Monitor_Columns" xml:space="preserve">
+    <value>Колонки</value>
+  </data>
+  <data name="Monitor_DeleteCurrentView" xml:space="preserve">
+    <value>Удалить текущий</value>
+  </data>
+  <data name="Monitor_Dense" xml:space="preserve">
+    <value>Плотно</value>
+  </data>
+  <data name="Monitor_DenseAutomation" xml:space="preserve">
+    <value>Компактная плотность строк</value>
+  </data>
+  <data name="Monitor_EmptyFilteredBody" xml:space="preserve">
+    <value>Ни один инструмент не подходит под текущие фильтры.</value>
+  </data>
+  <data name="Monitor_EmptyFilteredTitle" xml:space="preserve">
+    <value>Ничего не найдено</value>
+  </data>
+  <data name="Monitor_EmptyWaitingBody" xml:space="preserve">
+    <value>Каталог инструментов ещё не получен от сервера.</value>
+  </data>
+  <data name="Monitor_EmptyWaitingTitle" xml:space="preserve">
+    <value>Ожидание данных</value>
+  </data>
+  <data name="Monitor_SaveView" xml:space="preserve">
+    <value>Сохранить вид</value>
+  </data>
+  <data name="Monitor_SaveViewHint" xml:space="preserve">
+    <value>Фильтры, сортировка и колонки сохраняются под именем</value>
+  </data>
+  <data name="Monitor_SearchAutomation" xml:space="preserve">
+    <value>Поиск инструмента</value>
+  </data>
+  <data name="Monitor_SearchPlaceholder" xml:space="preserve">
+    <value>Тикер или название   (Ctrl+K)</value>
+  </data>
+  <data name="Monitor_Sparklines" xml:space="preserve">
+    <value>Графики</value>
+  </data>
+  <data name="Monitor_SparklinesAutomation" xml:space="preserve">
+    <value>Показывать спарклайны</value>
+  </data>
+  <data name="Monitor_SparklinesTip" xml:space="preserve">
+    <value>Спарклайны в отдельной колонке. Самая дорогая ячейка в гриде, поэтому выключены по умолчанию.</value>
+  </data>
+  <data name="Monitor_ViewNamePlaceholder" xml:space="preserve">
+    <value>Название вида</value>
+  </data>
+  <data name="Monitor_ViewsAutomation" xml:space="preserve">
+    <value>Сохранённые виды</value>
+  </data>
+  <data name="Monitor_WatchAutomation" xml:space="preserve">
+    <value>В избранное</value>
+  </data>
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>Обзор</value>
+  </data>
+  <data name="Nav_Instruments" xml:space="preserve">
+    <value>Инструменты</value>
+  </data>
+  <data name="Nav_Monitor" xml:space="preserve">
+    <value>Монитор</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="Nav_Signals" xml:space="preserve">
+    <value>Сигналы</value>
+  </data>
+  <data name="Onb_BadAddress" xml:space="preserve">
+    <value>Адрес должен быть вида https://api.example.com</value>
+  </data>
+  <data name="Onb_Check" xml:space="preserve">
+    <value>Проверить</value>
+  </data>
+  <data name="Onb_Connect" xml:space="preserve">
+    <value>Подключение</value>
+  </data>
+  <data name="Onb_HowNoisy" xml:space="preserve">
+    <value>Насколько шумно?</value>
+  </data>
+  <data name="Onb_HowNoisyBody" xml:space="preserve">
+    <value>Выберите набор порогов. Его можно изменить в любой момент в настройках — там же виден прогноз, сколько сигналов в день он даст.</value>
+  </data>
+  <data name="Onb_Intro" xml:space="preserve">
+    <value>RcktMon следит за всем рынком и присылает оповещение, когда цена или объём инструмента резко меняются — за день или за несколько минут. Пороги настраиваются, история сигналов хранится на сервере.</value>
+  </data>
+  <data name="Onb_KeyHint" xml:space="preserve">
+    <value>Ключ выдаётся ботом в Telegram и хранится в связке ключей операционной системы.</value>
+  </data>
+  <data name="Onb_NoBrokerToken" xml:space="preserve">
+    <value>RcktMon никогда не спрашивает брокерский токен.</value>
+  </data>
+  <data name="Onb_PresetNotSaved" xml:space="preserve">
+    <value>Профиль не сохранён: {0}</value>
+  </data>
+  <data name="Onb_PresetsFailed" xml:space="preserve">
+    <value>Не удалось загрузить пресеты: {0}</value>
+  </data>
+  <data name="Onb_Tagline" xml:space="preserve">
+    <value>Монитор резких движений на бирже</value>
+  </data>
+  <data name="Onb_WhatChanged" xml:space="preserve">
+    <value>Что изменилось</value>
+  </data>
+  <data name="Onb_WhatChangedBody" xml:space="preserve">
+    <value>Раньше приложение требовало брокерский токен, токен бота и два chat id ещё до первого запуска. Теперь рыночные данные подписывает сервер: клиенту нужен только адрес и ключ доступа.</value>
+  </data>
+  <data name="Phase_Break" xml:space="preserve">
+    <value>Перерыв</value>
+  </data>
+  <data name="Phase_Closed" xml:space="preserve">
+    <value>Закрыто</value>
+  </data>
+  <data name="Phase_ClosingAuction" xml:space="preserve">
+    <value>Аукцион закрытия</value>
+  </data>
+  <data name="Phase_Evening" xml:space="preserve">
+    <value>Вечерняя сессия</value>
+  </data>
+  <data name="Phase_Open" xml:space="preserve">
+    <value>Торги идут</value>
+  </data>
+  <data name="Phase_OpeningAuction" xml:space="preserve">
+    <value>Аукцион открытия</value>
+  </data>
+  <data name="Phase_Unknown" xml:space="preserve">
+    <value>Нет данных</value>
+  </data>
+  <data name="Profile_NoRules" xml:space="preserve">
+    <value>Нет правил</value>
+  </data>
+  <data name="Profile_Summary" xml:space="preserve">
+    <value>День от {0}% · {1}% за {2} мин</value>
+  </data>
+  <data name="Profiles_ActivateFailed" xml:space="preserve">
+    <value>Не удалось активировать профиль: {0}</value>
+  </data>
+  <data name="Profiles_CreateFailed" xml:space="preserve">
+    <value>Не удалось создать профиль: {0}</value>
+  </data>
+  <data name="Profiles_LoadFailed" xml:space="preserve">
+    <value>Не удалось загрузить профили: {0}</value>
+  </data>
+  <data name="Profiles_NoConnection" xml:space="preserve">
+    <value>Нет соединения с сервером — профили недоступны.</value>
+  </data>
+  <data name="Profiles_Rejected" xml:space="preserve">
+    <value>Сервер отклонил профиль: {0}</value>
+  </data>
+  <data name="Secret_Dpapi" xml:space="preserve">
+    <value>DPAPI (текущий пользователь Windows)</value>
+  </data>
+  <data name="Secret_File" xml:space="preserve">
+    <value>Зашифрованный файл (AES-GCM) в каталоге настроек</value>
+  </data>
+  <data name="Secret_Keychain" xml:space="preserve">
+    <value>Связка ключей macOS</value>
+  </data>
+  <data name="Session_ClosedToday" xml:space="preserve">
+    <value>Сегодня биржа не работает</value>
+  </data>
+  <data name="Session_Closes" xml:space="preserve">
+    <value>Закрытие {0} · {1}</value>
+  </data>
+  <data name="Session_NoMoreToday" xml:space="preserve">
+    <value>Сегодня торгов больше не будет</value>
+  </data>
+  <data name="Session_NoSchedule" xml:space="preserve">
+    <value>Расписание не получено</value>
+  </data>
+  <data name="Session_Opens" xml:space="preserve">
+    <value>Открытие {0} · {1}</value>
+  </data>
+  <data name="Settings_AccessKey" xml:space="preserve">
+    <value>Ключ доступа</value>
+  </data>
+  <data name="Settings_Active" xml:space="preserve">
+    <value>Активен</value>
+  </data>
+  <data name="Settings_Advanced" xml:space="preserve">
+    <value>Дополнительно</value>
+  </data>
+  <data name="Settings_Appearance" xml:space="preserve">
+    <value>Внешний вид</value>
+  </data>
+  <data name="Settings_ColourBlind" xml:space="preserve">
+    <value>Палитра для дальтоников (синий/оранжевый)</value>
+  </data>
+  <data name="Settings_ColourBlindHint" xml:space="preserve">
+    <value>Направление всегда дублируется стрелкой и знаком, так что цвет — второй канал, а не единственный.</value>
+  </data>
+  <data name="Settings_CompactRows" xml:space="preserve">
+    <value>Компактные строки в гриде</value>
+  </data>
+  <data name="Settings_ConfigDirectory" xml:space="preserve">
+    <value>Каталог настроек</value>
+  </data>
+  <data name="Settings_Connection" xml:space="preserve">
+    <value>Подключение</value>
+  </data>
+  <data name="Settings_Counting" xml:space="preserve">
+    <value>считаем…</value>
+  </data>
+  <data name="Settings_DayChangePercent" xml:space="preserve">
+    <value>Дневное изменение, %</value>
+  </data>
+  <data name="Settings_DayVolumeMultiple" xml:space="preserve">
+    <value>Объём, × среднего за день</value>
+  </data>
+  <data name="Settings_DeviceId" xml:space="preserve">
+    <value>Идентификатор установки</value>
+  </data>
+  <data name="Settings_DeviceIdHint" xml:space="preserve">
+    <value>Не секрет. Нужен, чтобы владелец аккаунта видел и отзывал отдельные устройства.</value>
+  </data>
+  <data name="Settings_Enabled" xml:space="preserve">
+    <value>Включено</value>
+  </data>
+  <data name="Settings_ExcludeTickers" xml:space="preserve">
+    <value>Исключить тикеры</value>
+  </data>
+  <data name="Settings_IncludePlaceholder" xml:space="preserve">
+    <value>regex, пусто = все</value>
+  </data>
+  <data name="Settings_IncludeTickers" xml:space="preserve">
+    <value>Только эти тикеры</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Язык</value>
+  </data>
+  <data name="Settings_LanguageHint" xml:space="preserve">
+    <value>Применяется сразу. Числа и даты остаются в системном формате.</value>
+  </data>
+  <data name="Settings_LogDirectory" xml:space="preserve">
+    <value>Каталог логов</value>
+  </data>
+  <data name="Settings_MakeActive" xml:space="preserve">
+    <value>Сделать активным</value>
+  </data>
+  <data name="Settings_NoBrokerToken" xml:space="preserve">
+    <value>RcktMon никогда не спрашивает брокерский токен: котировки подписывает сервер своими ключами.</value>
+  </data>
+  <data name="Settings_PerDay" xml:space="preserve">
+    <value>сигналов в день</value>
+  </data>
+  <data name="Settings_PreviewLabel" xml:space="preserve">
+    <value>С этими порогами сработало бы примерно</value>
+  </data>
+  <data name="Settings_PriceWindow" xml:space="preserve">
+    <value>Окно цены, минут</value>
+  </data>
+  <data name="Settings_ProfileName" xml:space="preserve">
+    <value>Название профиля</value>
+  </data>
+  <data name="Settings_Profiles" xml:space="preserve">
+    <value>Профили оповещений</value>
+  </data>
+  <data name="Settings_RestartHint" xml:space="preserve">
+    <value>Адрес или ключ изменились — применятся после переподключения.</value>
+  </data>
+  <data name="Settings_ServerAddress" xml:space="preserve">
+    <value>Адрес сервера</value>
+  </data>
+  <data name="Settings_Sparklines" xml:space="preserve">
+    <value>Спарклайны в мониторе</value>
+  </data>
+  <data name="Settings_StartFromPreset" xml:space="preserve">
+    <value>Начать с пресета</value>
+  </data>
+  <data name="Settings_StoredIn" xml:space="preserve">
+    <value>Хранится тут:</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="Settings_ThemeDark" xml:space="preserve">
+    <value>Тёмная</value>
+  </data>
+  <data name="Settings_ThemeLight" xml:space="preserve">
+    <value>Светлая</value>
+  </data>
+  <data name="Settings_ThemeSystem" xml:space="preserve">
+    <value>Как в системе</value>
+  </data>
+  <data name="Settings_TickInterval" xml:space="preserve">
+    <value>Интервал обновления, мс</value>
+  </data>
+  <data name="Settings_TickIntervalHint" xml:space="preserve">
+    <value>Сервер сам ограничит значение своим диапазоном и тарифом аккаунта.</value>
+  </data>
+  <data name="Settings_VolumeWindow" xml:space="preserve">
+    <value>Окно объёма, минут</value>
+  </data>
+  <data name="Settings_WindowPricePercent" xml:space="preserve">
+    <value>Изменение цены за N минут, %</value>
+  </data>
+  <data name="Settings_WindowVolumeMultiple" xml:space="preserve">
+    <value>Объём за N минут, × среднего</value>
+  </data>
+  <data name="Shell_ClosedToday" xml:space="preserve">
+    <value>сегодня выходной</value>
+  </data>
+  <data name="Shell_Closes" xml:space="preserve">
+    <value>закрытие {0}</value>
+  </data>
+  <data name="Shell_DataAge" xml:space="preserve">
+    <value>Возраст данных:</value>
+  </data>
+  <data name="Shell_OpenSettings" xml:space="preserve">
+    <value>Открыть настройки</value>
+  </data>
+  <data name="Shell_Opens" xml:space="preserve">
+    <value>открытие {0}</value>
+  </data>
+  <data name="Shell_SignalsToday" xml:space="preserve">
+    <value>Сигналов сегодня:</value>
+  </data>
+  <data name="Shell_StaleBanner" xml:space="preserve">
+    <value>Котировки не обновлялись более 10 секунд, хотя биржа открыта. Данные на экране могут быть устаревшими.</value>
+  </data>
+  <data name="Shell_ToggleRail" xml:space="preserve">
+    <value>Свернуть или развернуть панель навигации</value>
+  </data>
+  <data name="Shell_ToggleTheme" xml:space="preserve">
+    <value>Переключить светлую и тёмную тему</value>
+  </data>
+  <data name="Shell_UpdatesPerSecond" xml:space="preserve">
+    <value>Обновлений/с:</value>
+  </data>
+  <data name="SignalKind_DayChange" xml:space="preserve">
+    <value>Дневное движение</value>
+  </data>
+  <data name="SignalKind_MinutesPrice" xml:space="preserve">
+    <value>Рывок цены</value>
+  </data>
+  <data name="SignalKind_MinutesVolume" xml:space="preserve">
+    <value>Всплеск объёма</value>
+  </data>
+  <data name="SignalKind_Other" xml:space="preserve">
+    <value>Сигнал</value>
+  </data>
+  <data name="Signals_Currency" xml:space="preserve">
+    <value>Валюта</value>
+  </data>
+  <data name="Signals_EmptyBody" xml:space="preserve">
+    <value>Как только сработает первое правило, оповещение появится здесь и придёт в Telegram.</value>
+  </data>
+  <data name="Signals_EmptyFiltered" xml:space="preserve">
+    <value>Сигналов, подходящих под фильтры, нет. Попробуйте расширить период или снять фильтры.</value>
+  </data>
+  <data name="Signals_EmptyTitle" xml:space="preserve">
+    <value>Пока пусто</value>
+  </data>
+  <data name="Signals_Found" xml:space="preserve">
+    <value>Найдено:</value>
+  </data>
+  <data name="Signals_Kind" xml:space="preserve">
+    <value>Тип сигнала</value>
+  </data>
+  <data name="Signals_LiveAutomation" xml:space="preserve">
+    <value>Живое обновление ленты</value>
+  </data>
+  <data name="Signals_LiveTip" xml:space="preserve">
+    <value>Когда выключено, лента не перестраивается — удобно, чтобы прочитать карточку.</value>
+  </data>
+  <data name="Signals_PerDay" xml:space="preserve">
+    <value>за день</value>
+  </data>
+  <data name="Signals_Range" xml:space="preserve">
+    <value>Период</value>
+  </data>
+  <data name="Signals_RangeAll" xml:space="preserve">
+    <value>Всё, что есть</value>
+  </data>
+  <data name="Signals_RangeToday" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="Signals_RangeTwoDays" xml:space="preserve">
+    <value>Два дня</value>
+  </data>
+  <data name="Signals_Search" xml:space="preserve">
+    <value>Поиск</value>
+  </data>
+  <data name="Signals_SearchPlaceholder" xml:space="preserve">
+    <value>Тикер или текст</value>
+  </data>
+  <data name="Signals_ToMonitor" xml:space="preserve">
+    <value>В монитор</value>
+  </data>
+  <data name="Signals_TodaySuffix" xml:space="preserve">
+    <value>· сегодня:</value>
+  </data>
+  <data name="Signals_Volume" xml:space="preserve">
+    <value>объём</value>
+  </data>
+  <data name="Status_Break" xml:space="preserve">
+    <value>Перерыв</value>
+  </data>
+  <data name="Status_Closed" xml:space="preserve">
+    <value>Закрыт</value>
+  </data>
+  <data name="Status_ClosingAuction" xml:space="preserve">
+    <value>Аукцион закрытия</value>
+  </data>
+  <data name="Status_Halted" xml:space="preserve">
+    <value>Остановлен</value>
+  </data>
+  <data name="Status_Normal" xml:space="preserve">
+    <value>Торгуется</value>
+  </data>
+  <data name="Status_NotAvailable" xml:space="preserve">
+    <value>Недоступен</value>
+  </data>
+  <data name="Status_OpeningAuction" xml:space="preserve">
+    <value>Аукцион открытия</value>
+  </data>
+  <data name="Status_Unknown" xml:space="preserve">
+    <value>Неизвестно</value>
+  </data>
+  <data name="Time_AgoFormat" xml:space="preserve">
+    <value>{0} {1} назад</value>
+  </data>
+  <data name="Time_JustNow" xml:space="preserve">
+    <value>только что</value>
+  </data>
+  <data name="Time_Yesterday" xml:space="preserve">
+    <value>вчера {0}</value>
+  </data>
+  <data name="Unit_Minute_Few" xml:space="preserve">
+    <value>минуты</value>
+  </data>
+  <data name="Unit_Minute_Many" xml:space="preserve">
+    <value>минут</value>
+  </data>
+  <data name="Unit_Minute_One" xml:space="preserve">
+    <value>минуту</value>
+  </data>
+  <data name="Unit_Signal_Few" xml:space="preserve">
+    <value>сигнала</value>
+  </data>
+  <data name="Unit_Signal_Many" xml:space="preserve">
+    <value>сигналов</value>
+  </data>
+  <data name="Unit_Signal_One" xml:space="preserve">
+    <value>сигнал</value>
+  </data>
+  <data name="View_All" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="View_Mine" xml:space="preserve">
+    <value>Мой вид</value>
+  </data>
+  <data name="View_RubMovers" xml:space="preserve">
+    <value>Движения RUB</value>
+  </data>
+  <data name="View_VolumeSpikes" xml:space="preserve">
+    <value>Всплески объёма</value>
+  </data>
+  <data name="View_Watchlist" xml:space="preserve">
+    <value>Мой список</value>
+  </data>
+  <data name="Shell_Seconds" xml:space="preserve">
+    <value>{0} с</value>
+  </data>
+</root>

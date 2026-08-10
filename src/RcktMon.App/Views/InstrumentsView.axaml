@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:RcktMon.App.Localization"
              xmlns:vm="using:RcktMon.App.ViewModels"
              xmlns:fmt="using:RcktMon.App.Formatting"
              xmlns:market="using:RcktMon.Client.Core.Market"
@@ -18,7 +19,7 @@
         <!-- ============ server health ============ -->
         <StackPanel DockPanel.Dock="Top" Margin="20,16,20,10" Spacing="12">
 
-            <TextBlock Classes="h1" Text="Инструменты" />
+            <TextBlock Classes="h1" Text="{l:Localize Nav_Instruments}" />
 
             <Border Classes="card" Padding="14">
                 <Grid ColumnDefinitions="*,Auto">
@@ -30,20 +31,20 @@
                             <Ellipse Width="9" Height="9" VerticalAlignment="Center"
                                      Fill="{DynamicResource Brush.Warning}"
                                      IsVisible="{Binding IsDegraded}" />
-                            <TextBlock Classes="h2" Text="Поток рыночных данных" />
+                            <TextBlock Classes="h2" Text="{l:Localize Instruments_Health}" />
                         </StackPanel>
                         <TextBlock Classes="secondary" Text="{Binding HealthDetail}" />
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20">
                         <StackPanel>
-                            <TextBlock Classes="label" Text="Шарды" />
+                            <TextBlock Classes="label" Text="{l:Localize Instruments_Shards}" />
                             <TextBlock Classes="mono">
                                 <Run Text="{Binding ShardsHealthy}" /><Run Text=" / " /><Run Text="{Binding ShardsTotal}" />
                             </TextBlock>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Classes="label" Text="Подписано" />
+                            <TextBlock Classes="label" Text="{l:Localize Instruments_Subscribed}" />
                             <TextBlock Classes="mono" Text="{Binding SubscribedCount}" />
                         </StackPanel>
                     </StackPanel>
@@ -67,7 +68,7 @@
                                     <TextBlock Classes="tertiary" Text="{Binding Phase}" />
                                 </StackPanel>
                                 <TextBlock Classes="secondary" FontSize="12">
-                                    <Run Text="Локально:" /><Run Text=" " /><Run Text="{Binding LocalWindow}" />
+                                    <Run Text="{l:Localize Instruments_Local}" /><Run Text=" " /><Run Text="{Binding LocalWindow}" />
                                 </TextBlock>
                                 <TextBlock Classes="tertiary" FontSize="12">
                                     <Run Text="MSK:" /><Run Text=" " /><Run Text="{Binding MoscowWindow}" />
@@ -79,13 +80,13 @@
             </ItemsControl>
 
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBox Classes="search" Width="280" PlaceholderText="Тикер, название или ISIN"
+                <TextBox Classes="search" Width="280" PlaceholderText="{l:Localize Instruments_SearchPlaceholder}"
                          Text="{Binding SearchText}" />
-                <ToggleButton Classes="chip" Content="Только торгуемые" IsChecked="{Binding TradableOnly}" />
-                <ToggleButton Classes="chip" Content="Можно шортить" IsChecked="{Binding ShortableOnly}" />
-                <Button Classes="chip" Content="Сбросить" Command="{Binding ClearFiltersCommand}" />
+                <ToggleButton Classes="chip" Content="{l:Localize Instruments_TradableOnly}" IsChecked="{Binding TradableOnly}" />
+                <ToggleButton Classes="chip" Content="{l:Localize Instruments_ShortableOnly}" IsChecked="{Binding ShortableOnly}" />
+                <Button Classes="chip" Content="{l:Localize Common_Reset}" Command="{Binding ClearFiltersCommand}" />
                 <TextBlock Classes="tertiary" VerticalAlignment="Center" Margin="8,0,0,0">
-                    <Run Text="Показано:" /><Run Text=" " /><Run Text="{Binding VisibleCount}" />
+                    <Run Text="{l:Localize Instruments_Shown}" /><Run Text=" " /><Run Text="{Binding VisibleCount}" />
                 </TextBlock>
             </StackPanel>
         </StackPanel>
@@ -102,7 +103,7 @@
 
             <DataGrid.Columns>
 
-                <DataGridTemplateColumn Header="Тикер" Width="110">
+                <DataGridTemplateColumn Header="{l:Localize Col_Ticker}" Width="110">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="market:InstrumentRow">
                             <TextBlock VerticalAlignment="Center" FontWeight="SemiBold"
@@ -112,7 +113,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Название" Width="*">
+                <DataGridTemplateColumn Header="{l:Localize Col_Name}" Width="*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="market:InstrumentRow">
                             <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
@@ -121,7 +122,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Биржа" Width="110">
+                <DataGridTemplateColumn Header="{l:Localize Col_Exchange}" Width="110">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="market:InstrumentRow">
                             <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{Binding Exchange}" />
@@ -129,7 +130,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Класс" Width="90">
+                <DataGridTemplateColumn Header="{l:Localize Col_Class}" Width="90">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="market:InstrumentRow">
                             <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{Binding ClassCode}" />
@@ -137,7 +138,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Статус" Width="150">
+                <DataGridTemplateColumn Header="{l:Localize Col_Status}" Width="150">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="market:InstrumentRow">
                             <TextBlock VerticalAlignment="Center"
@@ -146,7 +147,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Данные" Width="120">
+                <DataGridTemplateColumn Header="{l:Localize Col_Data}" Width="120">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="market:InstrumentRow">
                             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
@@ -160,7 +161,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Шорт" Width="100">
+                <DataGridTemplateColumn Header="{l:Localize Col_Short}" Width="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="market:InstrumentRow">
                             <TextBlock Classes="secondary" VerticalAlignment="Center"
@@ -169,7 +170,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Лот" Width="86">
+                <DataGridTemplateColumn Header="{l:Localize Col_Lot}" Width="86">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="market:InstrumentRow">
                             <TextBlock Classes="numeric" VerticalAlignment="Center" Text="{Binding Lot}" />
@@ -177,7 +178,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Первая свеча" Width="150">
+                <DataGridTemplateColumn Header="{l:Localize Col_FirstCandle}" Width="150">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="market:InstrumentRow">
                             <TextBlock Classes="tertiary" VerticalAlignment="Center"

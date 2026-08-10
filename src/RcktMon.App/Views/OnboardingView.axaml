@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:RcktMon.App.Localization"
              xmlns:vm="using:RcktMon.App.ViewModels"
              xmlns:fmt="using:RcktMon.App.Formatting"
              x:Class="RcktMon.App.Views.OnboardingView"
@@ -17,33 +18,33 @@
         <StackPanel Grid.Row="0" VerticalAlignment="Center" Spacing="16" IsVisible="{Binding IsWelcome}">
             <TextBlock Text="RcktMon" FontSize="34" FontWeight="Bold"
                        Foreground="{DynamicResource Brush.Accent}" />
-            <TextBlock Classes="h2" Text="Монитор резких движений на бирже" />
+            <TextBlock Classes="h2" Text="{l:Localize Onb_Tagline}" />
             <TextBlock Classes="secondary" TextWrapping="Wrap"
-                       Text="RcktMon следит за всем рынком и присылает оповещение, когда цена или объём инструмента резко меняются — за день или за несколько минут. Пороги настраиваются, история сигналов хранится на сервере." />
+                       Text="{l:Localize Onb_Intro}" />
             <Border Classes="card">
                 <StackPanel Spacing="6">
-                    <TextBlock Classes="h2" Text="Что изменилось" />
+                    <TextBlock Classes="h2" Text="{l:Localize Onb_WhatChanged}" />
                     <TextBlock Classes="secondary" TextWrapping="Wrap"
-                               Text="Раньше приложение требовало брокерский токен, токен бота и два chat id ещё до первого запуска. Теперь рыночные данные подписывает сервер: клиенту нужен только адрес и ключ доступа." />
+                               Text="{l:Localize Onb_WhatChangedBody}" />
                 </StackPanel>
             </Border>
         </StackPanel>
 
         <!-- ============ step 2: connect ============ -->
         <StackPanel Grid.Row="0" VerticalAlignment="Center" Spacing="14" IsVisible="{Binding IsConnect}">
-            <TextBlock Classes="h1" Text="Подключение" />
+            <TextBlock Classes="h1" Text="{l:Localize Settings_Connection}" />
 
             <StackPanel Spacing="4">
-                <TextBlock Classes="label" Text="Адрес сервера" />
+                <TextBlock Classes="label" Text="{l:Localize Settings_ServerAddress}" />
                 <TextBox Classes="field" Text="{Binding ServerAddress}"
                          PlaceholderText="https://api.rcktmon.ru" />
             </StackPanel>
 
             <StackPanel Spacing="4">
-                <TextBlock Classes="label" Text="Ключ доступа" />
+                <TextBlock Classes="label" Text="{l:Localize Settings_AccessKey}" />
                 <TextBox Classes="field" PasswordChar="•" Text="{Binding AccessKey}" PlaceholderText="rm_…" />
                 <TextBlock Classes="tertiary" TextWrapping="Wrap"
-                           Text="Ключ выдаётся ботом в Telegram и хранится в связке ключей операционной системы." />
+                           Text="{l:Localize Onb_KeyHint}" />
             </StackPanel>
 
             <Border Classes="card" Padding="12">
@@ -53,7 +54,7 @@
                     <TextBlock VerticalAlignment="Center"
                                Text="{Binding Status, Converter={StaticResource ConnText}}" />
                     <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{Binding AccountName}" />
-                    <Button Classes="chip" Content="Проверить" Command="{Binding ConnectCommand}" />
+                    <Button Classes="chip" Content="{l:Localize Onb_Check}" Command="{Binding ConnectCommand}" />
                 </StackPanel>
             </Border>
 
@@ -62,14 +63,14 @@
                        IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
             <TextBlock Classes="tertiary" TextWrapping="Wrap"
-                       Text="RcktMon никогда не спрашивает брокерский токен." />
+                       Text="{l:Localize Onb_NoBrokerToken}" />
         </StackPanel>
 
         <!-- ============ step 3: profile ============ -->
         <StackPanel Grid.Row="0" VerticalAlignment="Center" Spacing="14" IsVisible="{Binding IsProfile}">
-            <TextBlock Classes="h1" Text="Насколько шумно?" />
+            <TextBlock Classes="h1" Text="{l:Localize Onb_HowNoisy}" />
             <TextBlock Classes="secondary" TextWrapping="Wrap"
-                       Text="Выберите набор порогов. Его можно изменить в любой момент в настройках — там же виден прогноз, сколько сигналов в день он даст." />
+                       Text="{l:Localize Onb_HowNoisyBody}" />
 
             <ItemsControl ItemsSource="{Binding Presets}">
                 <ItemsControl.ItemTemplate>
@@ -93,7 +94,7 @@
         <!-- ============ navigation ============ -->
         <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,20,0,0">
 
-            <Button Grid.Column="0" Classes="ghost" Content="Назад"
+            <Button Grid.Column="0" Classes="ghost" Content="{l:Localize Common_Back}"
                     Command="{Binding BackCommand}"
                     IsVisible="{Binding !IsWelcome}" />
 
@@ -104,14 +105,14 @@
                 <Ellipse Width="7" Height="7" Fill="{DynamicResource Brush.Text.Tertiary}" />
             </StackPanel>
 
-            <Button Grid.Column="2" Classes="ghost" Content="Пропустить"
+            <Button Grid.Column="2" Classes="ghost" Content="{l:Localize Common_Skip}"
                     Command="{Binding FinishCommand}" />
 
-            <Button Grid.Column="3" Classes="primary" Content="Далее" Margin="10,0,0,0"
+            <Button Grid.Column="3" Classes="primary" Content="{l:Localize Common_Next}" Margin="10,0,0,0"
                     Command="{Binding NextCommand}"
                     IsVisible="{Binding !IsProfile}" />
 
-            <Button Grid.Column="3" Classes="primary" Content="Готово" Margin="10,0,0,0"
+            <Button Grid.Column="3" Classes="primary" Content="{l:Localize Common_Done}" Margin="10,0,0,0"
                     Command="{Binding ChoosePresetCommand}"
                     IsVisible="{Binding IsProfile}" />
         </Grid>

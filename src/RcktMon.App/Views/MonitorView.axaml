@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:RcktMon.App.Localization"
              xmlns:vm="using:RcktMon.App.ViewModels"
              xmlns:fmt="using:RcktMon.App.Formatting"
              xmlns:controls="using:RcktMon.App.Controls"
@@ -16,6 +17,7 @@
         <fmt:RelativeTimeConverter x:Key="Ago" />
         <fmt:InactiveOpacityConverter x:Key="InactiveOpacity" />
         <fmt:WatchOpacityConverter x:Key="WatchOpacity" />
+        <fmt:SavedViewNameConverter x:Key="ViewName" />
     </UserControl.Resources>
 
     <DockPanel>
@@ -27,40 +29,40 @@
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
                     <TextBox x:Name="SearchBox" Classes="search" Width="280"
-                             PlaceholderText="Тикер или название   (Ctrl+K)"
+                             PlaceholderText="{l:Localize Monitor_SearchPlaceholder}"
                              Text="{Binding SearchText}"
-                             AutomationProperties.Name="Поиск инструмента" />
+                             AutomationProperties.Name="{l:Localize Monitor_SearchAutomation}" />
 
                     <ComboBox Width="180" ItemsSource="{Binding Views}"
                               SelectedItem="{Binding SelectedView}"
-                              AutomationProperties.Name="Сохранённые виды">
+                              AutomationProperties.Name="{l:Localize Monitor_ViewsAutomation}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="settings:SavedView">
-                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text="{Binding Converter={StaticResource ViewName}}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-                    <Button Classes="chip" Content="Применить"
+                    <Button Classes="chip" Content="{l:Localize Common_Apply}"
                             Command="{Binding ApplyViewCommand}"
                             CommandParameter="{Binding SelectedView}" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                    <ToggleButton Classes="chip" Content="Графики"
+                    <ToggleButton Classes="chip" Content="{l:Localize Monitor_Sparklines}"
                                   IsChecked="{Binding ShowSparklines}"
-                                  ToolTip.Tip="Спарклайны в отдельной колонке. Самая дорогая ячейка в гриде, поэтому выключены по умолчанию."
-                                  AutomationProperties.Name="Показывать спарклайны" />
+                                  ToolTip.Tip="{l:Localize Monitor_SparklinesTip}"
+                                  AutomationProperties.Name="{l:Localize Monitor_SparklinesAutomation}" />
 
-                    <ToggleButton Classes="chip" Content="Плотно"
+                    <ToggleButton Classes="chip" Content="{l:Localize Monitor_Dense}"
                                   IsChecked="{Binding CompactDensity}"
-                                  AutomationProperties.Name="Компактная плотность строк" />
+                                  AutomationProperties.Name="{l:Localize Monitor_DenseAutomation}" />
 
-                    <Button Classes="chip" Content="Колонки">
+                    <Button Classes="chip" Content="{l:Localize Monitor_Columns}">
                         <Button.Flyout>
                             <Flyout Placement="BottomEdgeAlignedRight">
                                 <StackPanel Width="240" Spacing="6">
-                                    <TextBlock Classes="h2" Text="Колонки" />
+                                    <TextBlock Classes="h2" Text="{l:Localize Monitor_Columns}" />
 
                                     <ItemsControl ItemsSource="{Binding Columns}">
                                         <ItemsControl.ItemTemplate>
@@ -72,25 +74,25 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
 
-                                    <Button Classes="chip" Content="Сбросить"
+                                    <Button Classes="chip" Content="{l:Localize Common_Reset}"
                                             Command="{Binding ResetColumnsCommand}" />
                                 </StackPanel>
                             </Flyout>
                         </Button.Flyout>
                     </Button>
 
-                    <Button Classes="chip" Content="Сохранить вид">
+                    <Button Classes="chip" Content="{l:Localize Monitor_SaveView}">
                         <Button.Flyout>
                             <Flyout Placement="BottomEdgeAlignedRight">
                                 <StackPanel Width="260" Spacing="8">
                                     <TextBlock Classes="label"
-                                               Text="Фильтры, сортировка и колонки сохраняются под именем" />
-                                    <TextBox Classes="field" PlaceholderText="Название вида"
+                                               Text="{l:Localize Monitor_SaveViewHint}" />
+                                    <TextBox Classes="field" PlaceholderText="{l:Localize Monitor_ViewNamePlaceholder}"
                                              Text="{Binding NewViewName}" />
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <Button Classes="primary" Content="Сохранить"
+                                        <Button Classes="primary" Content="{l:Localize Common_Save}"
                                                 Command="{Binding SaveViewCommand}" />
-                                        <Button Classes="chip" Content="Удалить текущий"
+                                        <Button Classes="chip" Content="{l:Localize Monitor_DeleteCurrentView}"
                                                 Command="{Binding DeleteViewCommand}" />
                                     </StackPanel>
                                 </StackPanel>
@@ -104,31 +106,31 @@
             <WrapPanel Orientation="Horizontal">
                 <ToggleButton Classes="chip" Margin="0,0,6,6" IsChecked="{Binding GainersOnly}">
                     <TextBlock>
-                        <Run Text="Растущие" /><Run Text=" · " /><Run Text="{Binding GainersCount}" />
+                        <Run Text="{l:Localize Chip_Gainers}" /><Run Text=" · " /><Run Text="{Binding GainersCount}" />
                     </TextBlock>
                 </ToggleButton>
 
                 <ToggleButton Classes="chip" Margin="0,0,6,6" IsChecked="{Binding LosersOnly}">
                     <TextBlock>
-                        <Run Text="Падающие" /><Run Text=" · " /><Run Text="{Binding LosersCount}" />
+                        <Run Text="{l:Localize Chip_Losers}" /><Run Text=" · " /><Run Text="{Binding LosersCount}" />
                     </TextBlock>
                 </ToggleButton>
 
                 <ToggleButton Classes="chip" Margin="0,0,6,6" IsChecked="{Binding UnusualVolumeOnly}">
                     <TextBlock>
-                        <Run Text="Объём выше среднего" /><Run Text=" · " /><Run Text="{Binding UnusualVolumeCount}" />
+                        <Run Text="{l:Localize Chip_UnusualVolume}" /><Run Text=" · " /><Run Text="{Binding UnusualVolumeCount}" />
                     </TextBlock>
                 </ToggleButton>
 
                 <ToggleButton Classes="chip" Margin="0,0,6,6" IsChecked="{Binding SignalledOnly}">
                     <TextBlock>
-                        <Run Text="Сигналили сегодня" /><Run Text=" · " /><Run Text="{Binding SignalledCount}" />
+                        <Run Text="{l:Localize Chip_SignalledToday}" /><Run Text=" · " /><Run Text="{Binding SignalledCount}" />
                     </TextBlock>
                 </ToggleButton>
 
                 <ToggleButton Classes="chip" Margin="0,0,6,6" IsChecked="{Binding WatchlistOnly}">
                     <TextBlock>
-                        <Run Text="Мой список" /><Run Text=" · " /><Run Text="{Binding WatchlistCount}" />
+                        <Run Text="{l:Localize Chip_Watchlist}" /><Run Text=" · " /><Run Text="{Binding WatchlistCount}" />
                     </TextBlock>
                 </ToggleButton>
 
@@ -166,7 +168,7 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <Button Classes="chip" Margin="0,0,6,6" Content="Сбросить фильтры"
+                <Button Classes="chip" Margin="0,0,6,6" Content="{l:Localize Common_ClearFilters}"
                         Command="{Binding ClearFiltersCommand}"
                         IsVisible="{Binding HasActiveFilter}" />
             </WrapPanel>
@@ -209,7 +211,7 @@
                                         <Button Grid.Column="1" Classes="ghost" Padding="2" Margin="0,0,6,0"
                                                 Click="OnWatchClicked"
                                                 VerticalAlignment="Center"
-                                                AutomationProperties.Name="В избранное">
+                                                AutomationProperties.Name="{l:Localize Monitor_WatchAutomation}">
                                             <PathIcon Width="12" Height="12"
                                                       Data="{DynamicResource Icon.Star}"
                                                       Foreground="{DynamicResource Brush.Accent}"
@@ -370,21 +372,21 @@
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
                                 Spacing="10" MaxWidth="420">
                         <TextBlock Classes="h2" HorizontalAlignment="Center"
-                                   Text="Ничего не найдено"
+                                   Text="{l:Localize Monitor_EmptyFilteredTitle}"
                                    IsVisible="{Binding HasActiveFilter}" />
                         <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
-                                   Text="Ни один инструмент не подходит под текущие фильтры."
+                                   Text="{l:Localize Monitor_EmptyFilteredBody}"
                                    IsVisible="{Binding HasActiveFilter}" />
                         <Button Classes="primary" HorizontalAlignment="Center"
-                                Content="Сбросить фильтры"
+                                Content="{l:Localize Common_ClearFilters}"
                                 Command="{Binding ClearFiltersCommand}"
                                 IsVisible="{Binding HasActiveFilter}" />
 
                         <TextBlock Classes="h2" HorizontalAlignment="Center"
-                                   Text="Ожидание данных"
+                                   Text="{l:Localize Monitor_EmptyWaitingTitle}"
                                    IsVisible="{Binding !HasActiveFilter}" />
                         <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
-                                   Text="Каталог инструментов ещё не получен от сервера."
+                                   Text="{l:Localize Monitor_EmptyWaitingBody}"
                                    IsVisible="{Binding !HasActiveFilter}" />
                     </StackPanel>
                 </Border>

@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using RcktMon.App.Formatting;
+using RcktMon.App.Localization;
 using RcktMon.Client.Core.Market;
 
 namespace RcktMon.App.ViewModels;
@@ -32,7 +34,7 @@ public sealed partial class DashboardViewModel : PageViewModel
     private int _drains;
 
     public DashboardViewModel(ClientSession session, Action<string> navigate, Action<InstrumentRow> inspect)
-        : base("dashboard", "Обзор", "Icon.Dashboard")
+        : base("dashboard", "Nav_Dashboard", "Icon.Dashboard")
     {
         _session = session;
         _navigate = navigate;
@@ -53,7 +55,7 @@ public sealed partial class DashboardViewModel : PageViewModel
 
     [ObservableProperty] private InstrumentRow? _mostActive;
 
-    [ObservableProperty] private string _sessionPhase = "Нет данных";
+    [ObservableProperty] private string _sessionPhase = string.Empty;
 
     [ObservableProperty] private string _sessionDetail = string.Empty;
 
@@ -74,6 +76,8 @@ public sealed partial class DashboardViewModel : PageViewModel
         _drains = 0;
         Refresh();
     }
+
+    public override void LanguageChanged() => Refresh();
 
     /// <summary>Recomputes every tile. Cheap enough to run twice a second at 2000 rows.</summary>
     public void Refresh()
@@ -112,11 +116,14 @@ public sealed partial class DashboardViewModel : PageViewModel
 
         SessionDetail = phase switch
         {
-            { NextChangeAt: { } next } =>
-                $"{(phase.NextChangeOpens ? "Открытие" : "Закрытие")} {next.ToLocalTime():HH:mm} · {Humanize.Countdown(next - now)}",
-            { Kind: MarketPhaseKind.Unknown } => "Расписание не получено",
-            { IsTradingDay: false } => "Сегодня биржа не работает",
-            _ => "Сегодня торгов больше не будет",
+            { NextChangeAt: { } next } => string.Format(
+                CultureInfo.CurrentCulture,
+                phase.NextChangeOpens ? Strings.Session_Opens : Strings.Session_Closes,
+                next.ToLocalTime().ToString("HH:mm", CultureInfo.CurrentCulture),
+                Humanize.Countdown(next - now)),
+            { Kind: MarketPhaseKind.Unknown } => Strings.Session_NoSchedule,
+            { IsTradingDay: false } => Strings.Session_ClosedToday,
+            _ => Strings.Session_NoMoreToday,
         };
     }
 

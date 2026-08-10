@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using CommunityToolkit.Mvvm.ComponentModel;
+using RcktMon.App.Localization;
 
 namespace RcktMon.App;
 
@@ -19,7 +20,7 @@ public sealed class ViewLocator : IDataTemplate
     {
         if (data is null)
         {
-            return new TextBlock { Text = "(нет данных)" };
+            return new TextBlock { Text = Strings.Common_NoData };
         }
 
         string name = data.GetType().FullName!
@@ -32,7 +33,7 @@ public sealed class ViewLocator : IDataTemplate
             ? control
             : new TextBlock
             {
-                Text = $"Не найдена разметка {name}",
+                Text = string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Common_MissingView, name),
                 Foreground = Avalonia.Media.Brushes.OrangeRed,
                 Margin = new Avalonia.Thickness(24),
             };

@@ -1,0 +1,857 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    English interface text. This is the neutral resource set: anything that is not Russian falls back here.
+
+    Generated-friendly but hand-edited: keep the keys sorted and keep this file and
+    Strings.ru.resx in step. A test asserts the two key sets are identical, because a
+    missing translation shows up as a raw key on screen and nowhere else.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Chip_Gainers" xml:space="preserve">
+    <value>Gainers</value>
+  </data>
+  <data name="Chip_Losers" xml:space="preserve">
+    <value>Losers</value>
+  </data>
+  <data name="Chip_SignalledToday" xml:space="preserve">
+    <value>Signalled today</value>
+  </data>
+  <data name="Chip_UnusualVolume" xml:space="preserve">
+    <value>Above average volume</value>
+  </data>
+  <data name="Chip_Watchlist" xml:space="preserve">
+    <value>My list</value>
+  </data>
+  <data name="Col_Ask" xml:space="preserve">
+    <value>Ask</value>
+  </data>
+  <data name="Col_Bid" xml:space="preserve">
+    <value>Bid</value>
+  </data>
+  <data name="Col_Change" xml:space="preserve">
+    <value>Chg</value>
+  </data>
+  <data name="Col_Class" xml:space="preserve">
+    <value>Class</value>
+  </data>
+  <data name="Col_Currency" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="Col_Data" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="Col_Exchange" xml:space="preserve">
+    <value>Exchange</value>
+  </data>
+  <data name="Col_FirstCandle" xml:space="preserve">
+    <value>First candle</value>
+  </data>
+  <data name="Col_Instrument" xml:space="preserve">
+    <value>Instrument</value>
+  </data>
+  <data name="Col_LastTrade" xml:space="preserve">
+    <value>Trade</value>
+  </data>
+  <data name="Col_Lot" xml:space="preserve">
+    <value>Lot</value>
+  </data>
+  <data name="Col_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Col_Price" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Col_Sector" xml:space="preserve">
+    <value>Sector</value>
+  </data>
+  <data name="Col_Short" xml:space="preserve">
+    <value>Short</value>
+  </data>
+  <data name="Col_Sparkline" xml:space="preserve">
+    <value>Chart</value>
+  </data>
+  <data name="Col_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Col_Ticker" xml:space="preserve">
+    <value>Ticker</value>
+  </data>
+  <data name="Col_Turnover" xml:space="preserve">
+    <value>Turnover</value>
+  </data>
+  <data name="Col_Volume" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="Col_VolumeOfAverage" xml:space="preserve">
+    <value>× average</value>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="Common_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Common_ClearFilters" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Common_Done" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Common_MissingView" xml:space="preserve">
+    <value>No view found for {0}</value>
+  </data>
+  <data name="Common_Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Common_NoData" xml:space="preserve">
+    <value>(no data)</value>
+  </data>
+  <data name="Common_Reconnect" xml:space="preserve">
+    <value>Reconnect</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Common_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Common_Saved" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="Common_Skip" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="Common_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Connection_Connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="Connection_Connecting" xml:space="preserve">
+    <value>Connecting…</value>
+  </data>
+  <data name="Connection_Degraded" xml:space="preserve">
+    <value>Data may be out of date</value>
+  </data>
+  <data name="Connection_Disconnected" xml:space="preserve">
+    <value>No connection</value>
+  </data>
+  <data name="Connection_Reconnecting" xml:space="preserve">
+    <value>Reconnecting…</value>
+  </data>
+  <data name="Connection_ReconnectingIn" xml:space="preserve">
+    <value>Reconnecting in {0} s</value>
+  </data>
+  <data name="Connection_Unauthorized" xml:space="preserve">
+    <value>Access key rejected</value>
+  </data>
+  <data name="Connection_VersionMismatch" xml:space="preserve">
+    <value>Update required</value>
+  </data>
+  <data name="Countdown_HoursMinutes" xml:space="preserve">
+    <value>in {0} h {1} min</value>
+  </data>
+  <data name="Countdown_Imminent" xml:space="preserve">
+    <value>any moment now</value>
+  </data>
+  <data name="Countdown_Minutes" xml:space="preserve">
+    <value>in {0} {1}</value>
+  </data>
+  <data name="Countdown_Seconds" xml:space="preserve">
+    <value>in {0} s</value>
+  </data>
+  <data name="Dash_ConnectingBody" xml:space="preserve">
+    <value>Once the instrument catalog and the first quote snapshot arrive, today's moves show up here.</value>
+  </data>
+  <data name="Dash_ConnectingTitle" xml:space="preserve">
+    <value>Connecting to the server</value>
+  </data>
+  <data name="Dash_MarketClosed" xml:space="preserve">
+    <value>The exchange is closed</value>
+  </data>
+  <data name="Dash_MostActive" xml:space="preserve">
+    <value>Most turnover</value>
+  </data>
+  <data name="Dash_NoSignalsToday" xml:space="preserve">
+    <value>No signals today yet. Thresholds are configured under Settings.</value>
+  </data>
+  <data name="Dash_OpenFeed" xml:space="preserve">
+    <value>Open the feed</value>
+  </data>
+  <data name="Dash_OpenInMonitor" xml:space="preserve">
+    <value>Open in the monitor</value>
+  </data>
+  <data name="Dash_RecentSignals" xml:space="preserve">
+    <value>Latest signals</value>
+  </data>
+  <data name="Dash_Rockets" xml:space="preserve">
+    <value>Flying right now</value>
+  </data>
+  <data name="Dash_Session" xml:space="preserve">
+    <value>MOEX session</value>
+  </data>
+  <data name="Dash_SignalsToday" xml:space="preserve">
+    <value>Signals today</value>
+  </data>
+  <data name="Dash_TopGainer" xml:space="preserve">
+    <value>Top gainer</value>
+  </data>
+  <data name="Dash_TopLoser" xml:space="preserve">
+    <value>Top loser</value>
+  </data>
+  <data name="Dash_VolumeOfAverage" xml:space="preserve">
+    <value>{0}× volume</value>
+  </data>
+  <data name="Dash_WholeFeed" xml:space="preserve">
+    <value>Whole feed</value>
+  </data>
+  <data name="Fault_ClientTooOld" xml:space="preserve">
+    <value>This version of RcktMon needs an update: the server supports protocol v{0} and newer, this client implements v{1}.</value>
+  </data>
+  <data name="Fault_DroppedTicks" xml:space="preserve">
+    <value>The server is skipping updates for this client ({0})</value>
+  </data>
+  <data name="Fault_InsecureAddress" xml:space="preserve">
+    <value>Refusing an unencrypted connection to {0}. Use https, or enable insecure HTTP explicitly for local development.</value>
+  </data>
+  <data name="Fault_KeyRejected" xml:space="preserve">
+    <value>The access key was rejected or revoked</value>
+  </data>
+  <data name="Fault_QuotesStale" xml:space="preserve">
+    <value>Quotes have not updated for more than 10 seconds</value>
+  </data>
+  <data name="Fault_StreamClosed" xml:space="preserve">
+    <value>The server closed the stream</value>
+  </data>
+  <data name="Group_Earlier" xml:space="preserve">
+    <value>Earlier</value>
+  </data>
+  <data name="Group_Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Group_Yesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="Inspector_AvgVolume" xml:space="preserve">
+    <value>Average volume</value>
+  </data>
+  <data name="Inspector_ChartFailed" xml:space="preserve">
+    <value>Chart unavailable: {0}</value>
+  </data>
+  <data name="Inspector_ChartLoading" xml:space="preserve">
+    <value>Loading the chart…</value>
+  </data>
+  <data name="Inspector_Close" xml:space="preserve">
+    <value>Close the panel</value>
+  </data>
+  <data name="Inspector_CopyIsin" xml:space="preserve">
+    <value>Copy ISIN</value>
+  </data>
+  <data name="Inspector_CopyTicker" xml:space="preserve">
+    <value>Copy ticker</value>
+  </data>
+  <data name="Inspector_DayOpen" xml:space="preserve">
+    <value>Day open</value>
+  </data>
+  <data name="Inspector_High" xml:space="preserve">
+    <value>High</value>
+  </data>
+  <data name="Inspector_Instrument" xml:space="preserve">
+    <value>Instrument</value>
+  </data>
+  <data name="Inspector_LastTrade" xml:space="preserve">
+    <value>Last trade</value>
+  </data>
+  <data name="Inspector_Low" xml:space="preserve">
+    <value>Low</value>
+  </data>
+  <data name="Inspector_Month" xml:space="preserve">
+    <value>Over the month</value>
+  </data>
+  <data name="Inspector_NoChart" xml:space="preserve">
+    <value>No minute data</value>
+  </data>
+  <data name="Inspector_NoChartSince" xml:space="preserve">
+    <value>No minute data (first candle {0})</value>
+  </data>
+  <data name="Inspector_NoConnection" xml:space="preserve">
+    <value>No connection to the server</value>
+  </data>
+  <data name="Inspector_NoSignals" xml:space="preserve">
+    <value>No signals for this instrument yet.</value>
+  </data>
+  <data name="Inspector_Spread" xml:space="preserve">
+    <value>Spread</value>
+  </data>
+  <data name="Inspector_Trading" xml:space="preserve">
+    <value>Trading</value>
+  </data>
+  <data name="Inspector_TradingBody" xml:space="preserve">
+    <value>Order entry comes later. RcktMon never asks for a broker token in order to receive quotes.</value>
+  </data>
+  <data name="Instruments_Health" xml:space="preserve">
+    <value>Market data stream</value>
+  </data>
+  <data name="Instruments_Healthy" xml:space="preserve">
+    <value>All shards healthy · last event {0}</value>
+  </data>
+  <data name="Instruments_Local" xml:space="preserve">
+    <value>Local:</value>
+  </data>
+  <data name="Instruments_SearchPlaceholder" xml:space="preserve">
+    <value>Ticker, name or ISIN</value>
+  </data>
+  <data name="Instruments_Shards" xml:space="preserve">
+    <value>Shards</value>
+  </data>
+  <data name="Instruments_ShortableOnly" xml:space="preserve">
+    <value>Shortable</value>
+  </data>
+  <data name="Instruments_Shown" xml:space="preserve">
+    <value>Shown:</value>
+  </data>
+  <data name="Instruments_Subscribed" xml:space="preserve">
+    <value>Subscribed</value>
+  </data>
+  <data name="Instruments_TradableOnly" xml:space="preserve">
+    <value>Tradable only</value>
+  </data>
+  <data name="Instruments_WaitingStatus" xml:space="preserve">
+    <value>Waiting for server status…</value>
+  </data>
+  <data name="Monitor_Columns" xml:space="preserve">
+    <value>Columns</value>
+  </data>
+  <data name="Monitor_DeleteCurrentView" xml:space="preserve">
+    <value>Delete current</value>
+  </data>
+  <data name="Monitor_Dense" xml:space="preserve">
+    <value>Dense</value>
+  </data>
+  <data name="Monitor_DenseAutomation" xml:space="preserve">
+    <value>Compact row density</value>
+  </data>
+  <data name="Monitor_EmptyFilteredBody" xml:space="preserve">
+    <value>No instrument matches the current filters.</value>
+  </data>
+  <data name="Monitor_EmptyFilteredTitle" xml:space="preserve">
+    <value>Nothing found</value>
+  </data>
+  <data name="Monitor_EmptyWaitingBody" xml:space="preserve">
+    <value>The instrument catalog has not arrived from the server yet.</value>
+  </data>
+  <data name="Monitor_EmptyWaitingTitle" xml:space="preserve">
+    <value>Waiting for data</value>
+  </data>
+  <data name="Monitor_SaveView" xml:space="preserve">
+    <value>Save view</value>
+  </data>
+  <data name="Monitor_SaveViewHint" xml:space="preserve">
+    <value>Filters, sorting and columns are saved under this name</value>
+  </data>
+  <data name="Monitor_SearchAutomation" xml:space="preserve">
+    <value>Search instruments</value>
+  </data>
+  <data name="Monitor_SearchPlaceholder" xml:space="preserve">
+    <value>Ticker or name   (Ctrl+K)</value>
+  </data>
+  <data name="Monitor_Sparklines" xml:space="preserve">
+    <value>Charts</value>
+  </data>
+  <data name="Monitor_SparklinesAutomation" xml:space="preserve">
+    <value>Show sparklines</value>
+  </data>
+  <data name="Monitor_SparklinesTip" xml:space="preserve">
+    <value>Sparklines in their own column. The most expensive cell in the grid, which is why they are off by default.</value>
+  </data>
+  <data name="Monitor_ViewNamePlaceholder" xml:space="preserve">
+    <value>View name</value>
+  </data>
+  <data name="Monitor_ViewsAutomation" xml:space="preserve">
+    <value>Saved views</value>
+  </data>
+  <data name="Monitor_WatchAutomation" xml:space="preserve">
+    <value>Add to the watchlist</value>
+  </data>
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="Nav_Instruments" xml:space="preserve">
+    <value>Instruments</value>
+  </data>
+  <data name="Nav_Monitor" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Nav_Signals" xml:space="preserve">
+    <value>Signals</value>
+  </data>
+  <data name="Onb_BadAddress" xml:space="preserve">
+    <value>The address must look like https://api.example.com</value>
+  </data>
+  <data name="Onb_Check" xml:space="preserve">
+    <value>Check</value>
+  </data>
+  <data name="Onb_Connect" xml:space="preserve">
+    <value>Connection</value>
+  </data>
+  <data name="Onb_HowNoisy" xml:space="preserve">
+    <value>How noisy should it be?</value>
+  </data>
+  <data name="Onb_HowNoisyBody" xml:space="preserve">
+    <value>Pick a set of thresholds. You can change it at any time under Settings, where you can also see how many signals a day it would produce.</value>
+  </data>
+  <data name="Onb_Intro" xml:space="preserve">
+    <value>RcktMon watches the whole market and alerts you when an instrument's price or volume moves sharply — over the day or over a few minutes. Thresholds are configurable and the signal history lives on the server.</value>
+  </data>
+  <data name="Onb_KeyHint" xml:space="preserve">
+    <value>The key is issued by the Telegram bot and is kept in the operating system's keychain.</value>
+  </data>
+  <data name="Onb_NoBrokerToken" xml:space="preserve">
+    <value>RcktMon never asks for a broker token.</value>
+  </data>
+  <data name="Onb_PresetNotSaved" xml:space="preserve">
+    <value>Profile not saved: {0}</value>
+  </data>
+  <data name="Onb_PresetsFailed" xml:space="preserve">
+    <value>Could not load the presets: {0}</value>
+  </data>
+  <data name="Onb_Tagline" xml:space="preserve">
+    <value>A monitor for sharp moves on the exchange</value>
+  </data>
+  <data name="Onb_WhatChanged" xml:space="preserve">
+    <value>What changed</value>
+  </data>
+  <data name="Onb_WhatChangedBody" xml:space="preserve">
+    <value>The old app demanded a broker token, a bot token and two chat ids before the first launch. Market data is now subscribed by the server: the client only needs an address and an access key.</value>
+  </data>
+  <data name="Phase_Break" xml:space="preserve">
+    <value>Break</value>
+  </data>
+  <data name="Phase_Closed" xml:space="preserve">
+    <value>Closed</value>
+  </data>
+  <data name="Phase_ClosingAuction" xml:space="preserve">
+    <value>Closing auction</value>
+  </data>
+  <data name="Phase_Evening" xml:space="preserve">
+    <value>Evening session</value>
+  </data>
+  <data name="Phase_Open" xml:space="preserve">
+    <value>Trading</value>
+  </data>
+  <data name="Phase_OpeningAuction" xml:space="preserve">
+    <value>Opening auction</value>
+  </data>
+  <data name="Phase_Unknown" xml:space="preserve">
+    <value>No schedule</value>
+  </data>
+  <data name="Profile_NoRules" xml:space="preserve">
+    <value>No rules</value>
+  </data>
+  <data name="Profile_Summary" xml:space="preserve">
+    <value>Day from {0}% · {1}% in {2} min</value>
+  </data>
+  <data name="Profiles_ActivateFailed" xml:space="preserve">
+    <value>Could not activate the profile: {0}</value>
+  </data>
+  <data name="Profiles_CreateFailed" xml:space="preserve">
+    <value>Could not create the profile: {0}</value>
+  </data>
+  <data name="Profiles_LoadFailed" xml:space="preserve">
+    <value>Could not load the profiles: {0}</value>
+  </data>
+  <data name="Profiles_NoConnection" xml:space="preserve">
+    <value>No connection to the server — profiles are unavailable.</value>
+  </data>
+  <data name="Profiles_Rejected" xml:space="preserve">
+    <value>The server rejected the profile: {0}</value>
+  </data>
+  <data name="Secret_Dpapi" xml:space="preserve">
+    <value>DPAPI (the current Windows user)</value>
+  </data>
+  <data name="Secret_File" xml:space="preserve">
+    <value>an encrypted file (AES-GCM) in the settings folder</value>
+  </data>
+  <data name="Secret_Keychain" xml:space="preserve">
+    <value>the macOS keychain</value>
+  </data>
+  <data name="Session_ClosedToday" xml:space="preserve">
+    <value>The exchange is closed today</value>
+  </data>
+  <data name="Session_Closes" xml:space="preserve">
+    <value>Closes {0} · {1}</value>
+  </data>
+  <data name="Session_NoMoreToday" xml:space="preserve">
+    <value>No more trading today</value>
+  </data>
+  <data name="Session_NoSchedule" xml:space="preserve">
+    <value>Schedule not received</value>
+  </data>
+  <data name="Session_Opens" xml:space="preserve">
+    <value>Opens {0} · {1}</value>
+  </data>
+  <data name="Settings_AccessKey" xml:space="preserve">
+    <value>Access key</value>
+  </data>
+  <data name="Settings_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Settings_Advanced" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="Settings_Appearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="Settings_ColourBlind" xml:space="preserve">
+    <value>Colour-blind palette (blue/orange)</value>
+  </data>
+  <data name="Settings_ColourBlindHint" xml:space="preserve">
+    <value>Direction is always doubled by an arrow and a sign, so colour is a second channel and never the only one.</value>
+  </data>
+  <data name="Settings_CompactRows" xml:space="preserve">
+    <value>Compact grid rows</value>
+  </data>
+  <data name="Settings_ConfigDirectory" xml:space="preserve">
+    <value>Settings folder</value>
+  </data>
+  <data name="Settings_Connection" xml:space="preserve">
+    <value>Connection</value>
+  </data>
+  <data name="Settings_Counting" xml:space="preserve">
+    <value>counting…</value>
+  </data>
+  <data name="Settings_DayChangePercent" xml:space="preserve">
+    <value>Daily change, %</value>
+  </data>
+  <data name="Settings_DayVolumeMultiple" xml:space="preserve">
+    <value>Volume, × daily average</value>
+  </data>
+  <data name="Settings_DeviceId" xml:space="preserve">
+    <value>Installation id</value>
+  </data>
+  <data name="Settings_DeviceIdHint" xml:space="preserve">
+    <value>Not a secret. It exists so the account owner can see and revoke individual devices.</value>
+  </data>
+  <data name="Settings_Enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="Settings_ExcludeTickers" xml:space="preserve">
+    <value>Exclude tickers</value>
+  </data>
+  <data name="Settings_IncludePlaceholder" xml:space="preserve">
+    <value>regex, empty = all</value>
+  </data>
+  <data name="Settings_IncludeTickers" xml:space="preserve">
+    <value>Only these tickers</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Settings_LanguageHint" xml:space="preserve">
+    <value>Applies immediately. Numbers and dates keep your system format.</value>
+  </data>
+  <data name="Settings_LogDirectory" xml:space="preserve">
+    <value>Log folder</value>
+  </data>
+  <data name="Settings_MakeActive" xml:space="preserve">
+    <value>Make active</value>
+  </data>
+  <data name="Settings_NoBrokerToken" xml:space="preserve">
+    <value>RcktMon never asks for a broker token: the server subscribes to quotes with its own credentials.</value>
+  </data>
+  <data name="Settings_PerDay" xml:space="preserve">
+    <value>signals per day</value>
+  </data>
+  <data name="Settings_PreviewLabel" xml:space="preserve">
+    <value>With these thresholds it would fire roughly</value>
+  </data>
+  <data name="Settings_PriceWindow" xml:space="preserve">
+    <value>Price window, minutes</value>
+  </data>
+  <data name="Settings_ProfileName" xml:space="preserve">
+    <value>Profile name</value>
+  </data>
+  <data name="Settings_Profiles" xml:space="preserve">
+    <value>Alert profiles</value>
+  </data>
+  <data name="Settings_RestartHint" xml:space="preserve">
+    <value>The address or key changed — it applies after reconnecting.</value>
+  </data>
+  <data name="Settings_ServerAddress" xml:space="preserve">
+    <value>Server address</value>
+  </data>
+  <data name="Settings_Sparklines" xml:space="preserve">
+    <value>Sparklines in the monitor</value>
+  </data>
+  <data name="Settings_StartFromPreset" xml:space="preserve">
+    <value>Start from a preset</value>
+  </data>
+  <data name="Settings_StoredIn" xml:space="preserve">
+    <value>Stored in:</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Settings_ThemeDark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_ThemeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_ThemeSystem" xml:space="preserve">
+    <value>Match the system</value>
+  </data>
+  <data name="Settings_TickInterval" xml:space="preserve">
+    <value>Update interval, ms</value>
+  </data>
+  <data name="Settings_TickIntervalHint" xml:space="preserve">
+    <value>The server clamps this to its own range and to the account's plan.</value>
+  </data>
+  <data name="Settings_VolumeWindow" xml:space="preserve">
+    <value>Volume window, minutes</value>
+  </data>
+  <data name="Settings_WindowPricePercent" xml:space="preserve">
+    <value>Price change over N minutes, %</value>
+  </data>
+  <data name="Settings_WindowVolumeMultiple" xml:space="preserve">
+    <value>Volume over N minutes, × average</value>
+  </data>
+  <data name="Shell_ClosedToday" xml:space="preserve">
+    <value>closed today</value>
+  </data>
+  <data name="Shell_Closes" xml:space="preserve">
+    <value>closes {0}</value>
+  </data>
+  <data name="Shell_DataAge" xml:space="preserve">
+    <value>Data age:</value>
+  </data>
+  <data name="Shell_OpenSettings" xml:space="preserve">
+    <value>Open settings</value>
+  </data>
+  <data name="Shell_Opens" xml:space="preserve">
+    <value>opens {0}</value>
+  </data>
+  <data name="Shell_SignalsToday" xml:space="preserve">
+    <value>Signals today:</value>
+  </data>
+  <data name="Shell_StaleBanner" xml:space="preserve">
+    <value>Quotes have not updated for over 10 seconds although the exchange is open. What you see may be out of date.</value>
+  </data>
+  <data name="Shell_ToggleRail" xml:space="preserve">
+    <value>Collapse or expand the navigation rail</value>
+  </data>
+  <data name="Shell_ToggleTheme" xml:space="preserve">
+    <value>Switch between the light and dark theme</value>
+  </data>
+  <data name="Shell_UpdatesPerSecond" xml:space="preserve">
+    <value>Updates/s:</value>
+  </data>
+  <data name="SignalKind_DayChange" xml:space="preserve">
+    <value>Daily move</value>
+  </data>
+  <data name="SignalKind_MinutesPrice" xml:space="preserve">
+    <value>Price spike</value>
+  </data>
+  <data name="SignalKind_MinutesVolume" xml:space="preserve">
+    <value>Volume spike</value>
+  </data>
+  <data name="SignalKind_Other" xml:space="preserve">
+    <value>Signal</value>
+  </data>
+  <data name="Signals_Currency" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="Signals_EmptyBody" xml:space="preserve">
+    <value>As soon as the first rule fires, the alert appears here and arrives in Telegram.</value>
+  </data>
+  <data name="Signals_EmptyFiltered" xml:space="preserve">
+    <value>No signals match the filters. Try widening the period or clearing them.</value>
+  </data>
+  <data name="Signals_EmptyTitle" xml:space="preserve">
+    <value>Nothing here yet</value>
+  </data>
+  <data name="Signals_Found" xml:space="preserve">
+    <value>Found:</value>
+  </data>
+  <data name="Signals_Kind" xml:space="preserve">
+    <value>Signal type</value>
+  </data>
+  <data name="Signals_LiveAutomation" xml:space="preserve">
+    <value>Live feed updates</value>
+  </data>
+  <data name="Signals_LiveTip" xml:space="preserve">
+    <value>When off, the feed stops rebuilding — handy while reading a card.</value>
+  </data>
+  <data name="Signals_PerDay" xml:space="preserve">
+    <value>for the day</value>
+  </data>
+  <data name="Signals_Range" xml:space="preserve">
+    <value>Period</value>
+  </data>
+  <data name="Signals_RangeAll" xml:space="preserve">
+    <value>Everything we have</value>
+  </data>
+  <data name="Signals_RangeToday" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Signals_RangeTwoDays" xml:space="preserve">
+    <value>Two days</value>
+  </data>
+  <data name="Signals_Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Signals_SearchPlaceholder" xml:space="preserve">
+    <value>Ticker or text</value>
+  </data>
+  <data name="Signals_ToMonitor" xml:space="preserve">
+    <value>To the monitor</value>
+  </data>
+  <data name="Signals_TodaySuffix" xml:space="preserve">
+    <value>· today:</value>
+  </data>
+  <data name="Signals_Volume" xml:space="preserve">
+    <value>volume</value>
+  </data>
+  <data name="Status_Break" xml:space="preserve">
+    <value>Break</value>
+  </data>
+  <data name="Status_Closed" xml:space="preserve">
+    <value>Closed</value>
+  </data>
+  <data name="Status_ClosingAuction" xml:space="preserve">
+    <value>Closing auction</value>
+  </data>
+  <data name="Status_Halted" xml:space="preserve">
+    <value>Halted</value>
+  </data>
+  <data name="Status_Normal" xml:space="preserve">
+    <value>Trading</value>
+  </data>
+  <data name="Status_NotAvailable" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
+  <data name="Status_OpeningAuction" xml:space="preserve">
+    <value>Opening auction</value>
+  </data>
+  <data name="Status_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Time_AgoFormat" xml:space="preserve">
+    <value>{0} {1} ago</value>
+  </data>
+  <data name="Time_JustNow" xml:space="preserve">
+    <value>just now</value>
+  </data>
+  <data name="Time_Yesterday" xml:space="preserve">
+    <value>yesterday {0}</value>
+  </data>
+  <data name="Unit_Minute_Few" xml:space="preserve">
+    <value>minutes</value>
+  </data>
+  <data name="Unit_Minute_Many" xml:space="preserve">
+    <value>minutes</value>
+  </data>
+  <data name="Unit_Minute_One" xml:space="preserve">
+    <value>minute</value>
+  </data>
+  <data name="Unit_Signal_Few" xml:space="preserve">
+    <value>signals</value>
+  </data>
+  <data name="Unit_Signal_Many" xml:space="preserve">
+    <value>signals</value>
+  </data>
+  <data name="Unit_Signal_One" xml:space="preserve">
+    <value>signal</value>
+  </data>
+  <data name="View_All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="View_Mine" xml:space="preserve">
+    <value>My view</value>
+  </data>
+  <data name="View_RubMovers" xml:space="preserve">
+    <value>RUB movers</value>
+  </data>
+  <data name="View_VolumeSpikes" xml:space="preserve">
+    <value>Volume spikes</value>
+  </data>
+  <data name="View_Watchlist" xml:space="preserve">
+    <value>My list</value>
+  </data>
+  <data name="Shell_Seconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+</root>

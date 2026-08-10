@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:RcktMon.App.Localization"
              xmlns:vm="using:RcktMon.App.ViewModels"
              xmlns:fmt="using:RcktMon.App.Formatting"
              xmlns:market="using:RcktMon.Client.Core.Market"
@@ -32,11 +33,11 @@
                             <TextBlock Classes="tertiary" Text="{Binding Kind, Converter={StaticResource KindName}}" />
                             <TextBlock Classes="tertiary" Text="{Binding Currency}" />
                             <TextBlock Classes="tertiary">
-                                <Run Text="объём" />
+                                <Run Text="{l:Localize Signals_Volume}" />
                                 <Run Text="{Binding Volume, Converter={StaticResource Compact}}" />
                             </TextBlock>
                             <TextBlock Classes="tertiary">
-                                <Run Text="за день" />
+                                <Run Text="{l:Localize Signals_PerDay}" />
                                 <Run Text="{Binding DayChange, Converter={StaticResource Percent}}" />
                             </TextBlock>
                         </StackPanel>
@@ -46,7 +47,7 @@
                         <TextBlock Classes="tertiary" HorizontalAlignment="Right"
                                    ToolTip.Tip="{Binding FiredAt}"
                                    Text="{Binding FiredAt, Converter={StaticResource Ago}}" />
-                        <Button Classes="chip" Content="В монитор"
+                        <Button Classes="chip" Content="{l:Localize Signals_ToMonitor}"
                                 Command="{Binding $parent[UserControl].((vm:SignalsViewModel)DataContext).OpenInstrumentCommand}"
                                 CommandParameter="{Binding}" />
                     </StackPanel>
@@ -75,25 +76,25 @@
             <StackPanel Margin="14" Spacing="14">
 
                 <StackPanel Spacing="6">
-                    <TextBlock Classes="label" Text="Поиск" />
-                    <TextBox Classes="field" PlaceholderText="Тикер или текст"
+                    <TextBlock Classes="label" Text="{l:Localize Signals_Search}" />
+                    <TextBox Classes="field" PlaceholderText="{l:Localize Signals_SearchPlaceholder}"
                              Text="{Binding SearchText}" />
                 </StackPanel>
 
                 <StackPanel Spacing="6">
-                    <TextBlock Classes="label" Text="Период" />
+                    <TextBlock Classes="label" Text="{l:Localize Signals_Range}" />
                     <StackPanel Spacing="2">
-                        <RadioButton GroupName="range" Content="Сегодня"
+                        <RadioButton GroupName="range" Content="{l:Localize Signals_RangeToday}"
                                      IsChecked="{Binding Range, Converter={StaticResource EnumIs}, ConverterParameter=Today}" />
-                        <RadioButton GroupName="range" Content="Два дня"
+                        <RadioButton GroupName="range" Content="{l:Localize Signals_RangeTwoDays}"
                                      IsChecked="{Binding Range, Converter={StaticResource EnumIs}, ConverterParameter=TwoDays}" />
-                        <RadioButton GroupName="range" Content="Всё, что есть"
+                        <RadioButton GroupName="range" Content="{l:Localize Signals_RangeAll}"
                                      IsChecked="{Binding Range, Converter={StaticResource EnumIs}, ConverterParameter=All}" />
                     </StackPanel>
                 </StackPanel>
 
                 <StackPanel Spacing="6">
-                    <TextBlock Classes="label" Text="Тип сигнала" />
+                    <TextBlock Classes="label" Text="{l:Localize Signals_Kind}" />
                     <ItemsControl ItemsSource="{Binding Kinds}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:FilterChip">
@@ -105,7 +106,7 @@
                 </StackPanel>
 
                 <StackPanel Spacing="6" IsVisible="{Binding Currencies.Count}">
-                    <TextBlock Classes="label" Text="Валюта" />
+                    <TextBlock Classes="label" Text="{l:Localize Signals_Currency}" />
                     <ItemsControl ItemsSource="{Binding Currencies}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:FilterChip">
@@ -116,7 +117,7 @@
                     </ItemsControl>
                 </StackPanel>
 
-                <Button Classes="chip" HorizontalAlignment="Stretch" Content="Сбросить"
+                <Button Classes="chip" HorizontalAlignment="Stretch" Content="{l:Localize Common_Reset}"
                         Command="{Binding ClearFiltersCommand}" />
             </StackPanel>
         </Border>
@@ -124,11 +125,11 @@
         <!-- ============ header ============ -->
         <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="20,16,20,8">
             <StackPanel Grid.Column="0" Spacing="2">
-                <TextBlock Classes="h1" Text="Сигналы" />
+                <TextBlock Classes="h1" Text="{l:Localize Nav_Signals}" />
                 <TextBlock Classes="tertiary">
-                    <Run Text="Найдено:" />
+                    <Run Text="{l:Localize Signals_Found}" />
                     <Run Text="{Binding MatchCount}" />
-                    <Run Text="· сегодня:" />
+                    <Run Text="{l:Localize Signals_TodaySuffix}" />
                     <Run Text="{Binding TodayCount}" />
                 </TextBlock>
             </StackPanel>
@@ -136,8 +137,8 @@
             <!-- Freezing the feed is what makes a fast-moving list readable. -->
             <ToggleButton Grid.Column="1" Classes="chip" Content="Live"
                           IsChecked="{Binding IsLive}"
-                          ToolTip.Tip="Когда выключено, лента не перестраивается — удобно, чтобы прочитать карточку."
-                          AutomationProperties.Name="Живое обновление ленты" />
+                          ToolTip.Tip="{l:Localize Signals_LiveTip}"
+                          AutomationProperties.Name="{l:Localize Signals_LiveAutomation}" />
         </Grid>
 
         <!-- ============ feed ============ -->
@@ -156,14 +157,14 @@
 
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10"
                         MaxWidth="420" IsVisible="{Binding IsEmpty}">
-                <TextBlock Classes="h2" HorizontalAlignment="Center" Text="Пока пусто" />
+                <TextBlock Classes="h2" HorizontalAlignment="Center" Text="{l:Localize Signals_EmptyTitle}" />
                 <TextBlock Classes="secondary" TextAlignment="Center" TextWrapping="Wrap"
-                           Text="Сигналов, подходящих под фильтры, нет. Попробуйте расширить период или снять фильтры."
+                           Text="{l:Localize Signals_EmptyFiltered}"
                            IsVisible="{Binding IsFilteredEmpty}" />
                 <TextBlock Classes="secondary" TextAlignment="Center" TextWrapping="Wrap"
-                           Text="Как только сработает первое правило, оповещение появится здесь и придёт в Telegram."
+                           Text="{l:Localize Signals_EmptyBody}"
                            IsVisible="{Binding !IsFilteredEmpty}" />
-                <Button Classes="primary" HorizontalAlignment="Center" Content="Сбросить фильтры"
+                <Button Classes="primary" HorizontalAlignment="Center" Content="{l:Localize Common_ClearFilters}"
                         Command="{Binding ClearFiltersCommand}"
                         IsVisible="{Binding IsFilteredEmpty}" />
             </StackPanel>

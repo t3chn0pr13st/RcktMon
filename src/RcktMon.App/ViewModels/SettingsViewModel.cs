@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using RcktMon.App.Formatting;
+using RcktMon.App.Localization;
 using RcktMon.Client.Core.Market;
 using RcktMon.Client.Core.Platform;
 using RcktMon.Client.Core.Security;
@@ -19,7 +21,7 @@ namespace RcktMon.App.ViewModels;
 /// effect?" a genuinely hard question. Here every change is written immediately and
 /// acknowledged inline.
 /// </remarks>
-public sealed partial class SettingsViewModel : PageViewModel, IDisposable
+public sealed partial class SettingsViewModel : PageViewModel
 {
     /// <summary>How long the inline "Сохранено" acknowledgement stays up.</summary>
     private static readonly TimeSpan AcknowledgementLifetime = TimeSpan.FromSeconds(2);
@@ -34,6 +36,7 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
     private readonly Action _persist;
     private readonly Action<ThemePreference> _applyTheme;
     private readonly Action _reconnect;
+    private readonly Action<string> _applyLanguage;
 
     private readonly System.Timers.Timer _previewTimer;
 
@@ -47,8 +50,9 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
         IAppPaths paths,
         Action persist,
         Action<ThemePreference> applyTheme,
-        Action reconnect)
-        : base("settings", "Настройки", "Icon.Settings")
+        Action reconnect,
+        Action<string> applyLanguage)
+        : base("settings", "Nav_Settings", "Icon.Settings")
     {
         _session = session;
         _settings = settings;
@@ -57,6 +61,7 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
         _persist = persist;
         _applyTheme = applyTheme;
         _reconnect = reconnect;
+        _applyLanguage = applyLanguage;
 
         _loading = true;
         _serverAddress = settings.ServerAddress;
@@ -67,6 +72,7 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
         _colourBlindSafe = settings.ColourBlindSafe;
         _tickIntervalMs = settings.TickIntervalMs;
         _deviceId = settings.DeviceId;
+        _language = settings.Locale;
         _loading = false;
 
         _previewTimer = new System.Timers.Timer(PreviewDebounce.TotalMilliseconds) { AutoReset = false };
@@ -106,6 +112,12 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
 
     [ObservableProperty] private int _tickIntervalMs;
 
+    /// <summary>BCP-47 tag, empty to follow the operating system, null before binding.</summary>
+    [ObservableProperty] private string? _language = string.Empty;
+
+    /// <summary>The languages the app ships, each named in its own language.</summary>
+    public IReadOnlyList<LanguageOption> Languages => Localizer.Languages;
+
     // ---- profiles ----
 
     [ObservableProperty] private AlertProfileViewModel? _selectedProfile;
@@ -134,17 +146,37 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
     /// <summary>Which backend is holding the access key, stated plainly.</summary>
     public string SecretBackend => _secrets switch
     {
-        KeychainSecretStore => "Связка ключей macOS",
-        DpapiSecretStore => "DPAPI (текущий пользователь Windows)",
-        _ => "Зашифрованный файл (AES-GCM) в каталоге настроек",
+        KeychainSecretStore => Strings.Secret_Keychain,
+        DpapiSecretStore => Strings.Secret_Dpapi,
+        _ => Strings.Secret_File,
     };
 
     public override void Activated()
     {
+        SyncLanguage();
+
         if (Profiles.Count == 0)
         {
             _ = LoadProfilesAsync();
         }
+    }
+
+    public override void LanguageChanged() => SyncLanguage();
+
+    /// <summary>
+    /// Re-reads the stored language into the selector.
+    /// </summary>
+    /// <remarks>
+    /// The pane is not the only thing that can change the language — onboarding and the
+    /// command line both can — and a stale selector does not merely look wrong: the combo
+    /// box writes its value back when the view is re-created, which would silently switch
+    /// the language back.
+    /// </remarks>
+    private void SyncLanguage()
+    {
+        _loading = true;
+        Language = _settings.Locale;
+        _loading = false;
     }
 
     public override void Drained(in DrainResult result)
@@ -205,6 +237,22 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
         Save();
     }
 
+    partial void OnLanguageChanged(string? value)
+    {
+        // A two-way ComboBox writes its value back while it is being set up, and switching
+        // language re-establishes the session — so an unguarded setter here would drop the
+        // connection every time this pane is opened.
+        if (_loading || value is null || value == _settings.Locale)
+        {
+            return;
+        }
+
+        // Applied live rather than on restart: everything translated is bound to the
+        // localizer, so the whole window relabels itself in place.
+        _applyLanguage(value);
+        Acknowledge();
+    }
+
     partial void OnColourBlindSafeChanged(bool value)
     {
         _settings.ColourBlindSafe = value;
@@ -228,7 +276,7 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
     {
         if (_session.Connection.Profiles is not { } client)
         {
-            ProfileError = "Нет соединения с сервером — профили недоступны.";
+            ProfileError = Strings.Profiles_NoConnection;
             return;
         }
 
@@ -258,7 +306,7 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
         }
         catch (Grpc.Core.RpcException ex)
         {
-            ProfileError = $"Не удалось загрузить профили: {ex.Status.Detail}";
+            ProfileError = string.Format(CultureInfo.CurrentCulture, Strings.Profiles_LoadFailed, ex.Status.Detail);
         }
         finally
         {
@@ -313,7 +361,7 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
         }
         catch (Grpc.Core.RpcException ex)
         {
-            ProfileError = $"Сервер отклонил профиль: {ex.Status.Detail}";
+            ProfileError = string.Format(CultureInfo.CurrentCulture, Strings.Profiles_Rejected, ex.Status.Detail);
         }
         finally
         {
@@ -350,7 +398,7 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
         }
         catch (Grpc.Core.RpcException ex)
         {
-            ProfileError = $"Не удалось создать профиль: {ex.Status.Detail}";
+            ProfileError = string.Format(CultureInfo.CurrentCulture, Strings.Profiles_CreateFailed, ex.Status.Detail);
         }
     }
 
@@ -375,7 +423,7 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
         }
         catch (Grpc.Core.RpcException ex)
         {
-            ProfileError = $"Не удалось активировать профиль: {ex.Status.Detail}";
+            ProfileError = string.Format(CultureInfo.CurrentCulture, Strings.Profiles_ActivateFailed, ex.Status.Detail);
         }
     }
 
@@ -428,5 +476,9 @@ public sealed partial class SettingsViewModel : PageViewModel, IDisposable
         ShowSaved = true;
     }
 
-    public void Dispose() => _previewTimer.Dispose();
+    public override void Dispose()
+    {
+        _previewTimer.Dispose();
+        base.Dispose();
+    }
 }

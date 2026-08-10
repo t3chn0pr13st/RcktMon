@@ -208,10 +208,14 @@ public sealed class EndToEndStreamTests : IAsyncLifetime
         using var lifetime = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         Task run = connection.RunAsync(lifetime.Token);
 
+        // Asserted on the fault kind rather than on the message: the transport reports
+        // what happened, and the words are the UI layer's business.
         await WaitFor(
             () => connection.CurrentStatus.State == ConnectionState.Reconnecting &&
-                  connection.CurrentStatus.Detail?.Contains("незашифрован", StringComparison.Ordinal) is true,
+                  connection.CurrentStatus.Fault.Kind == ConnectionFaultKind.InsecureAddress,
             lifetime.Token);
+
+        Assert.Equal($"http://localhost:{_port}/", connection.CurrentStatus.Fault.Argument);
 
         await lifetime.CancelAsync();
         await run;
@@ -224,6 +228,10 @@ public sealed class EndToEndStreamTests : IAsyncLifetime
         DeviceId = "11111111-1111-1111-1111-111111111111",
         AllowInsecureHttp = true,
         TickIntervalMs = 250,
+
+        // Pinned, because the server renders account and signal text in the session's
+        // language and the assertions below are in Russian.
+        Locale = "ru-RU",
     };
 
     private static string FirstUid(QuoteStore store)

@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:RcktMon.App.Localization"
         xmlns:vm="using:RcktMon.App.ViewModels"
         xmlns:fmt="using:RcktMon.App.Formatting"
         x:Class="RcktMon.App.Views.MainWindow"
@@ -25,7 +26,7 @@
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                         <Button Classes="ghost" Command="{Binding ToggleRailCommand}"
-                                AutomationProperties.Name="Свернуть или развернуть панель навигации">
+                                AutomationProperties.Name="{l:Localize Shell_ToggleRail}">
                             <PathIcon Classes="rail" Data="{DynamicResource Icon.Instruments}" />
                         </Button>
 
@@ -56,9 +57,9 @@
                             </StackPanel>
                         </Border>
 
-                        <Button Classes="chip" Content="Тема"
+                        <Button Classes="chip" Content="{l:Localize Settings_Theme}"
                                 Command="{Binding ToggleThemeCommand}"
-                                AutomationProperties.Name="Переключить светлую и тёмную тему" />
+                                AutomationProperties.Name="{l:Localize Shell_ToggleTheme}" />
                     </StackPanel>
 
                 </Grid>
@@ -69,8 +70,8 @@
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <TextBlock Text="⚠" VerticalAlignment="Center" />
                     <TextBlock VerticalAlignment="Center"
-                               Text="Котировки не обновлялись более 10 секунд, хотя биржа открыта. Данные на экране могут быть устаревшими." />
-                    <Button Classes="link" Content="Переподключиться" Command="{Binding ReconnectCommand}" />
+                               Text="{l:Localize Shell_StaleBanner}" />
+                    <Button Classes="link" Content="{l:Localize Common_Reconnect}" Command="{Binding ReconnectCommand}" />
                 </StackPanel>
             </Border>
 
@@ -79,7 +80,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <TextBlock Text="⛔" VerticalAlignment="Center" />
                     <TextBlock VerticalAlignment="Center" Text="{Binding Status.Detail}" />
-                    <Button Classes="link" Content="Открыть настройки"
+                    <Button Classes="link" Content="{l:Localize Shell_OpenSettings}"
                             Command="{Binding NavigateCommand}" CommandParameter="settings" />
                 </StackPanel>
             </Border>
@@ -90,17 +91,17 @@
                     <TextBlock Grid.Column="0" Classes="tertiary" Text="{Binding ServerAddress}" />
 
                     <TextBlock Grid.Column="1" Classes="tertiary" Margin="16,0,0,0">
-                        <Run Text="Обновлений/с:" />
+                        <Run Text="{l:Localize Shell_UpdatesPerSecond}" />
                         <Run Text="{Binding UpdatesPerSecond}" />
                     </TextBlock>
 
                     <TextBlock Grid.Column="2" Classes="tertiary" Margin="16,0,0,0">
-                        <Run Text="Возраст данных:" />
+                        <Run Text="{l:Localize Shell_DataAge}" />
                         <Run Text="{Binding DataAge}" />
                     </TextBlock>
 
                     <TextBlock Grid.Column="4" Classes="tertiary" Margin="16,0,0,0">
-                        <Run Text="Сигналов сегодня:" />
+                        <Run Text="{l:Localize Shell_SignalsToday}" />
                         <Run Text="{Binding SignalsToday}" />
                     </TextBlock>
 

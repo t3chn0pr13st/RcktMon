@@ -23,8 +23,15 @@ public sealed class ConnectionSettings
     /// <summary>Stable per-installation id, so the account owner can revoke one machine.</summary>
     public required string DeviceId { get; init; }
 
-    /// <summary>BCP-47 locale used for server-rendered signal headlines.</summary>
-    public string Locale { get; init; } = "ru-RU";
+    /// <summary>
+    /// BCP-47 locale used for server-rendered signal headlines.
+    /// </summary>
+    /// <remarks>
+    /// Sent on the handshake and remembered by the server for the session, so an alert
+    /// reads the same in the app, in Telegram and in the web account. Defaults to the
+    /// interface language rather than to Russian: the client is bilingual now.
+    /// </remarks>
+    public string Locale { get; init; } = System.Globalization.CultureInfo.CurrentUICulture.Name;
 
     /// <summary>
     /// Requested coalescing interval in milliseconds. The server clamps this to its own

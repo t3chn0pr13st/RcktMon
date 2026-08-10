@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using RcktMon.App.Localization;
 using RcktMon.Client.Core.Connection;
 using RcktMon.Client.Core.Security;
 using RcktMon.Client.Core.Settings;
@@ -112,7 +114,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
         if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) ||
             uri.Scheme is not ("http" or "https"))
         {
-            Error = "Адрес должен быть вида https://api.example.com";
+            Error = Strings.Onb_BadAddress;
             return;
         }
 
@@ -159,7 +161,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
         {
             // Not worth blocking onboarding over: the account keeps its default profile
             // and the user can pick another one in settings.
-            Error = $"Профиль не сохранён: {ex.Status.Detail}";
+            Error = string.Format(CultureInfo.CurrentCulture, Strings.Onb_PresetNotSaved, ex.Status.Detail);
         }
 
         Finish();
@@ -185,7 +187,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
         }
         catch (Grpc.Core.RpcException ex)
         {
-            Error = $"Не удалось загрузить пресеты: {ex.Status.Detail}";
+            Error = string.Format(CultureInfo.CurrentCulture, Strings.Onb_PresetsFailed, ex.Status.Detail);
         }
     }
 }

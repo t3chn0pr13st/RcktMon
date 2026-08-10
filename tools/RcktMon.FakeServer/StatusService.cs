@@ -29,14 +29,16 @@ public sealed class FakeStatusService(MarketHub hub) : StatusService.StatusServi
 
         try
         {
+            string locale = SessionLocales.For(context);
+
             // Send immediately rather than waiting out the first interval: the dashboard
             // shows an empty session tile until this arrives.
-            await responseStream.WriteAsync(Build(), ct).ConfigureAwait(false);
+            await responseStream.WriteAsync(Build(locale), ct).ConfigureAwait(false);
 
             using var timer = new PeriodicTimer(Interval);
             while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
             {
-                await responseStream.WriteAsync(Build(), ct).ConfigureAwait(false);
+                await responseStream.WriteAsync(Build(locale), ct).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -45,7 +47,7 @@ public sealed class FakeStatusService(MarketHub hub) : StatusService.StatusServi
         }
     }
 
-    private ServerStatus Build()
+    private ServerStatus Build(string locale)
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
 
@@ -67,7 +69,7 @@ public sealed class FakeStatusService(MarketHub hub) : StatusService.StatusServi
                     hub.LastTickAt == default ? hub.StartedAt : hub.LastTickAt),
                 Degraded = degraded,
                 DegradedReason = degraded
-                    ? $"{ShardsTotal - healthy} из {ShardsTotal} шардов не отвечают (chaos)"
+                    ? FakeStrings.ShardsDown(ShardsTotal - healthy, ShardsTotal, locale)
                     : string.Empty,
             },
         };
