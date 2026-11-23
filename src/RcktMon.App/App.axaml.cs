@@ -25,6 +25,8 @@ public sealed partial class RcktMonApp : Avalonia.Application
     /// <summary>Logger factory supplied by the host, if any.</summary>
     public static ILoggerFactory? LoggerFactory { get; set; }
 
+    public static bool LocalWorkspace { get; set; }
+
     private MainWindowViewModel? _mainViewModel;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -36,6 +38,13 @@ public sealed partial class RcktMonApp : Avalonia.Application
             IAppPaths paths = Paths
                 ?? throw new InvalidOperationException(
                     $"{nameof(RcktMonApp)}.{nameof(Paths)} must be set before the app runs.");
+
+            if (LocalWorkspace)
+            {
+                desktop.MainWindow = new WorkspaceWindow();
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
 
             _mainViewModel = new MainWindowViewModel(paths, LoggerFactory);
 

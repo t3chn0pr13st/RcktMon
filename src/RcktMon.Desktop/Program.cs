@@ -14,7 +14,9 @@ internal static class Program
         var paths = new AppPaths();
         paths.EnsureCreated();
 
-        ApplyCommandLineOverrides(args, paths);
+        RcktMonApp.LocalWorkspace = args.Contains("--studio", StringComparer.Ordinal) ||
+            (!args.Contains("--monitor", StringComparer.Ordinal) && File.Exists(Path.Combine(AppContext.BaseDirectory, "rocketmon-studio.bundle")));
+        if (!RcktMonApp.LocalWorkspace) ApplyCommandLineOverrides(args, paths);
 
         RcktMonApp.Paths = paths;
 
@@ -35,7 +37,7 @@ internal static class Program
     /// These write through to the same places the settings pane writes to — the settings
     /// file and the OS keychain — rather than living in a parallel configuration path, so
     /// there is exactly one answer to "where is the client getting its address from".
-    /// There is deliberately no broker token here or anywhere else in the client.
+    /// Manual trading credentials are never accepted via arguments or these settings.
     /// </remarks>
     private static void ApplyCommandLineOverrides(string[] args, IAppPaths paths)
     {

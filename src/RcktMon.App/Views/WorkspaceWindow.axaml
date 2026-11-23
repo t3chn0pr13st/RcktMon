@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="using:RcktMon.App.Views" xmlns:l="using:RcktMon.App.Localization"
+        x:Class="RcktMon.App.Views.WorkspaceWindow" Title="RocketMon Studio" Width="1170" Height="780"
+        MinWidth="390" MinHeight="490" Background="{DynamicResource Brush.Surface.1}" WindowStartupLocation="CenterScreen">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Classes="appbar" Padding="20,10">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="RocketMon" FontWeight="Bold" FontSize="19" Foreground="{DynamicResource Brush.Accent}"/>
+                    <TextBlock Text="Studio" VerticalAlignment="Center" Classes="secondary"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1" Classes="tertiary" VerticalAlignment="Center" Text="{l:Localize Work_Desktop}"/>
+            </Grid>
+        </Border>
+        <TabControl x:Name="Pages" Margin="10,0" SelectionChanged="PageChanged">
+            <TabItem FontSize="15" Padding="9,6" Header="{l:Localize Work_Studio}"><v:StudioView/></TabItem>
+            <TabItem FontSize="15" Padding="9,6" Header="{l:Localize Work_Trade}"><v:TradingView x:Name="Trading"/></TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

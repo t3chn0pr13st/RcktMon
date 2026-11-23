@@ -21,6 +21,7 @@
             <TextBlock Classes="h2" Text="{l:Localize Onb_Tagline}" />
             <TextBlock Classes="secondary" TextWrapping="Wrap"
                        Text="{l:Localize Onb_Intro}" />
+            <Button Classes="chip" Content="{l:Localize Work_OpenLocal}" Click="OpenWorkspace" />
             <Border Classes="card">
                 <StackPanel Spacing="6">
                     <TextBlock Classes="h2" Text="{l:Localize Onb_WhatChanged}" />

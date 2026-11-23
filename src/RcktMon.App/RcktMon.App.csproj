@@ -49,4 +49,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="RcktMon.App.UiTests" />
+  </ItemGroup>
+
 </Project>

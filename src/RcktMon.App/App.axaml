@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:app="using:RcktMon.App"
              x:Class="RcktMon.App.RcktMonApp"
-             RequestedThemeVariant="Default">
+             Name="RocketMon" RequestedThemeVariant="Default">
 
     <!-- Default follows the OS. Both variants are fully specified in Tokens.axaml. -->
 

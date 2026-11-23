@@ -46,6 +46,7 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Button Classes="ghost" Click="OpenWorkspace" Content="{l:Localize Work_Open}" />
                         <!-- Connection pill. Visible on every screen by design: silently stale
                              prices are the dangerous failure mode for this product. -->
                         <Border Classes="pill" ToolTip.Tip="{Binding Status.Detail}">

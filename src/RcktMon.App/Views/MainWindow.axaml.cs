@@ -18,6 +18,20 @@ public partial class MainWindow : Window
         Closing += (_, _) => CaptureGeometry();
     }
 
+    private WorkspaceWindow? _workspace;
+    public void ShowWorkspace(bool manualOrders = false)
+    {
+        if (_workspace is null)
+        {
+            _workspace = new WorkspaceWindow();
+            _workspace.Closed += (_, _) => _workspace = null;
+            _workspace.Show(this);
+        }
+        if (manualOrders) _workspace.ShowManualTicket();
+        _workspace.Activate();
+    }
+    private void OpenWorkspace(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => ShowWorkspace();
+
     private MainWindowViewModel? Model => DataContext as MainWindowViewModel;
 
     protected override void OnKeyDown(KeyEventArgs e)

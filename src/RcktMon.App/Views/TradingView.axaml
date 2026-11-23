@@ -1,0 +1,76 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:RcktMon.App.Localization" x:Class="RcktMon.App.Views.TradingView">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="14,16" MaxWidth="850" HorizontalAlignment="Stretch" Spacing="14">
+            <TextBlock Classes="h1" Text="{l:Localize Trade_Title}"/>
+            <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:Localize Trade_Intro}"/>
+            <Border Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="label" Text="{l:Localize Trade_Provider}"/>
+                    <ComboBox x:Name="Venue" AutomationProperties.Name="{l:Localize Trade_Provider}" SelectedIndex="0" SelectionChanged="VenueChanged" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="{l:Localize Trade_Walt}"/><ComboBoxItem Content="{l:Localize Trade_Finam}"/>
+                    </ComboBox>
+                    <TextBlock x:Name="ServiceHint" TextWrapping="Wrap" Classes="secondary"/>
+                    <StackPanel x:Name="Login" Spacing="8">
+                        <StackPanel x:Name="TokenFields" Spacing="4" IsVisible="False">
+                            <TextBlock Classes="label" Text="{l:Localize Trade_Token}"/>
+                            <TextBox x:Name="Secret" AutomationProperties.Name="{l:Localize Trade_Token}" PasswordChar="●" MaxLength="4096" PlaceholderText="{l:Localize Trade_TokenHint}" />
+                        </StackPanel>
+                        <Button x:Name="ConnectButton" Click="Connect"/>
+                    </StackPanel>
+                    <Button x:Name="DisconnectButton" Click="Disconnect" IsVisible="False" Content="{l:Localize Trade_Disconnect}"/>
+                </StackPanel>
+            </Border>
+            <Border x:Name="DraftCard" Classes="card" IsVisible="False">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="h2" Text="{l:Localize Trade_Parameters}"/>
+                    <StackPanel x:Name="WaltForm" Spacing="4">
+                        <TextBlock Classes="label" Text="{l:Localize Trade_Contract}"/>
+                        <ComboBox x:Name="Contract" AutomationProperties.Name="{l:Localize Trade_Contract}" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                    <StackPanel x:Name="FinamForm" Spacing="4">
+                        <TextBlock Classes="label" Text="{l:Localize Trade_Account}"/>
+                        <ComboBox x:Name="Account" AutomationProperties.Name="{l:Localize Trade_Account}" HorizontalAlignment="Stretch"/>
+                        <TextBlock Classes="label" Text="{l:Localize Trade_Ticker}"/>
+                        <TextBox x:Name="Ticker" AutomationProperties.Name="{l:Localize Trade_Ticker}" PlaceholderText="SBER" MaxLength="20"/>
+                    </StackPanel>
+                    <WrapPanel>
+                        <StackPanel Margin="0,0,12,4" Width="172" Spacing="4">
+                            <TextBlock Classes="label" Text="{l:Localize Trade_Side}"/><ComboBox x:Name="Side" AutomationProperties.Name="{l:Localize Trade_Side}" SelectionChanged="SideChanged" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                        <StackPanel x:Name="SizeGroup" Margin="0,0,12,4" Width="142" Spacing="4">
+                            <TextBlock x:Name="SizeLabel" Classes="label"/><TextBox x:Name="SizeField" AutomationProperties.LabeledBy="{Binding #SizeLabel}" MaxLength="18"/>
+                        </StackPanel>
+                        <StackPanel x:Name="PriceGroup" Margin="0,0,0,4" Width="142" Spacing="4">
+                            <TextBlock x:Name="PriceLabel" Classes="label"/><TextBox x:Name="PriceField" AutomationProperties.LabeledBy="{Binding #PriceLabel}" MaxLength="18"/>
+                        </StackPanel>
+                    </WrapPanel>
+                    <Button x:Name="PreviewButton" Classes="chip" Content="{l:Localize Trade_Prepare}" Click="Prepare"/>
+                </StackPanel>
+            </Border>
+            <Border x:Name="ReviewCard" Classes="card" IsVisible="False" BorderBrush="{DynamicResource Brush.Warning}">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="h2" Text="{l:Localize Trade_Review}"/>
+                    <TextBlock x:Name="ReviewBody" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="Until" Classes="secondary" TextWrapping="Wrap"/>
+                    <CheckBox x:Name="Consent" IsCheckedChanged="ConsentChanged"><TextBlock TextWrapping="Wrap" Text="{l:Localize Trade_Consent}"/></CheckBox>
+                    <WrapPanel>
+                        <Button x:Name="ConfirmButton" IsEnabled="False" Margin="0,0,12,4" Content="{l:Localize Trade_Send}" Click="Send"/>
+                        <Button Content="{l:Localize Trade_Discard}" Click="Discard"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+            <Border x:Name="PendingCard" Classes="card" IsVisible="False" BorderBrush="{DynamicResource Brush.Warning}">
+                <StackPanel Spacing="8">
+                    <TextBlock Classes="h2" Text="{l:Localize Trade_Unresolved}"/>
+                    <TextBlock x:Name="PendingBody" TextWrapping="Wrap"/>
+                    <ComboBox x:Name="LookupAccount" PlaceholderText="{l:Localize Trade_OriginalAccount}" AutomationProperties.Name="{l:Localize Trade_SelectAccount}" HorizontalAlignment="Stretch" IsVisible="False"/>
+                    <Button x:Name="LookupButton" Content="{l:Localize Trade_Lookup}" Click="Lookup"/>
+                    <CheckBox x:Name="CheckedProvider" IsCheckedChanged="CheckedProviderChanged"><TextBlock TextWrapping="Wrap" Text="{l:Localize Trade_Checked}"/></CheckBox>
+                    <Button x:Name="ClearButton" Content="{l:Localize Trade_Unlock}" IsEnabled="False" Click="ClearChecked"/>
+                </StackPanel>
+            </Border>
+            <TextBlock x:Name="Notice" TextWrapping="Wrap" FontWeight="SemiBold"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

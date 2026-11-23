@@ -1,0 +1,301 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:l="using:RcktMon.App.Localization" xmlns:vm="using:RcktMon.App.ViewModels" xmlns:controls="using:RcktMon.App.Controls" x:Class="RcktMon.App.Views.StudioView" x:DataType="vm:StudioViewModel">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.kpi">
+            <Setter Property="FontSize" Value="21"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="TextBlock.cell">
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="0,2"/>
+        </Style>
+    </UserControl.Styles>
+    <Grid RowDefinitions="Auto,*" Margin="18,12,18,6" RowSpacing="6">
+        <StackPanel Spacing="2">
+            <DockPanel LastChildFill="True">
+                <Border IsVisible="{DynamicResource StudioLayout.Wide}" DockPanel.Dock="Right" VerticalAlignment="Center" Padding="8,3" CornerRadius="6" Background="{DynamicResource Brush.Accent.Muted}">
+                    <TextBlock FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Brush.Accent}" Text="{l:Localize Studio_Badge}"/>
+                </Border>
+                <TextBlock Classes="h1" Text="{l:Localize Studio_Title}" TextWrapping="Wrap"/>
+            </DockPanel>
+            <TextBlock Classes="secondary" Text="{l:Localize Studio_Subtitle}" TextWrapping="Wrap"/>
+        </StackPanel>
+        <TabControl x:Name="ModeTabs" Grid.Row="1" SelectionChanged="OnMode" Padding="0,6,0,0">
+            <TabItem Header="{l:Localize Studio_LiveTab}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="0,2,8,12" Spacing="10">
+                        <UniformGrid Columns="{DynamicResource StudioLayout.Columns}">
+                            <Border Margin="3" Classes="card" Padding="12,8">
+                                <StackPanel Spacing="1">
+                                    <TextBlock Classes="label" Text="{l:Localize Studio_Coverage}"/>
+                                    <TextBlock Text="{Binding LiveState}" Classes="kpi" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Margin="3" Classes="card" Padding="12,8">
+                                <StackPanel Spacing="1">
+                                    <TextBlock Classes="label" Text="{l:Localize Studio_Subscribed}"/>
+                                    <TextBlock Text="{Binding Subscribed}" Classes="kpi" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Margin="3" Classes="card" Padding="12,8">
+                                <StackPanel Spacing="1">
+                                    <TextBlock Classes="label" Text="{l:Localize Studio_Fresh}"/>
+                                    <TextBlock Text="{Binding Fresh}" Classes="kpi" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Margin="3" Classes="card" Padding="12,8">
+                                <StackPanel Spacing="1">
+                                    <TextBlock Classes="label" Text="{l:Localize Studio_Prints}"/>
+                                    <TextBlock Text="{Binding Prints}" Classes="kpi" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                        <Border Classes="card" Padding="14">
+                            <StackPanel Spacing="6">
+                                <WrapPanel><TextBlock Classes="h2" Margin="0,0,14,0" Text="{l:Localize Studio_RadarTitle}"/><TextBlock VerticalAlignment="Center" Classes="secondary" Text="{Binding AsOf}"/></WrapPanel>
+                                <TextBlock Classes="secondary" Text="{Binding LiveHint}" TextWrapping="Wrap"/>
+                                <Grid IsVisible="{DynamicResource StudioLayout.Wide}" ColumnDefinitions="1.1*,1.1*,1.4*,*,*,1.1*" ColumnSpacing="8" Margin="4,4">
+                                    <TextBlock Grid.Column="0" Text="{l:Localize Studio_Ticker}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="1" Text="{l:Localize Studio_Price}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="2" Text="{l:Localize Studio_Buy}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="3" Text="{l:Localize Studio_Share}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="4" Text="{l:Localize Studio_Move}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="5" Text="{l:Localize Studio_State}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding Radar}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:RadarItem">
+                                            <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="0,3">
+                                                <Panel>
+                                                    <Grid IsVisible="{DynamicResource StudioLayout.Wide}" ColumnDefinitions="1.1*,1.1*,1.4*,*,*,1.1*" ColumnSpacing="8" Margin="4,4">
+                                                        <TextBlock Grid.Column="0" Text="{Binding Ticker}" Classes="cell" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Price}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding Buy}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Column="3" Text="{Binding Share}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Column="4" Text="{Binding Move}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Column="5" Text="{Binding State}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                    </Grid>
+                                                    <Grid IsVisible="{DynamicResource StudioLayout.Narrow}" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8" Margin="4,6">
+                                                        <StackPanel Grid.Row="0" Grid.Column="0">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_Ticker}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Ticker}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="0" Grid.Column="1">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_Price}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Price}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="1" Grid.Column="0">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_Buy}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Buy}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="1" Grid.Column="1">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_Share}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Share}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="2" Grid.Column="0">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_Move}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Move}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="2" Grid.Column="1">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_State}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding State}"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Panel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="card" Padding="14">
+                            <StackPanel Spacing="6">
+                                <TextBlock Classes="h2" Text="{l:Localize Studio_FeedTitle}" TextWrapping="Wrap"/>
+                                <TextBlock Classes="secondary" Text="{Binding FeedHint}" TextWrapping="Wrap"/>
+                                <Grid IsVisible="{DynamicResource StudioLayout.Wide}" ColumnDefinitions="*,*,*,1.3*,*" ColumnSpacing="8" Margin="4,4">
+                                    <TextBlock Grid.Column="0" Text="{l:Localize Studio_Ticker}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="1" Text="{l:Localize Studio_Age}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="2" Text="{l:Localize Studio_Price}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="3" Text="{l:Localize Studio_Buy}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="4" Text="{l:Localize Studio_Move}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding Feed}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:SignalItem">
+                                            <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="0,3">
+                                                <Panel>
+                                                    <Grid IsVisible="{DynamicResource StudioLayout.Wide}" ColumnDefinitions="*,*,*,1.3*,*" ColumnSpacing="8" Margin="4,4">
+                                                        <TextBlock Grid.Column="0" Text="{Binding Ticker}" Classes="cell" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding At}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding Price}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Column="3" Text="{Binding Buy}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Column="4" Text="{Binding Move}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                    </Grid>
+                                                    <Grid IsVisible="{DynamicResource StudioLayout.Narrow}" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8" Margin="4,6">
+                                                        <StackPanel Grid.Row="0" Grid.Column="0">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_Ticker}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Ticker}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="0" Grid.Column="1">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_Age}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding At}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="1" Grid.Column="0">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_Price}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Price}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="1" Grid.Column="1">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_Buy}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Buy}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Row="2" Grid.Column="0">
+                                                            <TextBlock Classes="label" Text="{l:Localize Studio_Move}"/>
+                                                            <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Move}"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Panel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem x:Name="ReplayTab" Header="{l:Localize Studio_ReplayTab}">
+                <ScrollViewer x:Name="ReplayScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="0,2,8,12" Spacing="10">
+                        <Border Classes="card" Padding="14">
+                            <StackPanel Spacing="6">
+                                <TextBlock Classes="h2" Text="{l:Localize Studio_BacktestTitle}" TextWrapping="Wrap"/>
+                                <TextBlock Classes="secondary" Text="{l:Localize Studio_BacktestHint}" TextWrapping="Wrap"/>
+                                <TextBlock Classes="label" Text="{l:Localize Studio_Recording}"/>
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <ComboBox x:Name="RecordingPicker" HorizontalAlignment="Stretch" AutomationProperties.Name="{l:Localize Studio_Recording}" ItemsSource="{Binding Captures}" SelectedItem="{Binding Selected, Mode=TwoWay}"/>
+                                    <Button Grid.Column="1" Classes="ghost" Content="{l:Localize Studio_Reload}" Click="OnLibrary"/>
+                                </Grid>
+                                <TextBlock Classes="secondary" Text="{Binding Coverage}" TextWrapping="Wrap"/>
+                                <CheckBox IsChecked="{Binding FlowOnly, Mode=TwoWay}" Content="{l:Localize Studio_FlowOnly}"/>
+                                <WrapPanel>
+                                    <StackPanel Margin="0,0,12,4">
+                                        <TextBlock Classes="label" Text="{l:Localize Studio_MinBuy}"/>
+                                        <NumericUpDown AutomationProperties.Name="{l:Localize Studio_MinBuy}" Width="138" Value="{Binding MinBuy, Mode=TwoWay}" Minimum="1" Maximum="10000000000" Increment="10000"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,4">
+                                        <TextBlock Classes="label" Text="{l:Localize Studio_MinMove}"/>
+                                        <NumericUpDown AutomationProperties.Name="{l:Localize Studio_MinMove}" Width="138" Value="{Binding Move, Mode=TwoWay}" Minimum="0" Maximum="1000" Increment="0.05" IsEnabled="{Binding !FlowOnly}"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,4">
+                                        <TextBlock Classes="label" Text="{l:Localize Studio_Slip}"/>
+                                        <NumericUpDown AutomationProperties.Name="{l:Localize Studio_Slip}" Width="138" Value="{Binding Slip, Mode=TwoWay}" Minimum="0" Maximum="1000" Increment="1"/>
+                                    </StackPanel>
+                                    <Button x:Name="ReplayRun" Classes="primary" VerticalAlignment="Bottom" Margin="0,0,0,4" Content="{l:Localize Studio_Run}" IsEnabled="{Binding CanRun}" Click="OnCalculate"/>
+                                </WrapPanel>
+                                <TextBlock Classes="secondary" Text="{Binding ReplayHint}" IsVisible="{Binding ReplayHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                        <StackPanel Spacing="10" IsVisible="{Binding Result, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <UniformGrid Columns="{DynamicResource StudioLayout.Columns}">
+                                <Border Margin="3" Classes="card" Padding="12,8">
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Classes="label" Text="{l:Localize Studio_Results}"/>
+                                        <TextBlock Text="{Binding Counts}" Classes="kpi" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Margin="3" Classes="card" Padding="12,8">
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Classes="label" Text="{l:Localize Studio_Net}"/>
+                                        <TextBlock Text="{Binding NetResult}" Classes="kpi" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Margin="3" Classes="card" Padding="12,8">
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Classes="label" Text="{l:Localize Studio_Mean}"/>
+                                        <TextBlock Text="{Binding Mean}" Classes="kpi" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Margin="3" Classes="card" Padding="12,8">
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Classes="label" Text="{l:Localize Studio_WinRate}"/>
+                                        <TextBlock Text="{Binding Win}" Classes="kpi" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+                            <Border Classes="card" Padding="14">
+                                <StackPanel Spacing="6">
+                                    <DockPanel LastChildFill="True">
+                                        <CheckBox DockPanel.Dock="Right" IsChecked="{Binding Zoom, Mode=TwoWay}" IsEnabled="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}" Content="{l:Localize Studio_Zoom}"/>
+                                        <TextBlock Classes="h2" Text="{l:Localize Studio_Chart}" TextWrapping="Wrap"/>
+                                    </DockPanel>
+                                    <TextBlock Classes="secondary" Text="{l:Localize Studio_Legend}" TextWrapping="Wrap"/>
+                                    <controls:StudioChart x:Name="PriceChart" Height="167" Replay="{Binding Result}" Selected="{Binding SelectedEntry}" Zoom="{Binding Zoom}" AutomationProperties.Name="{l:Localize Studio_Chart}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Classes="card" Padding="14">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Classes="h2" Text="{l:Localize Studio_Events}" TextWrapping="Wrap"/>
+                                    <TextBlock Classes="secondary" Text="{Binding ModelAssumptions}" TextWrapping="Wrap" IsVisible="{Binding ModelAssumptions, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <Grid IsVisible="{DynamicResource StudioLayout.Wide}" ColumnDefinitions="1.35*,1.15*,*,*,*,*" ColumnSpacing="8" Margin="4,4">
+                                        <TextBlock Grid.Column="0" Text="{l:Localize Studio_Age}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="1" Text="{l:Localize Studio_State}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="2" Text="{l:Localize Studio_Enter}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="3" Text="{l:Localize Studio_Exit}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="4" Text="{l:Localize Studio_Fees}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="5" Text="{l:Localize Studio_Net}" Classes="label" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                    </Grid>
+                                    <ListBox AutoScrollToSelectedItem="False" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry, Mode=TwoWay}" MaxHeight="220" Background="Transparent" Padding="0">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ReplayItem">
+                                                <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="0,3">
+                                                    <Panel>
+                                                        <Grid IsVisible="{DynamicResource StudioLayout.Wide}" ColumnDefinitions="1.35*,1.15*,*,*,*,*" ColumnSpacing="8" Margin="4,4">
+                                                            <TextBlock Grid.Column="0" Text="{Binding At}" Classes="cell" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding State}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Grid.Column="2" Text="{Binding Entry}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Grid.Column="3" Text="{Binding Exit}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Grid.Column="4" Text="{Binding Fees}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Grid.Column="5" Text="{Binding Net}" Classes="cell" FontWeight="Normal" TextTrimming="CharacterEllipsis"/>
+                                                        </Grid>
+                                                        <Grid IsVisible="{DynamicResource StudioLayout.Narrow}" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8" Margin="4,6">
+                                                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                                                <TextBlock Classes="label" Text="{l:Localize Studio_Age}"/>
+                                                                <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding At}"/>
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Row="0" Grid.Column="1">
+                                                                <TextBlock Classes="label" Text="{l:Localize Studio_State}"/>
+                                                                <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding State}"/>
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Row="1" Grid.Column="0">
+                                                                <TextBlock Classes="label" Text="{l:Localize Studio_Enter}"/>
+                                                                <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Entry}"/>
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Row="1" Grid.Column="1">
+                                                                <TextBlock Classes="label" Text="{l:Localize Studio_Exit}"/>
+                                                                <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Exit}"/>
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                                                <TextBlock Classes="label" Text="{l:Localize Studio_Fees}"/>
+                                                                <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Fees}"/>
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Row="2" Grid.Column="1">
+                                                                <TextBlock Classes="label" Text="{l:Localize Studio_Net}"/>
+                                                                <TextBlock Classes="cell" FontWeight="SemiBold" Text="{Binding Net}"/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Panel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

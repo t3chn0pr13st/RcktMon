@@ -357,7 +357,7 @@
     <value>Торговля</value>
   </data>
   <data name="Inspector_TradingBody" xml:space="preserve">
-    <value>Выставление заявок появится позже. RcktMon никогда не спрашивает брокерский токен для получения котировок.</value>
+    <value>Для ручных заявок есть отдельное окно. Инструмент и объём не подставляются из сигнала.</value>
   </data>
   <data name="Instruments_Health" xml:space="preserve">
     <value>Поток рыночных данных</value>
@@ -480,7 +480,7 @@
     <value>Ключ выдаётся ботом в Telegram и хранится в связке ключей операционной системы.</value>
   </data>
   <data name="Onb_NoBrokerToken" xml:space="preserve">
-    <value>RcktMon никогда не спрашивает брокерский токен.</value>
+    <value>Для просмотра котировок брокерский токен не нужен.</value>
   </data>
   <data name="Onb_PresetNotSaved" xml:space="preserve">
     <value>Профиль не сохранён: {0}</value>
@@ -630,7 +630,7 @@
     <value>Сделать активным</value>
   </data>
   <data name="Settings_NoBrokerToken" xml:space="preserve">
-    <value>RcktMon никогда не спрашивает брокерский токен: котировки подписывает сервер своими ключами.</value>
+    <value>Для мониторинга сервер использует собственные ключи. Торговый доступ подключается отдельно в окне ручных заявок.</value>
   </data>
   <data name="Settings_PerDay" xml:space="preserve">
     <value>сигналов в день</value>
@@ -854,4 +854,140 @@
   <data name="Shell_Seconds" xml:space="preserve">
     <value>{0} с</value>
   </data>
+  <data name="Studio_Title" xml:space="preserve"><value>Студия сигналов</value></data>
+  <data name="Studio_Subtitle" xml:space="preserve"><value>Наблюдайте импульсы в контрактах на акции и проверяйте сигналы на записях торгов.</value></data>
+  <data name="Studio_Badge" xml:space="preserve"><value>ТОЛЬКО НАБЛЮДЕНИЕ</value></data>
+  <data name="Studio_LiveTab" xml:space="preserve"><value>Радар сейчас</value></data>
+  <data name="Studio_ReplayTab" xml:space="preserve"><value>Бэктест</value></data>
+  <data name="Studio_RadarTitle" xml:space="preserve"><value>Давление покупателей</value></data>
+  <data name="Studio_RadarHint" xml:space="preserve"><value>По объёму агрессивных покупок за 5 секунд · до 12 инструментов</value></data>
+  <data name="Studio_FeedTitle" xml:space="preserve"><value>Последние сигналы</value></data>
+  <data name="Studio_FeedHint" xml:space="preserve"><value>Срабатывания онлайн-сканера, сначала новые.</value></data>
+  <data name="Studio_Ticker" xml:space="preserve"><value>Инструмент</value></data>
+  <data name="Studio_Price" xml:space="preserve"><value>Цена, USDT</value></data>
+  <data name="Studio_Buy" xml:space="preserve"><value>Покупки / 5 с, USDT</value></data>
+  <data name="Studio_Share" xml:space="preserve"><value>Доля покупок</value></data>
+  <data name="Studio_Move" xml:space="preserve"><value>Ход / 5 с</value></data>
+  <data name="Studio_State" xml:space="preserve"><value>Статус</value></data>
+  <data name="Studio_Coverage" xml:space="preserve"><value>Лента</value></data>
+  <data name="Studio_Subscribed" xml:space="preserve"><value>Подписки</value></data>
+  <data name="Studio_Fresh" xml:space="preserve"><value>Активны / 5 с</value></data>
+  <data name="Studio_Prints" xml:space="preserve"><value>Сделки ленты</value></data>
+  <data name="Studio_Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="Studio_NoRadar" xml:space="preserve"><value>В снимке пока нет инструментов.</value></data>
+  <data name="Studio_NoSignals" xml:space="preserve"><value>В этом снимке срабатываний пока нет.</value></data>
+  <data name="Studio_Stale" xml:space="preserve"><value>Снимок устарел</value></data>
+  <data name="Studio_Offline" xml:space="preserve"><value>Локальная Студия недоступна</value></data>
+  <data name="Studio_OfflineHint" xml:space="preserve"><value>Проверьте локальный сервис Signal Studio на порту 47831. Повторяем подключение автоматически.</value></data>
+  <data name="Studio_Recording" xml:space="preserve"><value>Запись (UTC)</value></data>
+  <data name="Studio_Reload" xml:space="preserve"><value>Обновить список</value></data>
+  <data name="Studio_BacktestTitle" xml:space="preserve"><value>Стратегия и исполнение</value></data>
+  <data name="Studio_BacktestHint" xml:space="preserve"><value>Виртуальные 100 USDT · окно 5 секунд · выход после первой красной минуты</value></data>
+  <data name="Studio_FlowOnly" xml:space="preserve"><value>Только поток покупок (без фильтра движения)</value></data>
+  <data name="Studio_MinBuy" xml:space="preserve"><value>Мин. покупки, USDT</value></data>
+  <data name="Studio_MinMove" xml:space="preserve"><value>Мин. движение, %</value></data>
+  <data name="Studio_Slip" xml:space="preserve"><value>Скольжение, б.п. / сторона</value></data>
+  <data name="Studio_Run" xml:space="preserve"><value>Рассчитать</value></data>
+  <data name="Studio_Results" xml:space="preserve"><value>Сигналы / закрыто</value></data>
+  <data name="Studio_Net" xml:space="preserve"><value>Чистый P&amp;L, USDT</value></data>
+  <data name="Studio_Mean" xml:space="preserve"><value>Средний итог, USDT</value></data>
+  <data name="Studio_WinRate" xml:space="preserve"><value>Прибыльных</value></data>
+  <data name="Studio_Chart" xml:space="preserve"><value>Сравнение цен</value></data>
+  <data name="Studio_Legend" xml:space="preserve"><value>Perp (сплошная) · Акция SIP (пунктир) · % от первой доступной цены каждого ряда</value></data>
+  <data name="Studio_Full" xml:space="preserve"><value>Вся запись</value></data>
+  <data name="Studio_Zoom" xml:space="preserve"><value>±30 с к сигналу</value></data>
+  <data name="Studio_Events" xml:space="preserve"><value>Виртуальные входы</value></data>
+  <data name="Studio_NoneClosed" xml:space="preserve"><value>Нет закрытых наблюдений.</value></data>
+  <data name="Studio_NoEvents" xml:space="preserve"><value>При этих параметрах сигналов нет.</value></data>
+  <data name="Studio_NoLibrary" xml:space="preserve"><value>Записей нет. Добавьте запись в локальную Студию и обновите список.</value></data>
+  <data name="Studio_ReplayError" xml:space="preserve"><value>Расчёт недоступен. Проверьте локальный сервис или запись и повторите.</value></data>
+  <data name="Studio_LibraryError" xml:space="preserve"><value>Список записей недоступен. Проверьте локальный сервис и обновите список.</value></data>
+  <data name="Studio_RunHint" xml:space="preserve"><value>Рассчитайте выбранную запись с новыми параметрами.</value></data>
+  <data name="Studio_AsOf" xml:space="preserve"><value>Снимок</value></data>
+  <data name="Studio_Age" xml:space="preserve"><value>Сигнал, UTC</value></data>
+  <data name="Studio_Enter" xml:space="preserve"><value>Вход</value></data>
+  <data name="Studio_Exit" xml:space="preserve"><value>Выход</value></data>
+  <data name="Studio_Fees" xml:space="preserve"><value>Комиссии, USDT</value></data>
+  <data name="Studio_State_closed" xml:space="preserve"><value>Закрыто</value></data>
+  <data name="Studio_State_live" xml:space="preserve"><value>На связи</value></data>
+  <data name="Studio_State_fresh" xml:space="preserve"><value>Свежий</value></data>
+  <data name="Studio_State_stale" xml:space="preserve"><value>Устарел</value></data>
+  <data name="Studio_State_pending" xml:space="preserve"><value>Ожидание</value></data>
+  <data name="Studio_State_warming" xml:space="preserve"><value>Прогрев</value></data>
+  <data name="Studio_State_gap" xml:space="preserve"><value>Разрыв</value></data>
+  <data name="Studio_State_offline" xml:space="preserve"><value>Нет связи</value></data>
+  <data name="Studio_State_connecting" xml:space="preserve"><value>Соединение</value></data>
+  <data name="Studio_State_subscribing" xml:space="preserve"><value>Подписка</value></data>
+  <data name="Studio_State_reconnecting" xml:space="preserve"><value>Переподключение</value></data>
+  <data name="Studio_State_stopped" xml:space="preserve"><value>Остановлен</value></data>
+  <data name="Studio_Latency" xml:space="preserve"><value>Задержка</value></data>
+  <data name="Studio_NoChart" xml:space="preserve"><value>В этом интервале наблюдений цен нет.</value></data>
+  <data name="Studio_State_no_entry_print" xml:space="preserve"><value>Нет сделки для входа</value></data>
+  <data name="Studio_State_incomplete_minute" xml:space="preserve"><value>Минута неполная</value></data>
+  <data name="Studio_State_no_exit_print" xml:space="preserve"><value>Нет сделки для выхода</value></data>
+  <data name="Studio_State_no_red_close" xml:space="preserve"><value>Нет красной минуты</value></data>
+  <data name="Work_Open" xml:space="preserve"><value>Студия сигналов</value></data>
+  <data name="Work_OpenLocal" xml:space="preserve"><value>Открыть локальную студию без ключа сервера</value></data>
+  <data name="Work_Desktop" xml:space="preserve"><value>ДЕСКТОП</value></data>
+  <data name="Work_Studio" xml:space="preserve"><value>Сигналы и бэктест</value></data>
+  <data name="Work_Trade" xml:space="preserve"><value>Ручная торговля</value></data>
+  <data name="Trade_Title" xml:space="preserve"><value>Ручная торговля</value></data>
+  <data name="Trade_Intro" xml:space="preserve"><value>Сигналы не выставляют заявки. Выбери площадку и проверь параметры перед отправкой.</value></data>
+  <data name="Trade_Provider" xml:space="preserve"><value>Площадка</value></data>
+  <data name="Trade_Walt" xml:space="preserve"><value>Walt · бессрочные контракты</value></data>
+  <data name="Trade_Finam" xml:space="preserve"><value>Финам · акции Мосбиржи</value></data>
+  <data name="Trade_WaltHint" xml:space="preserve"><value>Рыночные заявки Walt используют маржу в USDC. Вход — через Wallet в браузере. RocketMon не открывает и не пополняет торговый счёт.</value></data>
+  <data name="Trade_FinamHint" xml:space="preserve"><value>Лимитные заявки в рублях на акции в режиме TQBR. У реальных и демосчетов Финама один API: сверь выбранный счёт у брокера.</value></data>
+  <data name="Trade_ConnectWalt" xml:space="preserve"><value>Подключить Walt через браузер</value></data>
+  <data name="Trade_ConnectFinam" xml:space="preserve"><value>Подключить Финам</value></data>
+  <data name="Trade_Token" xml:space="preserve"><value>Токен Finam Trade API</value></data>
+  <data name="Trade_TokenHint" xml:space="preserve"><value>Только на этот сеанс · не сохраняется</value></data>
+  <data name="Trade_Disconnect" xml:space="preserve"><value>Отключить сессию</value></data>
+  <data name="Trade_Parameters" xml:space="preserve"><value>Параметры заявки</value></data>
+  <data name="Trade_Contract" xml:space="preserve"><value>Бессрочный контракт</value></data>
+  <data name="Trade_Account" xml:space="preserve"><value>Брокерский счёт</value></data>
+  <data name="Trade_Ticker" xml:space="preserve"><value>Тикер Мосбиржи</value></data>
+  <data name="Trade_Side" xml:space="preserve"><value>Направление</value></data>
+  <data name="Trade_Margin" xml:space="preserve"><value>Маржа · USDC</value></data>
+  <data name="Trade_Lots" xml:space="preserve"><value>Число лотов</value></data>
+  <data name="Trade_Leverage" xml:space="preserve"><value>Плечо · ×</value></data>
+  <data name="Trade_Price" xml:space="preserve"><value>Лимитная цена · ₽</value></data>
+  <data name="Trade_Notional" xml:space="preserve"><value>Сумма по лимитной цене без комиссии</value></data>
+  <data name="Trade_FinamFees" xml:space="preserve"><value>Комиссия — по твоему тарифу Финама; итог может отличаться. Это не исполненная сделка.</value></data>
+  <data name="Trade_Long" xml:space="preserve"><value>Лонг · купить</value></data>
+  <data name="Trade_Short" xml:space="preserve"><value>Шорт · продать</value></data>
+  <data name="Trade_Buy" xml:space="preserve"><value>Купить</value></data>
+  <data name="Trade_Sell" xml:space="preserve"><value>Продать</value></data>
+  <data name="Trade_Prepare" xml:space="preserve"><value>Проверить условия</value></data>
+  <data name="Trade_Review" xml:space="preserve"><value>Проверка перед отправкой</value></data>
+  <data name="Trade_Consent" xml:space="preserve"><value>Подтверждаю эти параметры для выбранного счёта. Заявка может быть реальной.</value></data>
+  <data name="Trade_Send" xml:space="preserve"><value>Отправить заявку на площадку</value></data>
+  <data name="Trade_Discard" xml:space="preserve"><value>Отменить предпросмотр</value></data>
+  <data name="Trade_Unresolved" xml:space="preserve"><value>Нужно сверить предыдущую отправку</value></data>
+  <data name="Trade_CheckAtProvider" xml:space="preserve"><value>Доставка не подтверждена. Сверь заявки и позиции на площадке. Не отправляй повторно. Идентификатор:</value></data>
+  <data name="Trade_Checked" xml:space="preserve"><value>Я самостоятельно сверил предыдущую отправку у провайдера.</value></data>
+  <data name="Trade_Unlock" xml:space="preserve"><value>Разрешить новый черновик (без повтора)</value></data>
+  <data name="Trade_Connected" xml:space="preserve"><value>Сессия подключена. Выбери инструмент и параметры. Заявка не отправлялась.</value></data>
+  <data name="Trade_Connecting" xml:space="preserve"><value>Подключение к площадке…</value></data>
+  <data name="Trade_NeedToken" xml:space="preserve"><value>Введи токен Финама здесь, не в чате.</value></data>
+  <data name="Trade_Invalid" xml:space="preserve"><value>Выбери все параметры и укажи положительные значения.</value></data>
+  <data name="Trade_Failure" xml:space="preserve"><value>Ответ площадки не удалось проверить. Проверь соединение и права доступа.</value></data>
+  <data name="Trade_Cancelled" xml:space="preserve"><value>Действие отменено.</value></data>
+  <data name="Trade_Preparing" xml:space="preserve"><value>Готовим предпросмотр; заявка не отправляется…</value></data>
+  <data name="Trade_Expires" xml:space="preserve"><value>Подтвердить до</value></data>
+  <data name="Trade_Expired" xml:space="preserve"><value>Предпросмотр устарел. Проверь текущие условия ещё раз.</value></data>
+  <data name="Trade_Sending" xml:space="preserve"><value>Отправляем заявку один раз…</value></data>
+  <data name="Trade_Reply" xml:space="preserve"><value>Ответ площадки</value></data>
+  <data name="Trade_Lookup" xml:space="preserve"><value>Проверить статус у Финама</value></data>
+  <data name="Trade_Checking" xml:space="preserve"><value>Проверяем статус без повторной отправки…</value></data>
+  <data name="Trade_SelectAccount" xml:space="preserve"><value>Для проверки выбери исходный счёт.</value></data>
+  <data name="Trade_Unlocked" xml:space="preserve"><value>Черновик доступен. Повторной отправки не было.</value></data>
+  <data name="Trade_StorageFault" xml:space="preserve"><value>Локальный статус отправки недоступен или занят. Сверь предыдущую заявку, прежде чем продолжать.</value></data>
+  <data name="Studio_State_disconnected" xml:space="preserve"><value>Отключён</value></data>
+  <data name="Trade_ReadOnly" xml:space="preserve"><value>Токен только для чтения. Можно проверять условия и статус заявок, но не отправлять их.</value></data>
+  <data name="Studio_CaptureFacts" xml:space="preserve"><value>{0} · {1} · сделок perp: {2:N0}, котировок акции: {3:N0}</value></data>
+  <data name="Studio_ExecutionFacts" xml:space="preserve"><value>{0} USDT на наблюдение · исполнение по сделкам ленты, задержка {1} мс · на сторону: комиссия {2} б.п., модель скольжения {3} б.п.</value></data>
+  <data name="Trade_Close" xml:space="preserve"><value>Закрыть всю позицию</value></data>
+  <data name="Trade_UnitPrice" xml:space="preserve"><value>Лимит за акцию</value></data>
+  <data name="Trade_OriginalAccount" xml:space="preserve"><value>Выбери исходный счёт</value></data>
 </root>

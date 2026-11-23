@@ -357,7 +357,7 @@
     <value>Trading</value>
   </data>
   <data name="Inspector_TradingBody" xml:space="preserve">
-    <value>Order entry comes later. RcktMon never asks for a broker token in order to receive quotes.</value>
+    <value>Manual orders have their own ticket. No instrument or quantity is copied from a signal.</value>
   </data>
   <data name="Instruments_Health" xml:space="preserve">
     <value>Market data stream</value>
@@ -480,7 +480,7 @@
     <value>The key is issued by the Telegram bot and is kept in the operating system's keychain.</value>
   </data>
   <data name="Onb_NoBrokerToken" xml:space="preserve">
-    <value>RcktMon never asks for a broker token.</value>
+    <value>No broker token is needed to monitor quotes.</value>
   </data>
   <data name="Onb_PresetNotSaved" xml:space="preserve">
     <value>Profile not saved: {0}</value>
@@ -630,7 +630,7 @@
     <value>Make active</value>
   </data>
   <data name="Settings_NoBrokerToken" xml:space="preserve">
-    <value>RcktMon never asks for a broker token: the server subscribes to quotes with its own credentials.</value>
+    <value>Market monitoring uses the server’s credentials. Optional trading credentials are entered only in the manual ticket.</value>
   </data>
   <data name="Settings_PerDay" xml:space="preserve">
     <value>signals per day</value>
@@ -854,4 +854,140 @@
   <data name="Shell_Seconds" xml:space="preserve">
     <value>{0} s</value>
   </data>
+  <data name="Studio_Title" xml:space="preserve"><value>Signal Studio</value></data>
+  <data name="Studio_Subtitle" xml:space="preserve"><value>Explore equity perpetuals in real time and test signals on recorded trades.</value></data>
+  <data name="Studio_Badge" xml:space="preserve"><value>OBSERVATION ONLY</value></data>
+  <data name="Studio_LiveTab" xml:space="preserve"><value>Live radar</value></data>
+  <data name="Studio_ReplayTab" xml:space="preserve"><value>Replay lab</value></data>
+  <data name="Studio_RadarTitle" xml:space="preserve"><value>Buying pressure</value></data>
+  <data name="Studio_RadarHint" xml:space="preserve"><value>Ranked by aggressive buy volume in the last 5 seconds · up to 12 instruments</value></data>
+  <data name="Studio_FeedTitle" xml:space="preserve"><value>Latest signals</value></data>
+  <data name="Studio_FeedHint" xml:space="preserve"><value>Detected by the live monitor, newest first.</value></data>
+  <data name="Studio_Ticker" xml:space="preserve"><value>Instrument</value></data>
+  <data name="Studio_Price" xml:space="preserve"><value>Price, USDT</value></data>
+  <data name="Studio_Buy" xml:space="preserve"><value>Buys / 5 s, USDT</value></data>
+  <data name="Studio_Share" xml:space="preserve"><value>Buy share</value></data>
+  <data name="Studio_Move" xml:space="preserve"><value>Move / 5 s</value></data>
+  <data name="Studio_State" xml:space="preserve"><value>State</value></data>
+  <data name="Studio_Coverage" xml:space="preserve"><value>Feed</value></data>
+  <data name="Studio_Subscribed" xml:space="preserve"><value>Subscriptions</value></data>
+  <data name="Studio_Fresh" xml:space="preserve"><value>Active / 5 s</value></data>
+  <data name="Studio_Prints" xml:space="preserve"><value>Observed trades</value></data>
+  <data name="Studio_Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="Studio_NoRadar" xml:space="preserve"><value>No instruments in the snapshot yet.</value></data>
+  <data name="Studio_NoSignals" xml:space="preserve"><value>No signals observed in this snapshot.</value></data>
+  <data name="Studio_Stale" xml:space="preserve"><value>Stale snapshot</value></data>
+  <data name="Studio_Offline" xml:space="preserve"><value>Local Studio unavailable</value></data>
+  <data name="Studio_OfflineHint" xml:space="preserve"><value>Check the local Signal Studio service on port 47831. Retrying automatically.</value></data>
+  <data name="Studio_Recording" xml:space="preserve"><value>Recording (UTC)</value></data>
+  <data name="Studio_Reload" xml:space="preserve"><value>Refresh list</value></data>
+  <data name="Studio_BacktestTitle" xml:space="preserve"><value>Strategy &amp; execution</value></data>
+  <data name="Studio_BacktestHint" xml:space="preserve"><value>Virtual 100 USDT · 5-second window · exit after first red minute</value></data>
+  <data name="Studio_FlowOnly" xml:space="preserve"><value>Volume only (ignore price move)</value></data>
+  <data name="Studio_MinBuy" xml:space="preserve"><value>Minimum buys, USDT</value></data>
+  <data name="Studio_MinMove" xml:space="preserve"><value>Min. move, %</value></data>
+  <data name="Studio_Slip" xml:space="preserve"><value>Slippage, bps / side</value></data>
+  <data name="Studio_Run" xml:space="preserve"><value>Run replay</value></data>
+  <data name="Studio_Results" xml:space="preserve"><value>Signals / closed</value></data>
+  <data name="Studio_Net" xml:space="preserve"><value>Net P&amp;L, USDT</value></data>
+  <data name="Studio_Mean" xml:space="preserve"><value>Mean net, USDT</value></data>
+  <data name="Studio_WinRate" xml:space="preserve"><value>Profitable</value></data>
+  <data name="Studio_Chart" xml:space="preserve"><value>Price comparison</value></data>
+  <data name="Studio_Legend" xml:space="preserve"><value>Perp (solid) · Stock SIP (dashed) · % from each first available price</value></data>
+  <data name="Studio_Full" xml:space="preserve"><value>Full range</value></data>
+  <data name="Studio_Zoom" xml:space="preserve"><value>±30 s at signal</value></data>
+  <data name="Studio_Events" xml:space="preserve"><value>Simulated entries</value></data>
+  <data name="Studio_NoneClosed" xml:space="preserve"><value>No closed observations.</value></data>
+  <data name="Studio_NoEvents" xml:space="preserve"><value>No signal matched these parameters.</value></data>
+  <data name="Studio_NoLibrary" xml:space="preserve"><value>No recordings available. Add a capture to the local Studio and refresh.</value></data>
+  <data name="Studio_ReplayError" xml:space="preserve"><value>Replay unavailable. Check the local service or recording and retry.</value></data>
+  <data name="Studio_LibraryError" xml:space="preserve"><value>Recording list unavailable. Check the local service, then refresh.</value></data>
+  <data name="Studio_RunHint" xml:space="preserve"><value>Apply to calculate the selected recording.</value></data>
+  <data name="Studio_AsOf" xml:space="preserve"><value>Updated</value></data>
+  <data name="Studio_Age" xml:space="preserve"><value>Signal time, UTC</value></data>
+  <data name="Studio_Enter" xml:space="preserve"><value>Entry</value></data>
+  <data name="Studio_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Studio_Fees" xml:space="preserve"><value>Fees, USDT</value></data>
+  <data name="Studio_State_closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Studio_State_live" xml:space="preserve"><value>Receiving</value></data>
+  <data name="Studio_State_fresh" xml:space="preserve"><value>Fresh</value></data>
+  <data name="Studio_State_stale" xml:space="preserve"><value>Stale</value></data>
+  <data name="Studio_State_pending" xml:space="preserve"><value>Waiting</value></data>
+  <data name="Studio_State_warming" xml:space="preserve"><value>Warming up</value></data>
+  <data name="Studio_State_gap" xml:space="preserve"><value>Gap</value></data>
+  <data name="Studio_State_offline" xml:space="preserve"><value>Offline</value></data>
+  <data name="Studio_State_connecting" xml:space="preserve"><value>Connecting</value></data>
+  <data name="Studio_State_subscribing" xml:space="preserve"><value>Subscribing</value></data>
+  <data name="Studio_State_reconnecting" xml:space="preserve"><value>Reconnecting</value></data>
+  <data name="Studio_State_stopped" xml:space="preserve"><value>Stopped</value></data>
+  <data name="Studio_Latency" xml:space="preserve"><value>Latency</value></data>
+  <data name="Studio_NoChart" xml:space="preserve"><value>No price observations in this interval.</value></data>
+  <data name="Studio_State_no_entry_print" xml:space="preserve"><value>No entry print</value></data>
+  <data name="Studio_State_incomplete_minute" xml:space="preserve"><value>Minute incomplete</value></data>
+  <data name="Studio_State_no_exit_print" xml:space="preserve"><value>No exit print</value></data>
+  <data name="Studio_State_no_red_close" xml:space="preserve"><value>No red minute</value></data>
+  <data name="Work_Open" xml:space="preserve"><value>Signal Studio</value></data>
+  <data name="Work_OpenLocal" xml:space="preserve"><value>Open local studio without a server key</value></data>
+  <data name="Work_Desktop" xml:space="preserve"><value>DESKTOP</value></data>
+  <data name="Work_Studio" xml:space="preserve"><value>Signals &amp; replay</value></data>
+  <data name="Work_Trade" xml:space="preserve"><value>Manual orders</value></data>
+  <data name="Trade_Title" xml:space="preserve"><value>Manual orders</value></data>
+  <data name="Trade_Intro" xml:space="preserve"><value>Signals never send orders. Choose a provider and review each order before you send it.</value></data>
+  <data name="Trade_Provider" xml:space="preserve"><value>Trading venue</value></data>
+  <data name="Trade_Walt" xml:space="preserve"><value>Walt · perpetual contracts</value></data>
+  <data name="Trade_Finam" xml:space="preserve"><value>Finam · Moscow Exchange shares</value></data>
+  <data name="Trade_WaltHint" xml:space="preserve"><value>Walt market orders use USDC margin. Sign in through Wallet in your browser. RocketMon does not open or fund a trading account.</value></data>
+  <data name="Trade_FinamHint" xml:space="preserve"><value>Limit orders for RUB shares on the TQBR board. Finam uses the same API for live and demo accounts: verify the selected account at the broker.</value></data>
+  <data name="Trade_ConnectWalt" xml:space="preserve"><value>Connect Walt in browser</value></data>
+  <data name="Trade_ConnectFinam" xml:space="preserve"><value>Connect Finam</value></data>
+  <data name="Trade_Token" xml:space="preserve"><value>Finam API token</value></data>
+  <data name="Trade_TokenHint" xml:space="preserve"><value>Session only · not saved</value></data>
+  <data name="Trade_Disconnect" xml:space="preserve"><value>Disconnect session</value></data>
+  <data name="Trade_Parameters" xml:space="preserve"><value>Order parameters</value></data>
+  <data name="Trade_Contract" xml:space="preserve"><value>Perpetual contract</value></data>
+  <data name="Trade_Account" xml:space="preserve"><value>Brokerage account</value></data>
+  <data name="Trade_Ticker" xml:space="preserve"><value>MOEX ticker</value></data>
+  <data name="Trade_Side" xml:space="preserve"><value>Direction</value></data>
+  <data name="Trade_Margin" xml:space="preserve"><value>Margin · USDC</value></data>
+  <data name="Trade_Lots" xml:space="preserve"><value>Number of lots</value></data>
+  <data name="Trade_Leverage" xml:space="preserve"><value>Leverage · ×</value></data>
+  <data name="Trade_Price" xml:space="preserve"><value>Limit price · RUB</value></data>
+  <data name="Trade_Notional" xml:space="preserve"><value>Limit notional before fees</value></data>
+  <data name="Trade_FinamFees" xml:space="preserve"><value>Fees follow your Finam tariff; the total may differ. This is not a fill.</value></data>
+  <data name="Trade_Long" xml:space="preserve"><value>Long · buy</value></data>
+  <data name="Trade_Short" xml:space="preserve"><value>Short · sell</value></data>
+  <data name="Trade_Buy" xml:space="preserve"><value>Buy</value></data>
+  <data name="Trade_Sell" xml:space="preserve"><value>Sell</value></data>
+  <data name="Trade_Prepare" xml:space="preserve"><value>Review terms</value></data>
+  <data name="Trade_Review" xml:space="preserve"><value>Review before sending</value></data>
+  <data name="Trade_Consent" xml:space="preserve"><value>I confirm these exact terms for the selected account. This may be a live order.</value></data>
+  <data name="Trade_Send" xml:space="preserve"><value>Send order to provider</value></data>
+  <data name="Trade_Discard" xml:space="preserve"><value>Discard preview</value></data>
+  <data name="Trade_Unresolved" xml:space="preserve"><value>Previous submission requires reconciliation</value></data>
+  <data name="Trade_CheckAtProvider" xml:space="preserve"><value>Delivery is not confirmed. Check orders and positions at the provider. Do not repeat the order. Local reference:</value></data>
+  <data name="Trade_Checked" xml:space="preserve"><value>I checked the previous submission directly at the provider.</value></data>
+  <data name="Trade_Unlock" xml:space="preserve"><value>Unlock a new draft (does not resend)</value></data>
+  <data name="Trade_Connected" xml:space="preserve"><value>Session connected. Select the instrument and order terms. No order was sent.</value></data>
+  <data name="Trade_Connecting" xml:space="preserve"><value>Connecting to the provider…</value></data>
+  <data name="Trade_NeedToken" xml:space="preserve"><value>Enter your Finam API token in this window, not in chat.</value></data>
+  <data name="Trade_Invalid" xml:space="preserve"><value>Select all order fields and enter valid positive amounts.</value></data>
+  <data name="Trade_Failure" xml:space="preserve"><value>The provider response could not be verified. Check the connection and your access.</value></data>
+  <data name="Trade_Cancelled" xml:space="preserve"><value>Action cancelled.</value></data>
+  <data name="Trade_Preparing" xml:space="preserve"><value>Preparing the preview; not sending an order…</value></data>
+  <data name="Trade_Expires" xml:space="preserve"><value>Confirmation expires at</value></data>
+  <data name="Trade_Expired" xml:space="preserve"><value>Preview expired. Review the current terms again.</value></data>
+  <data name="Trade_Sending" xml:space="preserve"><value>Sending this order once…</value></data>
+  <data name="Trade_Reply" xml:space="preserve"><value>Provider response</value></data>
+  <data name="Trade_Lookup" xml:space="preserve"><value>Check order status at Finam</value></data>
+  <data name="Trade_Checking" xml:space="preserve"><value>Checking order status; no resubmission…</value></data>
+  <data name="Trade_SelectAccount" xml:space="preserve"><value>Select the original account to look up the order.</value></data>
+  <data name="Trade_Unlocked" xml:space="preserve"><value>Draft unlocked. Nothing was resent.</value></data>
+  <data name="Trade_StorageFault" xml:space="preserve"><value>Local submission status unavailable or locked. Sending is blocked until it is reconciled.</value></data>
+  <data name="Studio_State_disconnected" xml:space="preserve"><value>Disconnected</value></data>
+  <data name="Trade_ReadOnly" xml:space="preserve"><value>Read-only token. You can review terms and look up orders, but cannot submit.</value></data>
+  <data name="Studio_CaptureFacts" xml:space="preserve"><value>{0} · {1} · {2:N0} perp trades / {3:N0} stock quotes</value></data>
+  <data name="Studio_ExecutionFacts" xml:space="preserve"><value>{0} USDT per observation · trade-print proxy, {1} ms latency · fees {2} and modeled slippage {3} bps per side.</value></data>
+  <data name="Trade_Close" xml:space="preserve"><value>Close full position</value></data>
+  <data name="Trade_UnitPrice" xml:space="preserve"><value>Limit per share</value></data>
+  <data name="Trade_OriginalAccount" xml:space="preserve"><value>Select original account</value></data>
 </root>

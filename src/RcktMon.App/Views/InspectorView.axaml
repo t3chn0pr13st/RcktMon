@@ -186,16 +186,12 @@
                     </ItemsControl>
                 </StackPanel>
 
-                <!--
-                    The order ticket's placeholder. Reserved deliberately: the client-side
-                    trading token is a later phase, and leaving room for it now means the
-                    information architecture will not have to be redone around it.
-                -->
-                <Border Classes="card" IsEnabled="False" Opacity="0.6">
+                <Border Classes="card">
                     <StackPanel Spacing="4">
                         <TextBlock Classes="h2" Text="{l:Localize Inspector_Trading}" />
                         <TextBlock Classes="tertiary" TextWrapping="Wrap"
                                    Text="{l:Localize Inspector_TradingBody}" />
+                        <Button Classes="link" Content="{l:Localize Work_Trade}" Click="OpenTicket" />
                     </StackPanel>
                 </Border>
 
