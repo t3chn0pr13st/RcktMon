@@ -990,4 +990,10 @@
   <data name="Trade_Close" xml:space="preserve"><value>Close full position</value></data>
   <data name="Trade_UnitPrice" xml:space="preserve"><value>Limit per share</value></data>
   <data name="Trade_OriginalAccount" xml:space="preserve"><value>Select original account</value></data>
+  <data name="Shell_PagePicker" xml:space="preserve"><value>Go to page</value></data>
+  <data name="Shell_ConnectMonitor" xml:space="preserve"><value>Connect monitor server</value></data>
+  <data name="Shell_CloseSetup" xml:space="preserve"><value>Close setup</value></data>
+  <data name="Shell_ServerCredentials" xml:space="preserve"><value>Enter a valid HTTPS server URL (HTTP is allowed on loopback) and its access key.</value></data>
+  <data name="Shell_OfflineMonitor" xml:space="preserve"><value>Connect your monitor server to see market data here. Signal Studio works independently.</value></data>
+  <data name="Shell_MonitorOfflineTitle" xml:space="preserve"><value>Monitor server not connected</value></data>
 </root>

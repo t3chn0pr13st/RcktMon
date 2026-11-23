@@ -88,7 +88,7 @@ public sealed class StudioScreenTests(HeadlessSessionFixture fixture) : IClassFi
         Assert.True(condition());
     }
 
-    private sealed class FixtureFeed : HttpMessageHandler
+    internal sealed class FixtureFeed : HttpMessageHandler
     {
         public bool Fail { get; set; }
         private readonly DateTimeOffset _start = new(2026, 11, 23, 13, 50, 0, TimeSpan.Zero);

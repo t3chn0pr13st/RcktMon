@@ -8,8 +8,8 @@ public partial class OnboardingView : UserControl
 {
     public OnboardingView() => InitializeComponent();
 
-    private void OpenWorkspace(object? sender, RoutedEventArgs e) =>
-        (TopLevel.GetTopLevel(this) as MainWindow)?.ShowWorkspace();
+    private void CancelSetup(object? sender, RoutedEventArgs e) =>
+        ((TopLevel.GetTopLevel(this) as MainWindow)?.DataContext as MainWindowViewModel)?.DismissOnboarding();
 
     /// <summary>
     /// Records which preset radio button is selected.

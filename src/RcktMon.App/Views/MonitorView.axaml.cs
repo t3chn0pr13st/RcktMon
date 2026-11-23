@@ -111,7 +111,6 @@ public partial class MonitorView : UserControl
                 {
                     case nameof(MonitorColumnState.IsVisible):
                         target.IsVisible = captured.IsVisible;
-                        ApplyStretch();
                         break;
                     // Both the arrow and the language can change the header text.
                     case nameof(MonitorColumnState.SortIndicator):
@@ -126,41 +125,12 @@ public partial class MonitorView : UserControl
             };
         }
 
+        // These are user-sized pixel columns. Mixing a single star column into a
+        // resizable, horizontally scrollable grid lets DataGrid redistribute a first
+        // narrow measure into all the frozen pixel columns. When the viewport expands
+        // it gives the extra space to the star, leaving tickers at their minimum. The
+        // grid's normal filler can paint spare space without modifying any data column.
         ApplyOrder();
-        ApplyStretch();
-    }
-
-    /// <summary>
-    /// Lets the rightmost visible column take the leftover width.
-    /// </summary>
-    /// <remarks>
-    /// Purely cosmetic, but the alternative is a band of empty grid to the right of the
-    /// last column that reads as a rendering fault rather than as spare space.
-    /// </remarks>
-    private void ApplyStretch()
-    {
-        DataGridColumn? last = null;
-
-        foreach (DataGridColumn column in Grid.Columns)
-        {
-            if (!column.IsVisible)
-            {
-                continue;
-            }
-
-            int index = Grid.Columns.IndexOf(column);
-            if (index >= 0 && index < _columns.Length)
-            {
-                column.Width = new DataGridLength(_columns[index].Width);
-            }
-
-            last = column;
-        }
-
-        if (last is not null)
-        {
-            last.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
-        }
     }
 
     private void ApplyOrder()

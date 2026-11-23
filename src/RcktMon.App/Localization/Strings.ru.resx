@@ -990,4 +990,10 @@
   <data name="Trade_Close" xml:space="preserve"><value>Закрыть всю позицию</value></data>
   <data name="Trade_UnitPrice" xml:space="preserve"><value>Лимит за акцию</value></data>
   <data name="Trade_OriginalAccount" xml:space="preserve"><value>Выбери исходный счёт</value></data>
+  <data name="Shell_PagePicker" xml:space="preserve"><value>Перейти в раздел</value></data>
+  <data name="Shell_ConnectMonitor" xml:space="preserve"><value>Подключить сервер</value></data>
+  <data name="Shell_CloseSetup" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="Shell_ServerCredentials" xml:space="preserve"><value>Укажите HTTPS-адрес сервера и его ключ доступа. HTTP разрешён только для локального адреса.</value></data>
+  <data name="Shell_OfflineMonitor" xml:space="preserve"><value>Для данных этого раздела подключите сервер мониторинга. Студия сигналов работает независимо.</value></data>
+  <data name="Shell_MonitorOfflineTitle" xml:space="preserve"><value>Сервер мониторинга не подключён</value></data>
 </root>

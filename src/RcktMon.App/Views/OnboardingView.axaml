@@ -21,7 +21,6 @@
             <TextBlock Classes="h2" Text="{l:Localize Onb_Tagline}" />
             <TextBlock Classes="secondary" TextWrapping="Wrap"
                        Text="{l:Localize Onb_Intro}" />
-            <Button Classes="chip" Content="{l:Localize Work_OpenLocal}" Click="OpenWorkspace" />
             <Border Classes="card">
                 <StackPanel Spacing="6">
                     <TextBlock Classes="h2" Text="{l:Localize Onb_WhatChanged}" />
@@ -106,8 +105,7 @@
                 <Ellipse Width="7" Height="7" Fill="{DynamicResource Brush.Text.Tertiary}" />
             </StackPanel>
 
-            <Button Grid.Column="2" Classes="ghost" Content="{l:Localize Common_Skip}"
-                    Command="{Binding FinishCommand}" />
+            <Button Grid.Column="2" Classes="ghost" Content="{l:Localize Shell_CloseSetup}" Click="CancelSetup" />
 
             <Button Grid.Column="3" Classes="primary" Content="{l:Localize Common_Next}" Margin="10,0,0,0"
                     Command="{Binding NextCommand}"

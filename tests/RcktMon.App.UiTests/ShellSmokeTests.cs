@@ -45,8 +45,8 @@ public sealed class ShellSmokeTests(HeadlessSessionFixture fixture) : IClassFixt
             {
                 RcktMonApp.Paths = paths;
 
-                var model = new MainWindowViewModel(paths, TestLogging.Factory);
-                var window = new MainWindow { DataContext = model };
+                var model = new MainWindowViewModel(paths, TestLogging.Factory, secretStore: new UnifiedShellTests.FixtureSecrets("rm_fixture"));
+                var window = new MainWindow(UnifiedShellTests.CreateStudio) { DataContext = model };
 
                 window.Show();
 
@@ -151,8 +151,8 @@ public sealed class ShellSmokeTests(HeadlessSessionFixture fixture) : IClassFixt
             {
                 RcktMonApp.Paths = paths;
 
-                var model = new MainWindowViewModel(paths);
-                var window = new MainWindow { DataContext = model };
+                var model = new MainWindowViewModel(paths, secretStore: new UnifiedShellTests.FixtureSecrets("rm_fixture"));
+                var window = new MainWindow(UnifiedShellTests.CreateStudio) { DataContext = model };
                 window.Show();
 
                 MonitorViewModel monitor = model.Pages.OfType<MonitorViewModel>().First();

@@ -67,12 +67,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private IDisposable _statusSubscription;
     private Task _sessionTask;
 
-    public MainWindowViewModel(IAppPaths paths, ILoggerFactory? loggerFactory = null)
+    private bool _disposed, _restarting, _selectingLanding;
+    public MainWindowViewModel(IAppPaths paths, ILoggerFactory? loggerFactory = null,
+        bool preferStudio = false, ISecretStore? secretStore = null, bool connectConfiguredServer = false)
     {
         _paths = paths;
         _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         _logger = _loggerFactory.CreateLogger<MainWindowViewModel>();
-        _secrets = SecretStoreFactory.Create(paths.ConfigDirectory);
+        _secrets = secretStore ?? SecretStoreFactory.Create(paths.ConfigDirectory);
 
         _settingsFile = new JsonFileStore<ClientSettings>(Path.Combine(paths.ConfigDirectory, "settings.json"));
         _viewsFile = new JsonFileStore<ViewCollection>(Path.Combine(paths.ConfigDirectory, "views.json"));
@@ -94,24 +96,22 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         // the localizer at construction.
         Localizer.Instance.Use(_settings.Locale);
 
-        _session = CreateSession();
+        var remote = !preferStudio && ((_settings.OnboardingCompleted && !_settings.MonitorConnectionPending) || connectConfiguredServer)
+            ? ReadRemoteSettings(connectConfiguredServer) : null;
+        _session = CreateSession(remote);
+        MonitorStarted = remote is not null;
         _statusSubscription = SubscribeStatus(_session);
 
         Pages = [];
-        BuildPages();
+        BuildPages(preferStudio || !MonitorStarted ? "studio" : _settings.StartPage);
 
-        _sessionTask = _session.Start();
+        _sessionTask = MonitorStarted ? _session.Start() : Task.CompletedTask;
 
         _drainTimer = new DispatcherTimer(DrainInterval, DispatcherPriority.Background, (_, _) => Drain());
         _clockTimer = new DispatcherTimer(ClockInterval, DispatcherPriority.Background, (_, _) => Tick());
 
         _drainTimer.Start();
         _clockTimer.Start();
-
-        if (!_settings.OnboardingCompleted)
-        {
-            Onboarding = CreateOnboarding();
-        }
 
         ApplyTheme(_settings.Theme);
     }
@@ -123,6 +123,37 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public ClientSettings Settings => _settings;
 
     [ObservableProperty] private PageViewModel? _currentPage;
+    [ObservableProperty] private bool _monitorStarted;
+    public bool IsLocalPage => CurrentPage is LocalPage;
+    public PageViewModel? RemotePage => IsLocalPage || ShowOfflineMonitor ? null : CurrentPage;
+    public bool ShowOfflineMonitor => !MonitorStarted && !IsLocalPage && CurrentPage?.Key != "settings";
+    public bool ShowSetupShortcut => !MonitorStarted && !ShowOfflineMonitor;
+    public bool ShowMarketStatus => MonitorStarted && !IsLocalPage;
+    public bool ShowStaleBanner => ShowMarketStatus && IsStale;
+    public bool ShowTerminalBanner => ShowMarketStatus && Status.IsTerminal;
+    partial void OnIsStaleChanged(bool value) => OnPropertyChanged(nameof(ShowStaleBanner));
+    partial void OnStatusChanged(ConnectionStatus value) => OnPropertyChanged(nameof(ShowTerminalBanner));
+    partial void OnMonitorStartedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(RemotePage));
+        NotifyMarketChrome();
+    }
+    private void NotifyMarketChrome()
+    {
+        OnPropertyChanged(nameof(ShowOfflineMonitor));
+        OnPropertyChanged(nameof(ShowSetupShortcut));
+        OnPropertyChanged(nameof(ShowMarketStatus));
+        OnPropertyChanged(nameof(ShowStaleBanner));
+        OnPropertyChanged(nameof(ShowTerminalBanner));
+    }
+    [RelayCommand]
+    public void BeginServerSetup()
+    {
+        Onboarding ??= CreateOnboarding();
+        Onboarding.Step = 1;
+    }
+    [RelayCommand]
+    public void DismissOnboarding() => Onboarding = null;
 
     [ObservableProperty] private ConnectionStatus _status = new(ConnectionState.Disconnected);
 
@@ -163,6 +194,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     partial void OnCurrentPageChanged(PageViewModel? oldValue, PageViewModel? newValue)
     {
+        OnPropertyChanged(nameof(IsLocalPage));
+        OnPropertyChanged(nameof(RemotePage));
+        NotifyMarketChrome();
         if (oldValue is not null)
         {
             oldValue.IsActive = false;
@@ -176,8 +210,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         newValue.IsActive = true;
         newValue.Activated();
 
-        _settings.StartPage = newValue.Key;
-        Persist();
+        if (!_selectingLanding)
+        {
+            _settings.StartPage = newValue.Key;
+            Persist();
+        }
     }
 
     /// <summary>Switches pages by key. Used by the rail and by cross-page links.</summary>
@@ -213,10 +250,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Writes settings and views to disk. Debounced by the file store.</summary>
     public void Persist()
     {
-        _views.Views.Clear();
-
         if (Pages.OfType<MonitorViewModel>().FirstOrDefault() is { } monitor)
         {
+            // Monitor may be temporarily absent during teardown; never erase saved filters then.
+            _views.Views.Clear();
             _views.Views.AddRange(monitor.AllViews);
         }
 
@@ -250,7 +287,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         // label are rendered by the server in the language it was told at handshake. A
         // language change therefore has to re-establish the session, or new alerts would
         // keep arriving in the old language for the rest of the run.
-        Reconnect();
+        if (MonitorStarted && !_settings.MonitorConnectionPending && _settings.ServerAddress.TrimEnd('/') == ServerAddress.TrimEnd('/'))
+        {
+            Reconnect();
+        }
     }
 
     /// <summary>Applies a theme preference to the running application.</summary>
@@ -374,14 +414,27 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
     }
 
-    private ClientSession CreateSession()
+    private (Uri Address, string Key)? ReadRemoteSettings(bool explicitlyPaired = false)
     {
-        var uri = new Uri(_settings.ServerAddress, UriKind.Absolute);
+        if (_settings.MonitorConnectionPending && !explicitlyPaired) return null;
+        if (!Uri.TryCreate(_settings.ServerAddress, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != "https" && !(uri.Scheme == "http" && uri.IsLoopback)) ||
+            uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0)
+            return null;
+        string? key = _secrets.Read(SecretKeys.AccessKey);
+        return string.IsNullOrWhiteSpace(key) ? null : (uri, key);
+    }
+
+    private ClientSession CreateSession((Uri Address, string Key)? remote)
+    {
+        // In local mode only the in-memory stores are used by the legacy pages. No RunAsync,
+        // no channel, no fake fallback and no use of server or broker credentials.
+        var uri = remote?.Address ?? new Uri("http://127.0.0.1");
 
         var settings = new ConnectionSettings
         {
             ServerUri = uri,
-            AccessKey = _secrets.Read(SecretKeys.AccessKey) ?? "rm_local_development",
+            AccessKey = remote?.Key ?? string.Empty,
             DeviceId = _settings.DeviceId,
             Locale = string.IsNullOrEmpty(_settings.Locale)
                 ? System.Globalization.CultureInfo.CurrentUICulture.Name
@@ -395,7 +448,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             AllowInsecureHttp = uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback,
         };
 
-        ServerAddress = uri.ToString();
+        ServerAddress = remote?.Address.ToString() ?? string.Empty;
         return new ClientSession(settings, _loggerFactory);
     }
 
@@ -409,7 +462,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 ServerVersion = session.Connection.Session?.ServerVersion;
             });
 
-    private void BuildPages()
+    private void BuildPages(string? landing)
     {
         var monitor = new MonitorViewModel(_session, _settings, Persist);
         monitor.LoadViews(_views.Views, _settings.ActiveView);
@@ -421,7 +474,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         Pages.Add(new SettingsViewModel(
             _session, _settings, _secrets, _paths, Persist, ApplyTheme, Reconnect, ApplyLanguage));
 
-        CurrentPage = Pages.FirstOrDefault(p => p.Key == _settings.StartPage) ?? Pages[1];
+        // Preserve desktop shortcuts 1–5; extend the existing rail instead of opening a second window.
+        Pages.Add(new LocalPage("studio", "Work_Open", "Icon.Studio"));
+        Pages.Add(new LocalPage("trading", "Work_Trade", "Icon.Trading"));
+        _selectingLanding = true;
+        try { CurrentPage = Pages.FirstOrDefault(p => p.Key == landing) ?? Pages[1]; }
+        finally { _selectingLanding = false; }
     }
 
     private void OpenInstrument(string uid)
@@ -443,22 +501,37 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private async Task RestartSessionAsync()
     {
-        _drainTimer.Stop();
+        if (_disposed || _restarting) return;
+        var remote = ReadRemoteSettings();
+        if (remote is null)
+        {
+            BeginServerSetup();
+            if (Onboarding != null) Onboarding.Error = Strings.Shell_ServerCredentials;
+            return;
+        }
 
-        _statusSubscription.Dispose();
-
-        ClientSession old = _session;
-        DisposePages();
-
-        await old.DisposeAsync();
-
-        _session = CreateSession();
-        _statusSubscription = SubscribeStatus(_session);
-
-        BuildPages();
-
-        _sessionTask = _session.Start();
-        _drainTimer.Start();
+        _restarting = true;
+        string? landing = CurrentPage?.Key;
+        try
+        {
+            _settings.MonitorConnectionPending = false;
+            Persist();
+            _drainTimer.Stop();
+            _statusSubscription.Dispose();
+            var old = _session;
+            // Replace the session and pages before yielding, so window close never owns
+            // the same session as the asynchronous cleanup of the previous connection.
+            DisposePages();
+            _session = CreateSession(remote);
+            Status = new(ConnectionState.Disconnected);
+            _statusSubscription = SubscribeStatus(_session);
+            MonitorStarted = true;
+            BuildPages(landing);
+            _sessionTask = _session.Start();
+            _drainTimer.Start();
+            await old.DisposeAsync();
+        }
+        finally { _restarting = false; }
     }
 
     private void DisposePages()
@@ -474,6 +547,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
         _drainTimer.Stop();
         _clockTimer.Stop();
 

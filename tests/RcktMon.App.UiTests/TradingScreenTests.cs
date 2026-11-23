@@ -15,11 +15,13 @@ namespace RcktMon.App.UiTests;
 
 public sealed class TradingScreenTests(HeadlessSessionFixture fixture) : IClassFixture<HeadlessSessionFixture>
 {
-    private sealed class Broker : HttpMessageHandler
+    internal sealed class Broker : HttpMessageHandler
     {
         public int Sends;
+        public int Requests;
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage msg, CancellationToken ct)
         {
+            Requests++;
             string path = msg.RequestUri!.GetComponents(UriComponents.Path, UriFormat.Unescaped);
             object result;
             if (msg.Method == HttpMethod.Post && path.EndsWith("/orders", StringComparison.Ordinal))

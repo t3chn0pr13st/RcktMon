@@ -7,7 +7,7 @@ namespace RcktMon.App.Views;
 public partial class InspectorView : UserControl
 {
     private void OpenTicket(object? sender, Avalonia.Interactivity.RoutedEventArgs e) =>
-        (TopLevel.GetTopLevel(this) as MainWindow)?.ShowWorkspace(manualOrders: true);
+        ((TopLevel.GetTopLevel(this) as MainWindow)?.DataContext as MainWindowViewModel)?.Navigate("trading");
 
 
     public InspectorView()

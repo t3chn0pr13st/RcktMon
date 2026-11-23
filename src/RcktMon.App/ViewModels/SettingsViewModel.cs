@@ -41,7 +41,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly System.Timers.Timer _previewTimer;
 
     private DateTimeOffset _savedAt;
-    private bool _loading;
+    private bool _loading, _loadedConnectionDraft;
 
     public SettingsViewModel(
         ClientSession session,
@@ -65,7 +65,7 @@ public sealed partial class SettingsViewModel : PageViewModel
 
         _loading = true;
         _serverAddress = settings.ServerAddress;
-        _accessKey = secrets.Read(SecretKeys.AccessKey) ?? string.Empty;
+        _accessKey = string.Empty;
         _theme = settings.Theme;
         _compactDensity = settings.CompactDensity;
         _showSparklines = settings.ShowSparklines;
@@ -153,6 +153,17 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     public override void Activated()
     {
+        if (!_loadedConnectionDraft)
+        {
+            _loadedConnectionDraft = true;
+            _loading = true;
+            try
+            {
+                AccessKey = _settings.MonitorConnectionPending || !_settings.OnboardingCompleted ? string.Empty : _secrets.Read(SecretKeys.AccessKey) ?? string.Empty;
+                ConnectionNeedsRestart = _settings.MonitorConnectionPending;
+            }
+            finally { _loading = false; }
+        }
         SyncLanguage();
 
         if (Profiles.Count == 0)
@@ -191,6 +202,11 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     partial void OnServerAddressChanged(string value)
     {
+        if (_loading || _settings.ServerAddress == value.Trim()) return;
+        _loading = true;
+        try { AccessKey = string.Empty; } // Never pre-fill the old server’s key on a new destination.
+        finally { _loading = false; }
+        _settings.MonitorConnectionPending = true;
         _settings.ServerAddress = value.Trim();
         ConnectionNeedsRestart = true;
         Save();
@@ -203,19 +219,9 @@ public sealed partial class SettingsViewModel : PageViewModel
             return;
         }
 
-        string trimmed = value.Trim();
-
-        if (trimmed.Length == 0)
-        {
-            _secrets.Delete(SecretKeys.AccessKey);
-        }
-        else
-        {
-            _secrets.Write(SecretKeys.AccessKey, trimmed);
-        }
-
+        _settings.MonitorConnectionPending = true;
         ConnectionNeedsRestart = true;
-        Acknowledge();
+        _persist(); // Save the guard, not a partially typed key.
     }
 
     partial void OnThemeChanged(ThemePreference value)
@@ -455,6 +461,20 @@ public sealed partial class SettingsViewModel : PageViewModel
     [RelayCommand]
     private void Reconnect()
     {
+        if (ConnectionNeedsRestart || _settings.MonitorConnectionPending)
+        {
+            if (string.IsNullOrWhiteSpace(AccessKey) || !Uri.TryCreate(ServerAddress, UriKind.Absolute, out var uri)
+                || (uri.Scheme != "https" && !(uri.Scheme == "http" && uri.IsLoopback))
+                || uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0)
+            {
+                _reconnect(); // The shell offers setup, but the pending guard prevents using the stored key.
+                return;
+            }
+            _secrets.Write(SecretKeys.AccessKey, AccessKey.Trim());
+            _settings.MonitorConnectionPending = false;
+            _settings.OnboardingCompleted = true; // Manual connection in Settings skips the optional preset wizard.
+            _persist();
+        }
         ConnectionNeedsRestart = false;
         _reconnect();
     }

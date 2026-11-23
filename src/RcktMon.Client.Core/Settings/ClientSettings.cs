@@ -30,6 +30,10 @@ public sealed class ClientSettings
     /// <summary>Server base address. Plaintext http is only accepted for loopback.</summary>
     public string ServerAddress { get; set; } = "http://localhost:5299";
 
+    /// <summary>The address or access key was edited but not expressly reconnected.
+    /// Never send an old key to an edited address during startup or a language switch.</summary>
+    public bool MonitorConnectionPending { get; set; }
+
     /// <summary>Stable per-installation id. Not a secret; the account owner can revoke it.</summary>
     public string DeviceId { get; set; } = string.Empty;
 

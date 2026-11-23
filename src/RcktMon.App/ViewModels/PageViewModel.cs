@@ -79,3 +79,6 @@ public abstract partial class PageViewModel : ObservableObject, IDisposable
 
     public virtual void Dispose() => _titleSubscription.Dispose();
 }
+
+/// <summary>Local, account-independent page. Native controls are owned lazily by the shell window.</summary>
+internal sealed class LocalPage(string key, string titleKey, string iconKey) : PageViewModel(key, titleKey, iconKey);

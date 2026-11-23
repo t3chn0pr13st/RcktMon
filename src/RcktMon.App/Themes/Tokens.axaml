@@ -141,6 +141,8 @@
         ship and fall back from, and seven shapes do not justify one.
     -->
     <StreamGeometry x:Key="Icon.Dashboard">M3,3 H10 V10 H3 Z M14,3 H21 V8 H14 Z M14,12 H21 V21 H14 Z M3,14 H10 V21 H3 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Studio">M2,16 L7,12 L10,14 L16,5 L18,7 L11,18 L7,15 L3,19 Z M17,4 H22 V9 L20,7 V6 H18 Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Trading">M3,7 H16 V3 L22,8.5 L16,14 V10 H3 Z M21,15 H8 V11 L2,16.5 L8,22 V18 H21 Z</StreamGeometry>
     <StreamGeometry x:Key="Icon.Monitor">M4,13 H8 V20 H4 Z M10,6 H14 V20 H10 Z M16,10 H20 V20 H16 Z</StreamGeometry>
     <StreamGeometry x:Key="Icon.Signals">M13,2 L4,14 H11 L10,22 L20,9 H13 Z</StreamGeometry>
     <StreamGeometry x:Key="Icon.Instruments">M3,5 H21 V7 H3 Z M3,11 H21 V13 H3 Z M3,17 H21 V19 H3 Z</StreamGeometry>

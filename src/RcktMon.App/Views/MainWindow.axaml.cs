@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -10,32 +11,93 @@ namespace RcktMon.App.Views;
 
 public partial class MainWindow : Window
 {
-    public MainWindow()
-    {
-        InitializeComponent();
+    private readonly Func<StudioView> _makeStudio;
+    private readonly Func<TradingView> _makeTicket;
+    private StudioView? _studio;
+    private TradingView? _trading;
+    private MainWindowViewModel? _observed;
+    public MainWindow() : this(() => new StudioView()) { }
 
+    internal MainWindow(Func<StudioView> studioFactory, Func<TradingView>? tradingFactory = null)
+    {
+        _makeStudio = studioFactory;
+        _makeTicket = tradingFactory ?? (() => new TradingView());
+        InitializeComponent();
+        LayoutFor(Width);
+        SizeChanged += (_, e) => LayoutFor(e.NewSize.Width);
+        DataContextChanged += (_, _) => ObserveModel();
         Opened += (_, _) => RestoreGeometry();
         Closing += (_, _) => CaptureGeometry();
+        Closed += (_, _) =>
+        {
+            if (_observed is not null) _observed.PropertyChanged -= ShellChanged;
+            LocalContent.Content = null;
+            _trading?.Dispose();
+        };
     }
 
-    private WorkspaceWindow? _workspace;
-    public void ShowWorkspace(bool manualOrders = false)
+    private void LayoutFor(double width)
     {
-        if (_workspace is null)
-        {
-            _workspace = new WorkspaceWindow();
-            _workspace.Closed += (_, _) => _workspace = null;
-            _workspace.Show(this);
-        }
-        if (manualOrders) _workspace.ShowManualTicket();
-        _workspace.Activate();
+        Resources["Shell.Wide"] = width >= 800;
+        Resources["Shell.Narrow"] = width < 800;
+        SizeLegacyPage(width);
     }
-    private void OpenWorkspace(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => ShowWorkspace();
+
+    private void SizeLegacyPage(double windowWidth)
+    {
+        // Between the mobile breakpoint and the old 1000px desktop minimum the rail
+        // also consumes space. Recompute when its expanded state changes.
+        bool compact = windowWidth < 800;
+        double available = windowWidth - (compact ? 0 : Model?.RailWidth ?? 208);
+        double required = compact ? 1000 : 792;
+        bool pan = Model?.RemotePage != null && available < required;
+        RemoteScroller.HorizontalScrollBarVisibility = pan
+            ? Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+            : Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled;
+        RemoteContent.Width = pan ? required : double.NaN;
+    }
+
+    private void ObserveModel()
+    {
+        if (_observed is not null) _observed.PropertyChanged -= ShellChanged;
+        _observed = Model;
+        if (_observed is not null) _observed.PropertyChanged += ShellChanged;
+        DisplayPage();
+    }
+
+    private void ShellChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainWindowViewModel.CurrentPage)) RemoteScroller.Offset = default;
+        if (e.PropertyName == nameof(MainWindowViewModel.RailWidth)) SizeLegacyPage(Bounds.Width);
+        if (e.PropertyName is nameof(MainWindowViewModel.CurrentPage) or nameof(MainWindowViewModel.IsOnboarding))
+            DisplayPage();
+    }
+
+    private void DisplayPage()
+    {
+        SizeLegacyPage(Bounds.Width > 0 ? Bounds.Width : Width);
+        string? key = Model?.IsOnboarding == false ? Model.CurrentPage?.Key : null;
+        if (key != "trading" && _trading != null && ReferenceEquals(LocalContent.Content, _trading))
+            _trading.DismissReview();
+        LocalContent.Content = key switch
+        {
+            "studio" => _studio ??= _makeStudio(),
+            "trading" => _trading ??= _makeTicket(),
+            _ => (Control?)null
+        };
+    }
 
     private MainWindowViewModel? Model => DataContext as MainWindowViewModel;
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
+        if (Model?.IsOnboarding == true)
+        {
+            if (e.Key == Key.Escape) { Model.DismissOnboarding(); e.Handled = true; }
+            else base.OnKeyDown(e);
+            return;
+        }
+
         // Ctrl/Cmd+K and "/" both jump to search — the two conventions users arrive with.
         bool commandK = e.Key == Key.K &&
             e.KeyModifiers.HasFlag(OperatingSystem.IsMacOS() ? KeyModifiers.Meta : KeyModifiers.Control);
@@ -53,7 +115,7 @@ public partial class MainWindow : Window
 
         // Digits switch pages, the way every tabbed app the audience already uses does.
         if (e.KeyModifiers.HasFlag(OperatingSystem.IsMacOS() ? KeyModifiers.Meta : KeyModifiers.Control)
-            && e.Key is >= Key.D1 and <= Key.D5
+            && e.Key is >= Key.D1 and <= Key.D7
             && Model is { } model)
         {
             int index = e.Key - Key.D1;

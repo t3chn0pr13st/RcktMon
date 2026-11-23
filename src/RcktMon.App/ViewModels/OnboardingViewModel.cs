@@ -45,7 +45,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
         _finished = finished;
 
         _serverAddress = settings.ServerAddress;
-        _accessKey = secrets.Read(SecretKeys.AccessKey) ?? string.Empty;
+        _accessKey = settings.MonitorConnectionPending || !settings.OnboardingCompleted ? string.Empty : secrets.Read(SecretKeys.AccessKey) ?? string.Empty;
     }
 
     /// <summary>Presets offered in step three, loaded from the server once connected.</summary>
@@ -55,8 +55,12 @@ public sealed partial class OnboardingViewModel : ObservableObject
     [ObservableProperty] private int _step;
 
     [ObservableProperty] private string _serverAddress;
+    private bool _checkedCurrentPair;
+
+    partial void OnServerAddressChanged(string value) { _checkedCurrentPair = false; AccessKey = string.Empty; }
 
     [ObservableProperty] private string _accessKey;
+    partial void OnAccessKeyChanged(string value) => _checkedCurrentPair = false;
 
     [ObservableProperty] private ConnectionStatus _status = new(ConnectionState.Disconnected);
 
@@ -94,7 +98,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
     {
         if (Step == 1)
         {
-            Connect();
+            if (!_checkedCurrentPair || !IsConnected) { Connect(); return; }
         }
 
         Step = Math.Min(2, Step + 1);
@@ -118,16 +122,23 @@ public sealed partial class OnboardingViewModel : ObservableObject
             return;
         }
 
-        _settings.ServerAddress = address;
-        _persist();
-
         string key = AccessKey.Trim();
-        if (key.Length > 0)
+        if (key.Length == 0 || (uri.Scheme == "http" && !uri.IsLoopback) ||
+            uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0)
         {
-            _secrets.Write(SecretKeys.AccessKey, key);
+            Error = Strings.Shell_ServerCredentials;
+            return;
         }
 
+        _checkedCurrentPair = false;
+        _secrets.Write(SecretKeys.AccessKey, key);
+        _settings.ServerAddress = address;
+        _settings.MonitorConnectionPending = false;
+        _persist();
+
+        Status = new(ConnectionState.Disconnected);
         _reconnect();
+        _checkedCurrentPair = true;
     }
 
     /// <summary>Skips the preset step; the server's default profile stays active.</summary>

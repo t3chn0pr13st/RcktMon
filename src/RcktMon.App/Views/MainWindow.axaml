@@ -5,9 +5,9 @@
         xmlns:fmt="using:RcktMon.App.Formatting"
         x:Class="RcktMon.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="RcktMon"
+        Title="RocketMon"
         Width="1360" Height="860"
-        MinWidth="1000" MinHeight="600"
+        MinWidth="360" MinHeight="480"
         Background="{DynamicResource Brush.Surface.1}">
 
     <Window.Resources>
@@ -18,38 +18,38 @@
 
     <Panel>
 
-        <DockPanel>
+        <DockPanel IsEnabled="{Binding !IsOnboarding}">
 
             <!-- ============ app bar ============ -->
             <Border Classes="appbar" DockPanel.Dock="Top">
                 <Grid ColumnDefinitions="Auto,*,Auto">
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                        <Button Classes="ghost" Command="{Binding ToggleRailCommand}"
+                        <Button Classes="ghost" IsVisible="{DynamicResource Shell.Wide}" Command="{Binding ToggleRailCommand}"
                                 AutomationProperties.Name="{l:Localize Shell_ToggleRail}">
                             <PathIcon Classes="rail" Data="{DynamicResource Icon.Instruments}" />
                         </Button>
 
-                        <TextBlock Text="RcktMon" FontSize="17" FontWeight="Bold"
+                        <TextBlock Text="RocketMon" FontSize="17" FontWeight="Bold"
                                    Foreground="{DynamicResource Brush.Accent}" VerticalAlignment="Center" />
 
-                        <TextBlock Classes="tertiary" VerticalAlignment="Center"
+                        <TextBlock Classes="tertiary" IsVisible="{DynamicResource Shell.Wide}" VerticalAlignment="Center"
                                    Text="{Binding CurrentPage.Title}" />
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                    <StackPanel Grid.Column="1" IsVisible="{Binding ShowMarketStatus}" Orientation="Horizontal" Spacing="10"
                                 HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Classes="secondary" VerticalAlignment="Center"
+                        <TextBlock Classes="secondary" IsVisible="{DynamicResource Shell.Wide}" VerticalAlignment="Center"
                                    Text="{Binding MarketPhase}" />
-                        <TextBlock Classes="tertiary" VerticalAlignment="Center"
+                        <TextBlock Classes="tertiary" IsVisible="{DynamicResource Shell.Wide}" VerticalAlignment="Center"
                                    Text="{Binding MarketCountdown}" />
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                        <Button Classes="ghost" Click="OpenWorkspace" Content="{l:Localize Work_Open}" />
-                        <!-- Connection pill. Visible on every screen by design: silently stale
-                             prices are the dangerous failure mode for this product. -->
-                        <Border Classes="pill" ToolTip.Tip="{Binding Status.Detail}">
+                        <Button x:Name="ServerSetupButton" Classes="chip" Command="{Binding BeginServerSetupCommand}"
+                                IsVisible="{Binding ShowSetupShortcut}" Content="{l:Localize Shell_ConnectMonitor}" />
+                        <!-- The monitor and local Studio use different data sources. -->
+                        <Border IsVisible="{Binding ShowMarketStatus}" Classes="pill" ToolTip.Tip="{Binding Status.Detail}">
                             <StackPanel Orientation="Horizontal" Spacing="7">
                                 <Ellipse Width="8" Height="8" VerticalAlignment="Center"
                                          Fill="{Binding Status, Converter={StaticResource ConnBrush}}" />
@@ -58,7 +58,7 @@
                             </StackPanel>
                         </Border>
 
-                        <Button Classes="chip" Content="{l:Localize Settings_Theme}"
+                        <Button Classes="chip" IsVisible="{DynamicResource Shell.Wide}" Content="{l:Localize Settings_Theme}"
                                 Command="{Binding ToggleThemeCommand}"
                                 AutomationProperties.Name="{l:Localize Shell_ToggleTheme}" />
                     </StackPanel>
@@ -66,29 +66,37 @@
                 </Grid>
             </Border>
 
+            <ComboBox x:Name="PagePicker" DockPanel.Dock="Top" Margin="12,6"
+                      IsVisible="{DynamicResource Shell.Narrow}" HorizontalAlignment="Stretch"
+                      AutomationProperties.Name="{l:Localize Shell_PagePicker}" ItemsSource="{Binding Pages}"
+                      SelectedItem="{Binding CurrentPage}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PageViewModel"><TextBlock Text="{Binding Title}"/></DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
             <!-- ============ degraded / stale banner ============ -->
-            <Border Classes="banner" DockPanel.Dock="Top" IsVisible="{Binding IsStale}">
-                <StackPanel Orientation="Horizontal" Spacing="10">
+            <Border Classes="banner" DockPanel.Dock="Top" IsVisible="{Binding ShowStaleBanner}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                     <TextBlock Text="⚠" VerticalAlignment="Center" />
-                    <TextBlock VerticalAlignment="Center"
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap"
                                Text="{l:Localize Shell_StaleBanner}" />
-                    <Button Classes="link" Content="{l:Localize Common_Reconnect}" Command="{Binding ReconnectCommand}" />
-                </StackPanel>
+                    <Button Grid.Column="2" Classes="link" Content="{l:Localize Common_Reconnect}" Command="{Binding ReconnectCommand}" />
+                </Grid>
             </Border>
 
-            <Border Classes="banner error" DockPanel.Dock="Top"
-                    IsVisible="{Binding Status.IsTerminal}">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <TextBlock Text="⛔" VerticalAlignment="Center" />
-                    <TextBlock VerticalAlignment="Center" Text="{Binding Status.Detail}" />
-                    <Button Classes="link" Content="{l:Localize Shell_OpenSettings}"
+            <Border Classes="banner error" DockPanel.Dock="Top" IsVisible="{Binding ShowTerminalBanner}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding Status.Detail}" Text="{Binding Status.Detail}" />
+                    <Button Grid.Column="1" Classes="link" Content="{l:Localize Shell_OpenSettings}"
                             Command="{Binding NavigateCommand}" CommandParameter="settings" />
-                </StackPanel>
+                </Grid>
             </Border>
 
             <!-- ============ status bar ============ -->
-            <Border Classes="statusbar" DockPanel.Dock="Bottom">
-                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+            <Border Classes="statusbar" DockPanel.Dock="Bottom" IsVisible="{Binding ShowMarketStatus}">
+                <Grid IsVisible="{DynamicResource Shell.Wide}" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
                     <TextBlock Grid.Column="0" Classes="tertiary" Text="{Binding ServerAddress}" />
 
                     <TextBlock Grid.Column="1" Classes="tertiary" Margin="16,0,0,0">
@@ -114,14 +122,14 @@
             <!-- ============ rail + page ============ -->
             <Grid ColumnDefinitions="Auto,*">
 
-                <Border Grid.Column="0" Classes="rail" Width="{Binding RailWidth}">
-                    <ListBox Classes="rail"
+                <Border Grid.Column="0" Classes="rail" Width="{Binding RailWidth}" IsVisible="{DynamicResource Shell.Wide}">
+                    <ListBox x:Name="PageRail" Classes="rail" AutomationProperties.Name="{l:Localize Shell_PagePicker}"
                              Classes.collapsed="{Binding !IsRailExpanded}"
                              ItemsSource="{Binding Pages}"
                              SelectedItem="{Binding CurrentPage}">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:PageViewModel">
-                                <Grid ColumnDefinitions="Auto,*,Auto" ToolTip.Tip="{Binding Title}">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ToolTip.Tip="{Binding Title}" AutomationProperties.Name="{Binding Title}">
                                     <PathIcon Grid.Column="0" Classes="rail"
                                               Data="{Binding IconKey, Converter={StaticResource Icon}}" />
                                     <TextBlock Grid.Column="1" Classes="raillabel" Margin="12,0,0,0"
@@ -136,12 +144,25 @@
                     </ListBox>
                 </Border>
 
-                <!-- Pages are kept alive, so switching back restores scroll and selection. -->
-                <TransitioningContentControl Grid.Column="1" Content="{Binding CurrentPage}">
-                    <TransitioningContentControl.PageTransition>
-                        <CrossFade Duration="0:0:0.12" />
-                    </TransitioningContentControl.PageTransition>
-                </TransitioningContentControl>
+                <Grid Grid.Column="1">
+                    <!-- The original monitor screens contain desktop tables/toolbars. In a
+                         compact shell they retain their desktop width inside this pan area. -->
+                    <ScrollViewer x:Name="RemoteScroller" IsVisible="{Binding !IsLocalPage}"
+                                  HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+                        <ContentControl x:Name="RemoteContent" Content="{Binding RemotePage}"/>
+                    </ScrollViewer>
+                    <Border x:Name="OfflineCard" Classes="card" IsVisible="{Binding ShowOfflineMonitor}"
+                            Margin="16" MaxWidth="520" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel Spacing="12">
+                            <TextBlock Classes="h2" TextWrapping="Wrap" Text="{l:Localize Shell_MonitorOfflineTitle}"/>
+                            <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:Localize Shell_OfflineMonitor}"/>
+                            <Button Classes="chip" Content="{l:Localize Shell_ConnectMonitor}" Command="{Binding BeginServerSetupCommand}"/>
+                        </StackPanel>
+                    </Border>
+                    <!-- Remove inactive children from the visual tree: subscriptions stop and
+                         local confirmations are revoked, without waking an unvisited page. -->
+                    <ContentControl x:Name="LocalContent" IsVisible="{Binding IsLocalPage}"/>
+                </Grid>
 
             </Grid>
 

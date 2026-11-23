@@ -25,7 +25,12 @@ public sealed partial class RcktMonApp : Avalonia.Application
     /// <summary>Logger factory supplied by the host, if any.</summary>
     public static ILoggerFactory? LoggerFactory { get; set; }
 
-    public static bool LocalWorkspace { get; set; }
+    /// <summary>Initial page hint; never launches a separate application or workspace.</summary>
+    public static bool StartInStudio { get; set; }
+
+    public static bool StartInMonitor { get; set; }
+
+    public static bool ConnectConfiguredServer { get; set; }
 
     private MainWindowViewModel? _mainViewModel;
 
@@ -39,14 +44,10 @@ public sealed partial class RcktMonApp : Avalonia.Application
                 ?? throw new InvalidOperationException(
                     $"{nameof(RcktMonApp)}.{nameof(Paths)} must be set before the app runs.");
 
-            if (LocalWorkspace)
-            {
-                desktop.MainWindow = new WorkspaceWindow();
-                base.OnFrameworkInitializationCompleted();
-                return;
-            }
+            _mainViewModel = new MainWindowViewModel(paths, LoggerFactory, preferStudio: StartInStudio,
+                connectConfiguredServer: ConnectConfiguredServer);
 
-            _mainViewModel = new MainWindowViewModel(paths, LoggerFactory);
+            if (StartInMonitor) _mainViewModel.Navigate("monitor");
 
             SetColourBlindPalette(_mainViewModel.Settings.ColourBlindSafe);
 
