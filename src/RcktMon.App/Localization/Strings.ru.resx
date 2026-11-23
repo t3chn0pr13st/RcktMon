@@ -996,4 +996,29 @@
   <data name="Shell_ServerCredentials" xml:space="preserve"><value>Укажите HTTPS-адрес сервера и его ключ доступа. HTTP разрешён только для локального адреса.</value></data>
   <data name="Shell_OfflineMonitor" xml:space="preserve"><value>Для данных этого раздела подключите сервер мониторинга. Студия сигналов работает независимо.</value></data>
   <data name="Shell_MonitorOfflineTitle" xml:space="preserve"><value>Сервер мониторинга не подключён</value></data>
+  <data name="History_Tab" xml:space="preserve"><value>Исторические тесты</value></data>
+  <data name="History_Heading" xml:space="preserve"><value>Тест по локальной истории</value></data>
+  <data name="History_Hint" xml:space="preserve"><value>Два порога входа, три выхода. Тики уже на Mac; недостающие стаканы загрузятся автоматически. Реальных сделок нет.</value></data>
+  <data name="History_From" xml:space="preserve"><value>С даты · ГГГГ-ММ-ДД</value></data>
+  <data name="History_To" xml:space="preserve"><value>По дату включительно</value></data>
+  <data name="History_Ticker" xml:space="preserve"><value>Инструмент · * означает все</value></data>
+  <data name="History_Rise" xml:space="preserve"><value>Рост за 5 секунд, %</value></data>
+  <data name="History_Low" xml:space="preserve"><value>Порог A, USDT</value></data>
+  <data name="History_High" xml:space="preserve"><value>Порог B, USDT</value></data>
+  <data name="History_Nominal" xml:space="preserve"><value>Номинал входа, USDT</value></data>
+  <data name="History_Start" xml:space="preserve"><value>Запустить тест</value></data>
+  <data name="History_Results" xml:space="preserve"><value>Сохранённые тесты</value></data>
+  <data name="History_NoRuns" xml:space="preserve"><value>Пока нет тестов</value></data>
+  <data name="History_Unavailable" xml:space="preserve"><value>Архив недоступен. Проверьте, что локальная Студия обновлена и запущена.</value></data>
+  <data name="History_Invalid" xml:space="preserve"><value>Проверьте даты и числа. Порог B должен быть больше A.</value></data>
+  <data name="History_Loading" xml:space="preserve"><value>Читаю локальный архив…</value></data>
+  <data name="History_See" xml:space="preserve"><value>Подробно и CSV</value></data>
+  <data name="History_Unknown" xml:space="preserve"><value>не оценено</value></data>
+  <data name="History_Signals" xml:space="preserve"><value>сигналов</value></data>
+  <data name="History_Closed" xml:space="preserve"><value>оценено</value></data>
+  <data name="History_Wins" xml:space="preserve"><value>в плюс</value></data>
+  <data name="History_Rule1" xml:space="preserve"><value>3-я красная 1 мин</value></data>
+  <data name="History_Rule2" xml:space="preserve"><value>1-я красная 3 мин</value></data>
+  <data name="History_Rule3" xml:space="preserve"><value>Гибрид 1 → 3 мин</value></data>
+  <data name="History_Coverage" xml:space="preserve"><value>Покрытие</value></data>
 </root>

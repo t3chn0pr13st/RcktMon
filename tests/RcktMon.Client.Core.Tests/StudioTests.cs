@@ -8,6 +8,26 @@ namespace RcktMon.Client.Core.Tests;
 public sealed class StudioTests
 {
     [Fact]
+    public async Task Archive_run_is_a_single_local_research_request()
+    {
+        using var mock=new ArchiveHandler();using var c=new StudioClient(mock);
+        var ct=TestContext.Current.CancellationToken;
+        await Assert.ThrowsAsync<ArgumentException>(()=>c.ArchiveResultAsync("../wrong",ct));
+        await c.StartArchiveAsync(new("2026-02-25","2026-08-24","*",1,1000,10000,50000),ct);
+        Assert.Equal(1,mock.Count);
+    }
+    private sealed class ArchiveHandler:HttpMessageHandler
+    {
+        public int Count;
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r,CancellationToken ct)
+        {
+            Assert.Equal("http://127.0.0.1:47831/api/history/runs",r.RequestUri!.AbsoluteUri);
+            Assert.Equal(HttpMethod.Post,r.Method);Assert.Equal("1",Assert.Single(r.Headers.GetValues("X-RocketMon-History")));
+            ++Count;return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        }
+    }
+
+    [Fact]
     public void Rebasing_uses_each_series_first_valid_trade_and_preserves_gaps()
     {
         var points = StudioPlot.Normalize([

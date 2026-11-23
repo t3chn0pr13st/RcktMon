@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:l="using:RcktMon.App.Localization" xmlns:vm="using:RcktMon.App.ViewModels" xmlns:controls="using:RcktMon.App.Controls" x:Class="RcktMon.App.Views.StudioView" x:DataType="vm:StudioViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:l="using:RcktMon.App.Localization" xmlns:vm="using:RcktMon.App.ViewModels" xmlns:views="using:RcktMon.App.Views" xmlns:controls="using:RcktMon.App.Controls" x:Class="RcktMon.App.Views.StudioView" x:DataType="vm:StudioViewModel">
     <UserControl.Styles>
         <Style Selector="TextBlock.kpi">
             <Setter Property="FontSize" Value="21"/>
@@ -296,6 +296,7 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+            <TabItem Header="{l:Localize History_Tab}"><views:ArchivePane /></TabItem>
         </TabControl>
     </Grid>
 </UserControl>

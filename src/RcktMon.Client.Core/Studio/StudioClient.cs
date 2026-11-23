@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace RcktMon.Client.Core.Studio;
 
 /// <summary>Public observations only. No configurable origin, cookies, proxies, redirects, trading or account APIs.</summary>
-public sealed class StudioClient : IDisposable
+public sealed partial class StudioClient : IDisposable
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {

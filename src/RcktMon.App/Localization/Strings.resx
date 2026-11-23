@@ -996,4 +996,29 @@
   <data name="Shell_ServerCredentials" xml:space="preserve"><value>Enter a valid HTTPS server URL (HTTP is allowed on loopback) and its access key.</value></data>
   <data name="Shell_OfflineMonitor" xml:space="preserve"><value>Connect your monitor server to see market data here. Signal Studio works independently.</value></data>
   <data name="Shell_MonitorOfflineTitle" xml:space="preserve"><value>Monitor server not connected</value></data>
+  <data name="History_Tab" xml:space="preserve"><value>Archive tests</value></data>
+  <data name="History_Heading" xml:space="preserve"><value>Test local market history</value></data>
+  <data name="History_Hint" xml:space="preserve"><value>Compare two entry thresholds and three exits. Ticks stay on this Mac; missing order books are cached on demand. No orders.</value></data>
+  <data name="History_From" xml:space="preserve"><value>From · YYYY-MM-DD</value></data>
+  <data name="History_To" xml:space="preserve"><value>Through date (inclusive)</value></data>
+  <data name="History_Ticker" xml:space="preserve"><value>Instrument · * means all</value></data>
+  <data name="History_Rise" xml:space="preserve"><value>Rise in 5 seconds, %</value></data>
+  <data name="History_Low" xml:space="preserve"><value>Threshold A, USDT</value></data>
+  <data name="History_High" xml:space="preserve"><value>Threshold B, USDT</value></data>
+  <data name="History_Nominal" xml:space="preserve"><value>Position notional, USDT</value></data>
+  <data name="History_Start" xml:space="preserve"><value>Run test</value></data>
+  <data name="History_Results" xml:space="preserve"><value>Saved tests</value></data>
+  <data name="History_NoRuns" xml:space="preserve"><value>No saved tests</value></data>
+  <data name="History_Unavailable" xml:space="preserve"><value>Archive unavailable. Check that the local Studio is up to date and running.</value></data>
+  <data name="History_Invalid" xml:space="preserve"><value>Check the dates and numbers. B must be greater than A.</value></data>
+  <data name="History_Loading" xml:space="preserve"><value>Reading local archive…</value></data>
+  <data name="History_See" xml:space="preserve"><value>Details and CSV</value></data>
+  <data name="History_Unknown" xml:space="preserve"><value>unpriced</value></data>
+  <data name="History_Signals" xml:space="preserve"><value>signals</value></data>
+  <data name="History_Closed" xml:space="preserve"><value>priced</value></data>
+  <data name="History_Wins" xml:space="preserve"><value>profitable</value></data>
+  <data name="History_Rule1" xml:space="preserve"><value>3rd red 1m</value></data>
+  <data name="History_Rule2" xml:space="preserve"><value>1st red 3m</value></data>
+  <data name="History_Rule3" xml:space="preserve"><value>Hybrid 1 → 3m</value></data>
+  <data name="History_Coverage" xml:space="preserve"><value>Coverage</value></data>
 </root>

@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:l="using:RcktMon.App.Localization" x:Class="RcktMon.App.Views.ArchivePane">
+ <ScrollViewer HorizontalScrollBarVisibility="Disabled"><StackPanel Margin="10,14" Spacing="10">
+  <TextBlock FontWeight="Bold" FontSize="21" Text="{l:Localize History_Heading}" />
+  <TextBlock TextWrapping="Wrap" Text="{l:Localize History_Hint}" />
+  <TextBlock x:Name="Coverage" TextWrapping="Wrap" />
+  <WrapPanel>
+   <StackPanel Width="158" Margin="0,0,10,8"><TextBlock Text="{l:Localize History_From}"/><TextBox x:Name="FromBox" AutomationProperties.Name="{l:Localize History_From}"/></StackPanel>
+   <StackPanel Width="158" Margin="0,0,10,8"><TextBlock Text="{l:Localize History_To}"/><TextBox x:Name="ToBox" AutomationProperties.Name="{l:Localize History_To}"/></StackPanel>
+   <StackPanel Width="190" Margin="0,0,10,8"><TextBlock Text="{l:Localize History_Ticker}"/><ComboBox x:Name="Symbol" HorizontalAlignment="Stretch" AutomationProperties.Name="{l:Localize History_Ticker}"/></StackPanel>
+   <StackPanel Width="158" Margin="0,0,10,8"><TextBlock Text="{l:Localize History_Rise}"/><TextBox x:Name="Rise" Text="1" AutomationProperties.Name="{l:Localize History_Rise}"/></StackPanel>
+   <StackPanel Width="158" Margin="0,0,10,8"><TextBlock Text="{l:Localize History_Low}"/><TextBox x:Name="Low" Text="10000" AutomationProperties.Name="{l:Localize History_Low}"/></StackPanel>
+   <StackPanel Width="158" Margin="0,0,10,8"><TextBlock Text="{l:Localize History_High}"/><TextBox x:Name="High" Text="50000" AutomationProperties.Name="{l:Localize History_High}"/></StackPanel>
+   <StackPanel Width="158" Margin="0,0,10,8"><TextBlock Text="{l:Localize History_Nominal}"/><TextBox x:Name="Nominal" Text="1000" AutomationProperties.Name="{l:Localize History_Nominal}"/></StackPanel>
+  </WrapPanel>
+  <WrapPanel><Button x:Name="Start" IsEnabled="False" Content="{l:Localize History_Start}" Click="RunClick" Margin="0,0,8,5"/><Button Content="{l:Localize History_See}" Click="DetailsClick" Margin="0,0,8,5"/></WrapPanel>
+  <TextBlock x:Name="Hint" TextWrapping="Wrap"/>
+  <TextBlock FontWeight="Bold" FontSize="16" Text="{l:Localize History_Results}"/>
+  <ComboBox x:Name="Runs" SelectionChanged="SelectRun" HorizontalAlignment="Stretch" AutomationProperties.Name="{l:Localize History_Results}"/>
+  <ItemsControl x:Name="Rows"><ItemsControl.ItemTemplate><DataTemplate x:DataType="x:String"><Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border}" Padding="2,7"><TextBlock Text="{Binding}" TextWrapping="Wrap"/></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+ </StackPanel></ScrollViewer>
+</UserControl>

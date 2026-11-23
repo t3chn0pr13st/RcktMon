@@ -67,6 +67,38 @@ public sealed class StudioScreenTests(HeadlessSessionFixture fixture) : IClassFi
         });
     }
 
+    [Theory]
+    [InlineData(1440,900)]
+    [InlineData(390,780)]
+    public void Archive_opens_without_requests_to_accounts_or_orders(int width,int height)
+    {
+        fixture.Run(()=>{
+            Localizer.Instance.Use("ru");
+            var pane=new ArchivePane(()=>new StudioClient(new ArchiveFeed()));
+            var win=new Window{Width=width,Height=height,Content=pane};
+            try{win.Show();var start=pane.FindControl<Button>("Start")!;
+                Pump(()=>start.IsEnabled && pane.FindControl<ItemsControl>("Rows")!.Items.Count==1);
+                Assert.Equal("2026-02-25",pane.FindControl<TextBox>("FromBox")!.Text);
+                Assert.Contains("—",pane.FindControl<ItemsControl>("Rows")!.Items[0]?.ToString());
+                Assert.True(start.Focus());Frame(win,"archive",width);
+            }finally{win.Close();}
+        });
+    }
+    private sealed class ArchiveFeed:HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req,CancellationToken ct)
+        {
+            Assert.Equal(HttpMethod.Get,req.Method);var id=new string('b',32);
+            var q=new ArchiveQuery("2026-02-25","2026-08-24","NVDA",1,1000,10000,50000);
+            object o=req.RequestUri!.AbsolutePath switch{
+                "/api/history/catalog"=>new ArchiveCatalog(q.From,q.Through,[new("NVDA",DateTimeOffset.UnixEpoch)]),
+                "/api/history/runs"=>new ArchiveRun[]{new(id,q,"complete","Тест завершён",0,0)},
+                var p when p==$"/api/history/runs/{id}/result"=>new ArchiveResult([new(10000,"hybrid",1,1,0,0,1,null)],0,0),
+                _=>throw new Exception("unexpected API")};
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=JsonContent.Create(o,o.GetType())});
+        }
+    }
+
     private static void Frame(Window window, string state, int width)
     {
         Dispatcher.UIThread.RunJobs(); AvaloniaHeadlessPlatform.ForceRenderTimerTick();
