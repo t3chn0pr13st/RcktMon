@@ -1,0 +1,76 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:RcktMon.App.Localization" xmlns:view="using:RcktMon.App.Views" xmlns:c="using:RcktMon.App.Controls"
+    x:Class="RcktMon.App.Views.ComparisonPane">
+    <UserControl.Styles>
+        <Style Selector="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+        <Style Selector="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="8,5"/></Style>
+    </UserControl.Styles>
+    <ScrollViewer x:Name="ComparisonScroll" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="2,6,8,12" Spacing="12">
+            <Border Classes="card" Padding="14">
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="h2" Text="{l:Localize Compare_Heading}"/>
+                    <TextBlock Text="{l:Localize Compare_ParamsA}"/>
+                    <TextBlock Text="{l:Localize Compare_ParamsB}"/>
+                    <TextBlock Classes="secondary" Text="{l:Localize Compare_Gates}"/>
+                    <WrapPanel>
+                        <StackPanel Width="142" Margin="0,3,10,4"><TextBlock Classes="label" Text="{l:Localize History_From}"/><TextBox x:Name="CompareFrom" AutomationProperties.Name="{l:Localize History_From}"/></StackPanel>
+                        <StackPanel Width="142" Margin="0,3,10,4"><TextBlock Classes="label" Text="{l:Localize History_To}"/><TextBox x:Name="CompareThrough" AutomationProperties.Name="{l:Localize History_To}"/></StackPanel>
+                        <Button x:Name="CompareStart" Classes="primary" IsEnabled="False" Margin="0,3,8,4" VerticalAlignment="Bottom" Content="{l:Localize Compare_Start}" Click="Run"/>
+                        <Button x:Name="CompareCancel" IsVisible="False" Margin="0,3,8,4" VerticalAlignment="Bottom" Content="{l:Localize Compare_Cancel}" Click="Cancel"/>
+                    </WrapPanel>
+                    <TextBlock x:Name="ArchiveCoverage" Classes="secondary"/>
+                    <TextBlock x:Name="ActionMessage" IsVisible="False" FontWeight="SemiBold"/>
+                    <Expander Header="{l:Localize Compare_Method}" HorizontalAlignment="Stretch" Padding="8,4">
+                        <TextBlock Text="{l:Localize Compare_Assumptions}"/>
+                    </Expander>
+                </StackPanel>
+            </Border>
+            <StackPanel Spacing="4">
+                <TextBlock Classes="label" Text="{l:Localize Compare_Saved}"/>
+                <ComboBox x:Name="CompareRuns" HorizontalAlignment="Stretch" IsEnabled="False" AutomationProperties.Name="{l:Localize Compare_Saved}" SelectionChanged="RunSelected"/>
+                <TextBlock x:Name="RunStatus" Classes="secondary"/>
+            </StackPanel>
+            <Border x:Name="ResultCard" Classes="card" Padding="14" IsVisible="False">
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="h2" Text="{l:Localize Compare_Table}"/>
+                    <WrapPanel>
+                        <StackPanel Margin="0,0,12,4"><TextBlock Classes="label" Text="{l:Localize Compare_Execution}"/><ComboBox x:Name="ExecutionModel" MinWidth="168" AutomationProperties.Name="{l:Localize Compare_Execution}" SelectionChanged="ModelChanged"><ComboBoxItem Content="{l:Localize Compare_Print}"/><ComboBoxItem Content="{l:Localize Compare_Book}"/></ComboBox></StackPanel>
+                    </WrapPanel>
+                    <TextBlock x:Name="ModelHelp" Classes="secondary"/>
+                    <Grid IsVisible="{DynamicResource ComparisonWide}" ColumnDefinitions="1.3*,*,*,*,1.1*,1.2*" ColumnSpacing="6" Margin="10,3">
+                        <TextBlock Classes="label" Text="{l:Localize Compare_Rule}"/><TextBlock Grid.Column="1" Classes="label" Text="{l:Localize Compare_Exit}"/><TextBlock Grid.Column="2" Classes="label" Text="{l:Localize Compare_Pause}"/><TextBlock Grid.Column="3" Classes="label" Text="{l:Localize Compare_Net}"/><TextBlock Grid.Column="4" Classes="label" Text="{l:Localize Compare_Delta}"/><TextBlock Grid.Column="5" Classes="label" Text="{l:Localize Compare_Coverage}"/>
+                    </Grid>
+                    <ListBox x:Name="VariantRows" Background="Transparent" Padding="0" AutoScrollToSelectedItem="False" AutomationProperties.Name="{l:Localize Compare_Table}" SelectionChanged="VariantChanged">
+                        <ListBox.ItemTemplate><DataTemplate x:DataType="view:VariantDisplay">
+                            <Panel>
+                                <Grid IsVisible="{DynamicResource ComparisonWide}" ColumnDefinitions="1.3*,*,*,*,1.1*,1.2*" ColumnSpacing="6" Margin="2,1">
+                                    <TextBlock FontWeight="SemiBold" Text="{Binding Rule}"/><TextBlock Grid.Column="1" Text="{Binding Exit}"/><TextBlock Grid.Column="2" Text="{Binding Pause}"/><TextBlock Grid.Column="3" FontWeight="SemiBold" Text="{Binding Net}"/><TextBlock Grid.Column="4" Text="{Binding Delta}"/><TextBlock Grid.Column="5" Text="{Binding Priced}"/>
+                                </Grid>
+                                <StackPanel IsVisible="{DynamicResource ComparisonNarrow}" Spacing="2">
+                                    <TextBlock FontWeight="SemiBold" Text="{Binding Title}"/>
+                                    <TextBlock Text="{Binding CompactProfit}"/>
+                                    <TextBlock Classes="secondary" Text="{Binding CompactCoverage}"/>
+                                </StackPanel>
+                            </Panel>
+                        </DataTemplate></ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Classes="secondary" Text="{l:Localize Compare_Partial}"/>
+                </StackPanel>
+            </Border>
+            <Border x:Name="DetailCard" Classes="card" Padding="14" IsVisible="False">
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="h2" Text="{l:Localize Compare_Trades}"/>
+                    <TextBlock x:Name="VariantFacts" Classes="secondary"/>
+                    <WrapPanel>
+                        <StackPanel Width="134" Margin="0,0,10,4"><TextBlock Classes="label" Text="{l:Localize Compare_Ticker}"/><ComboBox x:Name="TickerFilter" HorizontalAlignment="Stretch" AutomationProperties.Name="{l:Localize Compare_Ticker}" SelectionChanged="TickerChanged"/></StackPanel>
+                        <StackPanel MinWidth="150" Margin="0,0,0,4"><TextBlock Classes="label" Text="{l:Localize Compare_SignalPicker}"/><ComboBox x:Name="TradePicker" HorizontalAlignment="Stretch" AutomationProperties.Name="{l:Localize Compare_SignalPicker}" SelectionChanged="TradeChanged"/></StackPanel>
+                    </WrapPanel>
+                    <TextBlock x:Name="TradeFacts"/>
+                    <TextBlock x:Name="ChartStatus" Classes="secondary"/>
+                    <c:HistoryTradeChart x:Name="TradeChart" IsVisible="False" Height="170" AutomationProperties.Name="{l:Localize Compare_Chart}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

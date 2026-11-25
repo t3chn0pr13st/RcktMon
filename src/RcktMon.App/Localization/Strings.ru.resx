@@ -1021,4 +1021,69 @@
   <data name="History_Rule2" xml:space="preserve"><value>1-я красная 3 мин</value></data>
   <data name="History_Rule3" xml:space="preserve"><value>Гибрид 1 → 3 мин</value></data>
   <data name="History_Coverage" xml:space="preserve"><value>Покрытие</value></data>
+  <data name="Compare_Tab" xml:space="preserve"><value>Сравнение правил</value></data>
+  <data name="Compare_Manual" xml:space="preserve"><value>Свои пороги</value></data>
+  <data name="Compare_Heading" xml:space="preserve"><value>Два правила входа</value></data>
+  <data name="Compare_ParamsA" xml:space="preserve"><value>Исходное NVDA: от 100 000 USDT покупок и рост от 0,25% за 5 секунд.</value></data>
+  <data name="Compare_ParamsB" xml:space="preserve"><value>Относительное 8×: от 10 000 USDT и 8× обычного оборота, рост от 2% за 5 секунд.</value></data>
+  <data name="Compare_Gates" xml:space="preserve"><value>Оба правила: ≥5 покупок и ≥80% оборота на стороне покупателя. Все тикеры, по 1 000 USDT на виртуальный вход.</value></data>
+  <data name="Compare_Start" xml:space="preserve"><value>Обновить и сравнить</value></data>
+  <data name="Compare_Cancel" xml:space="preserve"><value>Остановить</value></data>
+  <data name="Compare_Cache" xml:space="preserve"><value>Тики в кэше: {0} — {1} (UTC+8). Для более поздних дат загрузятся доступные полные дни архива.</value></data>
+  <data name="Compare_Method" xml:space="preserve"><value>Как считаются пауза и прибыль</value></data>
+  <data name="Compare_Assumptions" xml:space="preserve"><value>Первый сигнал разрешает вход и запускает паузу на 24 часа для этого тикера, даже если вход не исполнен. Пропущенные сигналы паузу не продлевают. В обоих режимах второй вход при открытой позиции запрещён. Каждый вариант рассчитывается отдельно. Выход — после закрытия первой или третьей красной минутной свечи; они не обязаны идти подряд. Задержка — 250 мс, комиссия — 0,05% на сторону, фандинг учтён. Принты: скольжение 0,1% на сторону. Стакан: исполнение по доступной глубине, без дополнительного скольжения. Реальных заявок нет.</value></data>
+  <data name="Compare_Saved" xml:space="preserve"><value>Сохранённый прогон</value></data>
+  <data name="Compare_Table" xml:space="preserve"><value>Прибыль по вариантам, USDT</value></data>
+  <data name="Compare_Execution" xml:space="preserve"><value>Исполнение</value></data>
+  <data name="Compare_Print" xml:space="preserve"><value>По принтам</value></data>
+  <data name="Compare_Book" xml:space="preserve"><value>По стакану</value></data>
+  <data name="Compare_PrintHelp" xml:space="preserve"><value>Прибыль с учётом скольжения, комиссии и фандинга. Цены входа и выхода в деталях — исходные принты. Выберите строку, чтобы посмотреть её сигналы и график.</value></data>
+  <data name="Compare_BookHelp" xml:space="preserve"><value>Прибыль только по сделкам с доступной глубиной стакана. Неполная выборка не представляет весь период.</value></data>
+  <data name="Compare_Rule" xml:space="preserve"><value>Правило</value></data>
+  <data name="Compare_Exit" xml:space="preserve"><value>Красная 1 мин</value></data>
+  <data name="Compare_Pause" xml:space="preserve"><value>Пауза</value></data>
+  <data name="Compare_Net" xml:space="preserve"><value>Прибыль</value></data>
+  <data name="Compare_Delta" xml:space="preserve"><value>Δ к базе без паузы</value></data>
+  <data name="Compare_Coverage" xml:space="preserve"><value>Оценено / входы</value></data>
+  <data name="Compare_Partial" xml:space="preserve"><value>Δ — разница с тем же правилом и выходом без паузы. * При неполном покрытии сравниваются только оценённые сделки; пропуски не равны нулю.</value></data>
+  <data name="Compare_Trades" xml:space="preserve"><value>Сигналы и сделки</value></data>
+  <data name="Compare_Ticker" xml:space="preserve"><value>Тикер</value></data>
+  <data name="Compare_SignalPicker" xml:space="preserve"><value>Сигнал · UTC+8</value></data>
+  <data name="Compare_Chart" xml:space="preserve"><value>Минутные свечи с отметками событий</value></data>
+  <data name="Compare_Legend" xml:space="preserve"><value>Свечи 1 мин · UTC+8     S — сигнал     E — вход     X — выход</value></data>
+  <data name="Compare_ChartLoading" xml:space="preserve"><value>Загружаю минутные свечи…</value></data>
+  <data name="Compare_NoChart" xml:space="preserve"><value>Для этого сигнала график недоступен.</value></data>
+  <data name="Compare_NoTrades" xml:space="preserve"><value>Сигналов в выбранном варианте нет.</value></data>
+  <data name="Compare_TradeFacts" xml:space="preserve"><value>{0} · сигнал {1} (UTC+8)
+Вход: {2} · {3} USDT     Выход: {4} · {5} USDT
+Прибыль: {6} USDT</value></data>
+  <data name="Compare_Facts" xml:space="preserve"><value>{0}. Сигналы: {1:N0} · входы: {2:N0} · в плюс: {3:N0}.</value></data>
+  <data name="Compare_CompactCoverage" xml:space="preserve"><value>Оценено / входы: {0}</value></data>
+  <data name="Compare_CompactProfit" xml:space="preserve"><value>Прибыль: {0} USDT    Δ {1}</value></data>
+  <data name="Compare_Original" xml:space="preserve"><value>Исходное NVDA</value></data>
+  <data name="Compare_Relative" xml:space="preserve"><value>Объём 8×</value></data>
+  <data name="Compare_First" xml:space="preserve"><value>1-я красная</value></data>
+  <data name="Compare_Third" xml:space="preserve"><value>3-я красная</value></data>
+  <data name="Compare_Off" xml:space="preserve"><value>Без паузы</value></data>
+  <data name="Compare_Day" xml:space="preserve"><value>24 часа</value></data>
+  <data name="Compare_Loading" xml:space="preserve"><value>Читаю сохранённые прогоны…</value></data>
+  <data name="Compare_Running" xml:space="preserve"><value>Идёт расчёт</value></data>
+  <data name="Compare_Complete" xml:space="preserve"><value>Готов</value></data>
+  <data name="Compare_Failed" xml:space="preserve"><value>Ошибка</value></data>
+  <data name="Compare_Cancelled" xml:space="preserve"><value>Остановлен</value></data>
+  <data name="Compare_Interrupted" xml:space="preserve"><value>Прерван</value></data>
+  <data name="Compare_Empty" xml:space="preserve"><value>Пока нет сравнений. Выберите период и нажмите «Обновить и сравнить».</value></data>
+  <data name="Compare_Done" xml:space="preserve"><value>Результат за {0} — {1}, даты включительно (UTC+8).</value></data>
+  <data name="Compare_Invalid" xml:space="preserve"><value>Проверьте даты в формате ГГГГ-ММ-ДД. Начало не раньше архива, конец не раньше начала и не позже вчерашнего дня (UTC+8). Период — до 366 дней; за раз можно добавить до 7 дней.</value></data>
+  <data name="Compare_Busy" xml:space="preserve"><value>Другой тест уже запущен. Дождитесь завершения.</value></data>
+  <data name="Compare_StartError" xml:space="preserve"><value>Не удалось выполнить запрос. Проверьте даты и доступность локальной Студии.</value></data>
+  <data name="Compare_ResultError" xml:space="preserve"><value>Результат прогона недоступен. Повторяю чтение…</value></data>
+  <data name="Compare_Cancelling" xml:space="preserve"><value>Остановка запрошена.</value></data>
+  <data name="Compare_Skipped" xml:space="preserve"><value>Пропущено из-за паузы: {0:N0}.</value></data>
+  <data name="Compare_MissingEntry" xml:space="preserve"><value>Нет подтверждённого входа.</value></data>
+  <data name="Compare_MissingExit" xml:space="preserve"><value>Нет подтверждённого выхода в пределах допуска.</value></data>
+  <data name="Compare_MissingBook" xml:space="preserve"><value>Нет пригодного снимка стакана для входа или выхода.</value></data>
+  <data name="Compare_NotPriced" xml:space="preserve"><value>Не хватает данных для оценки прибыли.</value></data>
+  <data name="Compare_LongChart" xml:space="preserve"><value>Длинная сделка: показаны только окна у сигнала и выхода.</value></data>
+  <data name="Compare_Costs" xml:space="preserve"><value>Комиссии: {0:0.####} USDT · фандинг: {1:0.####} USDT</value></data>
 </root>
